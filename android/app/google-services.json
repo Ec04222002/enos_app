@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "796865798388",
+    "project_id": "enos-app",
+    "storage_bucket": "enos-app.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:796865798388:android:f74773c3310be0cab2fea1",
+        "android_client_info": {
+          "package_name": "com.enosapp.enos"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "796865798388-dnh82f4634m5kvi079dvv4r47p9upmo2.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBBuhBPGEq82imPlnSGOsIFZqKTJFWtGs0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "796865798388-dnh82f4634m5kvi079dvv4r47p9upmo2.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
