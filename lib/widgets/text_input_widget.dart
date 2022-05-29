@@ -6,6 +6,7 @@ class TextInputWidget extends StatefulWidget {
   final IconData icon;
   final bool isPassword;
   final TextEditingController controller;
+  final Function validatorFunct;
   bool obscureText;
   TextInputWidget({
     Key key,
@@ -13,6 +14,7 @@ class TextInputWidget extends StatefulWidget {
     this.icon,
     this.isPassword,
     this.controller,
+    this.validatorFunct,
     this.obscureText = true,
   }) : super(key: key);
 
@@ -30,6 +32,7 @@ class _TextInputWidgetState extends State<TextInputWidget> {
   @override
   Widget build(BuildContext context) {
     return TextFormField(
+      validator: widget.validatorFunct,
       controller: widget.controller,
       obscureText: widget.obscureText,
       enableSuggestions: !widget.isPassword,

@@ -55,6 +55,8 @@ class _SignInPageState extends State<SignInPage> {
                     text: "Username or email",
                     icon: Icons.person_outline,
                     isPassword: false,
+                    validatorFunct: (val) =>
+                        val.isEmpty() ? 'Please enter an email' : null,
                     controller: _emailTextController,
                     obscureText: false,
                   ),
@@ -63,6 +65,9 @@ class _SignInPageState extends State<SignInPage> {
                     text: "Password",
                     icon: Icons.lock_outline,
                     isPassword: true,
+                    validatorFunct: (val) => val.length < 6
+                        ? 'Please enter a password 6+ chars long'
+                        : null,
                     controller: _passwordTextController,
                   ),
                   SizedBox(height: 25),
