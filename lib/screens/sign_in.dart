@@ -3,15 +3,13 @@ import 'package:enos/screens/register.dart';
 import 'package:enos/services/auth.dart';
 import 'package:enos/widgets/auth_button.dart';
 import 'package:enos/widgets/loading.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:enos/constants.dart';
-import 'package:flutter/services.dart';
 import 'package:enos/widgets/text_input_widget.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:provider/provider.dart';
 
 class SignInPage extends StatefulWidget {
-  //const SignInPage({ Key? key }) : super(key: key);
+  //const SignInPage({Key key}) : super(key: key);
 
   @override
   State<SignInPage> createState() => _SignInPageState();
@@ -22,6 +20,7 @@ class _SignInPageState extends State<SignInPage> {
   final _passwordTextController = TextEditingController();
   bool isLoading = false;
   String error = '';
+  final _formKey = GlobalKey<FormState>();
   //final AuthService _auth = AuthService();
   @override
   void dispose() {
@@ -32,8 +31,6 @@ class _SignInPageState extends State<SignInPage> {
 
   @override
   Widget build(BuildContext context) {
-    final _formKey = GlobalKey<FormState>();
-
     return isLoading
         ? Loading()
         : Scaffold(
@@ -75,7 +72,12 @@ class _SignInPageState extends State<SignInPage> {
                           : null,
                       controller: _passwordTextController,
                     ),
-                    SizedBox(height: 25),
+                    SizedBox(height: 5),
+                    Text(
+                      error,
+                      style: TextStyle(color: kRedColor),
+                    ),
+                    SizedBox(height: 5),
                     AuthButton(
                       backgroundColor: kActiveColor,
                       text: 'Log in',
@@ -83,17 +85,22 @@ class _SignInPageState extends State<SignInPage> {
                         if (_formKey.currentState.validate()) {
                           setState(() {
                             isLoading = true;
+                            print("Showing loading");
                           });
-                          dynamic result = await AuthService()
-                              .registerWithEmailAndPassword(
-                                  email: _emailTextController.text,
-                                  password: _passwordTextController.text);
+                          dynamic result = await context
+                              .read<AuthService>()
+                              .signInWithEmailAndPassword(
+                                  email: _emailTextController.text.trim(),
+                                  password:
+                                      _passwordTextController.text.trim());
                           if (result == null) {
                             setState(() {
                               isLoading = false;
-                              error = 'Invalid email';
+                              print("Error logging in");
+                              error = 'Please enter a valid email';
                             });
                           }
+                          print("completed");
                         }
                       },
                     ),
@@ -102,7 +109,7 @@ class _SignInPageState extends State<SignInPage> {
                       backgroundColor: Colors.white,
                       leadIcon: Container(
                           padding: const EdgeInsets.symmetric(
-                              vertical: 9.0, horizontal: 11.0),
+                              vertical: 9.0, horizontal: 10.0),
                           child: Image.network(
                               'https://developers.google.com/identity/images/g-logo.png')),
                       text: 'Sign in with Google',

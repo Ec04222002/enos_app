@@ -4,9 +4,12 @@ import 'package:enos/widgets/auth_button.dart';
 import 'package:enos/widgets/loading.dart';
 import 'package:enos/widgets/text_input_widget.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class RegisterPage extends StatefulWidget {
-  //const RegisterPage({ Key? key }) : super(key: key);
+  final Function toggleView;
+
+  const RegisterPage({Key key, this.toggleView}) : super(key: key);
 
   @override
   State<RegisterPage> createState() => _RegisterPageState();
@@ -18,6 +21,7 @@ class _RegisterPageState extends State<RegisterPage> {
   final _userNameTextController = TextEditingController();
   String error = '';
   bool isLoading = false;
+  final _formKey = GlobalKey<FormState>();
 
   @override
   void dispose() {
@@ -29,7 +33,6 @@ class _RegisterPageState extends State<RegisterPage> {
 
   @override
   Widget build(BuildContext context) {
-    final _formKey = GlobalKey<FormState>();
     return isLoading
         ? Loading()
         : Scaffold(
@@ -58,16 +61,18 @@ class _RegisterPageState extends State<RegisterPage> {
                           validatorFunct: (val) => val.length < 6
                               ? 'Please enter an username 6+ chars long'
                               : null,
-                          controller: _emailTextController),
-                      SizedBox(height: 20),
+                          obscureText: false,
+                          controller: _userNameTextController),
+                      SizedBox(height: 15),
                       TextInputWidget(
                           text: "Enter email",
                           icon: Icons.email_outlined,
                           isPassword: false,
                           validatorFunct: (val) =>
                               val.isEmpty ? 'Please enter an email' : null,
+                          obscureText: false,
                           controller: _emailTextController),
-                      SizedBox(height: 20),
+                      SizedBox(height: 15),
                       TextInputWidget(
                           text: "Enter password",
                           icon: Icons.lock_outline,
@@ -76,7 +81,11 @@ class _RegisterPageState extends State<RegisterPage> {
                               ? 'Please enter a password 6+ chars long'
                               : null,
                           controller: _passwordTextController),
-                      SizedBox(height: 20),
+                      SizedBox(height: 15),
+                      Text(
+                        error,
+                        style: TextStyle(color: kRedColor),
+                      ),
                       AuthButton(
                         backgroundColor: kActiveColor,
                         textColor: kDarkTextColor,
@@ -85,15 +94,18 @@ class _RegisterPageState extends State<RegisterPage> {
                           if (_formKey.currentState.validate()) {
                             setState(() {
                               isLoading = true;
+                              print("show loading");
                             });
-                            dynamic result = await AuthService()
+                            dynamic result = await context
+                                .read<AuthService>()
                                 .registerWithEmailAndPassword(
                                     email: _emailTextController.text,
                                     password: _passwordTextController.text);
+                            print("gotten results");
                             if (result == null) {
                               setState(() {
                                 isLoading = false;
-                                error = 'Invalid email';
+                                error = 'Please enter a valid email';
                               });
                             }
                           }

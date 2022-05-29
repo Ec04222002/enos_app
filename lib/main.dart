@@ -1,5 +1,6 @@
-import 'package:enos/screens/wrapper.dart';
-import 'package:enos/widgets/ticker_tile_provider.dart';
+import 'package:enos/screens/auth_wrapper.dart';
+import 'package:enos/services/auth.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:enos/constants.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
@@ -26,8 +27,14 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (context) => TickerTileProvider(),
+    return MultiProvider(
+      providers: [
+        Provider<AuthService>(
+          create: (_) => AuthService(FirebaseAuth.instance),
+        ),
+        StreamProvider(
+            create: (context) => context.read<AuthService>().authChanges)
+      ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
         title: "Enos",
@@ -42,7 +49,7 @@ class MyApp extends StatelessWidget {
               // small text
               bodyText2: TextStyle(color: kDarkTextColor)),
         ),
-        home: Wrapper(),
+        home: AuthWrapper(),
       ),
     );
   }
