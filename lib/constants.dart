@@ -1,7 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
-const kDarkBackgroundColor = Color(0xFFa0F30);
+const kDarkBackgroundColor = Color(0xFF1a0F30);
 const kLightBackgroundColor = Color(0xFF22143e);
 
 const kBrightTextColor = Color(0xFFFCFBFE);

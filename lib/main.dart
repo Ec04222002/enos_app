@@ -32,10 +32,15 @@ class MyApp extends StatelessWidget {
         debugShowCheckedModeBanner: false,
         title: "Enos",
         theme: ThemeData(
+          primaryColor: kDarkBackgroundColor,
           scaffoldBackgroundColor: kDarkBackgroundColor,
           fontFamily: GoogleFonts.openSans().fontFamily,
-          textTheme:
-              Theme.of(context).textTheme.apply(displayColor: kDarkTextColor),
+          textTheme: TextTheme(
+              //slight bold or normal
+              headline1:
+                  TextStyle(color: kDarkTextColor, fontWeight: FontWeight.bold),
+              // small text
+              bodyText2: TextStyle(color: kDarkTextColor)),
         ),
         home: Wrapper(),
       ),
