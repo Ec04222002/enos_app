@@ -29,7 +29,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
   @override
   Widget build(BuildContext context) {
-    final formKey = GlobalKey<FormState>();
+    final _formKey = GlobalKey<FormState>();
     return isLoading
         ? Loading()
         : Scaffold(
@@ -48,7 +48,7 @@ class _RegisterPageState extends State<RegisterPage> {
                 padding: EdgeInsets.fromLTRB(
                     20, MediaQuery.of(context).size.height * 0.15, 20, 0),
                 child: Form(
-                  key: formKey,
+                  key: _formKey,
                   child: Column(
                     children: <Widget>[
                       TextInputWidget(
@@ -65,7 +65,7 @@ class _RegisterPageState extends State<RegisterPage> {
                           icon: Icons.email_outlined,
                           isPassword: false,
                           validatorFunct: (val) =>
-                              val.isEmpty() ? 'Please enter an email' : null,
+                              val.isEmpty ? 'Please enter an email' : null,
                           controller: _emailTextController),
                       SizedBox(height: 20),
                       TextInputWidget(
@@ -82,7 +82,7 @@ class _RegisterPageState extends State<RegisterPage> {
                         textColor: kDarkTextColor,
                         text: "Sign up ",
                         onTap: () async {
-                          if (formKey.currentState.validate()) {
+                          if (_formKey.currentState.validate()) {
                             setState(() {
                               isLoading = true;
                             });
