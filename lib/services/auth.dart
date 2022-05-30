@@ -52,7 +52,6 @@ class AuthService {
 
   Future signOut() async {
     try {
-      await GoogleSignInProvider().googleLogOut();
       return await _auth.signOut();
     } catch (error) {
       print(error.toString());
@@ -73,7 +72,7 @@ class GoogleSignInProvider extends ChangeNotifier {
       print("S0");
       final googleUser = await googleSignIn.signIn();
       print("S1");
-      if (googleUser == null) return;
+      if (googleUser == null) return null;
       print("S2");
       _user = googleUser;
       final googleAuth = await googleUser.authentication;
@@ -85,6 +84,7 @@ class GoogleSignInProvider extends ChangeNotifier {
       await FirebaseAuth.instance.signInWithCredential(credential);
 
       notifyListeners();
+      return "Success";
     } catch (error) {
       print(error.toString());
       return null;

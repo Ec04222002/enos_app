@@ -117,7 +117,19 @@ class _SignInPageState extends State<SignInPage> {
                         final provider = Provider.of<GoogleSignInProvider>(
                             context,
                             listen: false);
-                        await provider.googleLogin();
+                        setState(() {
+                          isLoading = true;
+                          print("Showing loading");
+                        });
+                        dynamic result = await provider.googleLogin();
+                        if (result == null) {
+                          setState(() {
+                            isLoading = false;
+                            print("Error logging in");
+                            error =
+                                'Google cannot log you in. Please try again later';
+                          });
+                        }
                       },
                     ),
                     SizedBox(height: 20),

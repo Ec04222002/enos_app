@@ -18,7 +18,10 @@ class _HomePageState extends State<HomePage> {
         body: Center(
       child: ElevatedButton(
           child: Text("Log out"),
-          onPressed: () {
+          onPressed: () async {
+            if (context.read<GoogleSignInProvider>().user != null) {
+              context.read<GoogleSignInProvider>().googleLogOut();
+            }
             context.read<AuthService>().signOut();
           }),
     ));
