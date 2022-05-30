@@ -22,7 +22,7 @@ class AuthButton extends StatelessWidget {
     return Container(
       width: MediaQuery.of(context).size.width,
       height: 50,
-      margin: const EdgeInsets.fromLTRB(0, 5, 0, 5),
+      margin: const EdgeInsets.fromLTRB(0, 0, 0, 10),
       decoration: BoxDecoration(borderRadius: BorderRadius.circular(7)),
       child: ElevatedButton(
         onPressed: onTap,

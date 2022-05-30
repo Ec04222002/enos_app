@@ -147,7 +147,7 @@ class _SignInPageState extends State<SignInPage> {
                         }
                       },
                     ),
-                    SizedBox(height: 20),
+                    SizedBox(height: 15),
                     //google/fb
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,

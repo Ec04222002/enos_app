@@ -79,11 +79,8 @@ class GoogleSignInProvider extends ChangeNotifier {
 
   Future googleLogin() async {
     try {
-      print("S0");
       final googleUser = await googleSignIn.signIn();
-      print("S1");
       if (googleUser == null) return null;
-      print("S2");
       _user = googleUser;
       final googleAuth = await googleUser.authentication;
       final credential = GoogleAuthProvider.credential(
