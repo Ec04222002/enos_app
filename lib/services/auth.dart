@@ -6,6 +6,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:enos/constants.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 
 class AuthService {
   final FirebaseAuth _auth;
@@ -51,10 +52,46 @@ class AuthService {
 
   Future signOut() async {
     try {
+      await GoogleSignInProvider().googleLogOut();
       return await _auth.signOut();
     } catch (error) {
       print(error.toString());
       return null;
     }
+  }
+}
+
+class GoogleSignInProvider extends ChangeNotifier {
+  final googleSignIn = GoogleSignIn();
+
+  GoogleSignInAccount _user;
+
+  GoogleSignInAccount get user => _user;
+
+  Future googleLogin() async {
+    try {
+      print("S0");
+      final googleUser = await googleSignIn.signIn();
+      print("S1");
+      if (googleUser == null) return;
+      print("S2");
+      _user = googleUser;
+      final googleAuth = await googleUser.authentication;
+      final credential = GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
+      );
+
+      await FirebaseAuth.instance.signInWithCredential(credential);
+
+      notifyListeners();
+    } catch (error) {
+      print(error.toString());
+      return null;
+    }
+  }
+
+  Future googleLogOut() async {
+    await googleSignIn.disconnect();
   }
 }

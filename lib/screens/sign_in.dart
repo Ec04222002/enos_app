@@ -113,7 +113,12 @@ class _SignInPageState extends State<SignInPage> {
                           child: Image.network(
                               'https://developers.google.com/identity/images/g-logo.png')),
                       text: 'Sign in with Google',
-                      onTap: () {},
+                      onTap: () async {
+                        final provider = Provider.of<GoogleSignInProvider>(
+                            context,
+                            listen: false);
+                        await provider.googleLogin();
+                      },
                     ),
                     SizedBox(height: 20),
                     //google/fb

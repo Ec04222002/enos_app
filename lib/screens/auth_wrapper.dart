@@ -14,16 +14,13 @@ class AuthWrapper extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final firebaseUser = context.watch<User>();
-    print("in wrapper: rebuilding");
     if (firebaseUser != null) {
-      print("Showing Home Page");
       Navigator.popUntil(
         context,
         ModalRoute.withName('/'),
       );
       return HomePage();
     }
-    print("Showing Sign in page");
     return SignInPage();
   }
 }

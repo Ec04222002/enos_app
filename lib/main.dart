@@ -33,7 +33,8 @@ class MyApp extends StatelessWidget {
           create: (_) => AuthService(FirebaseAuth.instance),
         ),
         StreamProvider(
-            create: (context) => context.read<AuthService>().authChanges)
+            create: (context) => context.read<AuthService>().authChanges),
+        ChangeNotifierProvider(create: (context) => GoogleSignInProvider())
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
