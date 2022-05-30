@@ -17,7 +17,7 @@ Future main() async {
 }
 
 Future initialization() async {
-  await Future.delayed(Duration(seconds: 2));
+  await Future.delayed(Duration(seconds: 1));
   FlutterNativeSplash.remove();
 }
 
@@ -34,7 +34,7 @@ class MyApp extends StatelessWidget {
         ),
         StreamProvider(
             create: (context) => context.read<AuthService>().authChanges),
-        ChangeNotifierProvider(create: (context) => GoogleSignInProvider())
+        ChangeNotifierProvider(create: (context) => GoogleSignInProvider()),
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,

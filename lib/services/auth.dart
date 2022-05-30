@@ -24,6 +24,16 @@ class AuthService {
     return _auth.authStateChanges();
   }
 
+  Future resetPassword({String email}) async {
+    try {
+      await _auth.sendPasswordResetEmail(email: email);
+      return "Success";
+    } catch (error) {
+      print(error.toString());
+      return null;
+    }
+  }
+
   Future signInWithEmailAndPassword({String email, String password}) async {
     try {
       dynamic result = await _auth.signInWithEmailAndPassword(

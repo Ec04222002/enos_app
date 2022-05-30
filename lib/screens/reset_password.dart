@@ -6,19 +6,18 @@ import 'package:enos/widgets/text_input_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-class RegisterPage extends StatefulWidget {
+class ResetPasswordScreen extends StatefulWidget {
   final Function toggleView;
 
-  const RegisterPage({Key key, this.toggleView}) : super(key: key);
+  const ResetPasswordScreen({Key key, this.toggleView}) : super(key: key);
 
   @override
-  State<RegisterPage> createState() => _RegisterPageState();
+  State<ResetPasswordScreen> createState() => _ResetPasswordScreenState();
 }
 
-class _RegisterPageState extends State<RegisterPage> {
+class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
   final _emailTextController = TextEditingController();
-  final _passwordTextController = TextEditingController();
-  final _userNameTextController = TextEditingController();
+
   String error = '';
   bool isLoading = false;
   final _formKey = GlobalKey<FormState>();
@@ -27,8 +26,6 @@ class _RegisterPageState extends State<RegisterPage> {
   void dispose() {
     super.dispose();
     _emailTextController.dispose();
-    _passwordTextController.dispose();
-    _userNameTextController.dispose();
   }
 
   @override
@@ -41,7 +38,7 @@ class _RegisterPageState extends State<RegisterPage> {
               backgroundColor: Colors.transparent,
               elevation: 0,
               centerTitle: true,
-              title: Text('Sign Up',
+              title: Text('Reset Password',
                   style: Theme.of(context)
                       .textTheme
                       .headline1
@@ -55,15 +52,6 @@ class _RegisterPageState extends State<RegisterPage> {
                   key: _formKey,
                   child: Column(
                     children: <Widget>[
-                      TextInputWidget(
-                          text: "Enter username",
-                          icon: Icons.person_outline,
-                          isPassword: false,
-                          validatorFunct: (val) => val.length < 6
-                              ? 'Please enter an username 6+ chars long'
-                              : null,
-                          obscureText: false,
-                          controller: _userNameTextController),
                       SizedBox(height: 15),
                       TextInputWidget(
                           text: "Enter email",
@@ -74,15 +62,6 @@ class _RegisterPageState extends State<RegisterPage> {
                           obscureText: false,
                           controller: _emailTextController),
                       SizedBox(height: 15),
-                      TextInputWidget(
-                          text: "Enter password",
-                          icon: Icons.lock_outline,
-                          isPassword: true,
-                          validatorFunct: (val) => val.length < 6
-                              ? 'Please enter a password 6+ chars long'
-                              : null,
-                          controller: _passwordTextController),
-                      SizedBox(height: 15),
                       Text(
                         error,
                         style: TextStyle(color: kRedColor),
@@ -90,24 +69,25 @@ class _RegisterPageState extends State<RegisterPage> {
                       AuthButton(
                         backgroundColor: kActiveColor,
                         textColor: kDarkTextColor,
-                        text: "Sign up ",
+                        text: "Reset Password",
                         onTap: () async {
                           if (_formKey.currentState.validate()) {
                             setState(() {
                               isLoading = true;
-                              print("show loading");
+                              //print("Showing loading");
                             });
                             dynamic result = await context
                                 .read<AuthService>()
-                                .registerWithEmailAndPassword(
-                                    email: _emailTextController.text,
-                                    password: _passwordTextController.text);
-                            print("gotten results");
+                                .resetPassword(
+                                    email: _emailTextController.text.trim());
+
                             if (result == null) {
                               setState(() {
                                 isLoading = false;
-                                error = 'Please enter a valid email';
+                                error = "Please enter a valid email";
                               });
+                            } else {
+                              Navigator.of(context).pop();
                             }
                           }
                         },

@@ -1,5 +1,6 @@
 //login page
 import 'package:enos/screens/register.dart';
+import 'package:enos/screens/reset_password.dart';
 import 'package:enos/services/auth.dart';
 import 'package:enos/widgets/auth_button.dart';
 import 'package:enos/widgets/loading.dart';
@@ -37,7 +38,7 @@ class _SignInPageState extends State<SignInPage> {
             body: SingleChildScrollView(
                 child: Padding(
               padding: EdgeInsets.fromLTRB(
-                  30, MediaQuery.of(context).size.height * 0.1, 30, 0),
+                  30, MediaQuery.of(context).size.height * 0.08, 30, 0),
               child: Form(
                 key: _formKey,
                 child: Column(
@@ -62,7 +63,7 @@ class _SignInPageState extends State<SignInPage> {
                       controller: _emailTextController,
                       obscureText: false,
                     ),
-                    SizedBox(height: 15),
+                    SizedBox(height: 10),
                     TextInputWidget(
                       text: "Password",
                       icon: Icons.lock_outline,
@@ -72,12 +73,26 @@ class _SignInPageState extends State<SignInPage> {
                           : null,
                       controller: _passwordTextController,
                     ),
-                    SizedBox(height: 5),
+                    Container(
+                        width: MediaQuery.of(context).size.width,
+                        height: 35,
+                        alignment: Alignment.bottomRight,
+                        child: TextButton(
+                            onPressed: () => Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) =>
+                                        ResetPasswordScreen())),
+                            child: Text(
+                              "Forgot Password ?",
+                              style:
+                                  TextStyle(fontSize: 12, color: kActiveColor),
+                              textAlign: TextAlign.right,
+                            ))),
                     Text(
                       error,
                       style: TextStyle(color: kRedColor),
                     ),
-                    SizedBox(height: 5),
                     AuthButton(
                       backgroundColor: kActiveColor,
                       text: 'Log in',
@@ -85,7 +100,7 @@ class _SignInPageState extends State<SignInPage> {
                         if (_formKey.currentState.validate()) {
                           setState(() {
                             isLoading = true;
-                            print("Showing loading");
+                            //print("Showing loading");
                           });
                           dynamic result = await context
                               .read<AuthService>()
@@ -96,11 +111,11 @@ class _SignInPageState extends State<SignInPage> {
                           if (result == null) {
                             setState(() {
                               isLoading = false;
-                              print("Error logging in");
+                              //print("Error logging in");
                               error = 'Please enter a valid email';
                             });
                           }
-                          print("completed");
+                          //print("completed");
                         }
                       },
                     ),
@@ -119,13 +134,13 @@ class _SignInPageState extends State<SignInPage> {
                             listen: false);
                         setState(() {
                           isLoading = true;
-                          print("Showing loading");
+                          //print("Showing loading");
                         });
                         dynamic result = await provider.googleLogin();
                         if (result == null) {
                           setState(() {
                             isLoading = false;
-                            print("Error logging in");
+                            //print("Error logging in");
                             error =
                                 'Google cannot log you in. Please try again later';
                           });
