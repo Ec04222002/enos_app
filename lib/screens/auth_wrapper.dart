@@ -1,8 +1,8 @@
 //determines if user already logged in and show
 //signup or home accordingly
 
+import 'package:enos/screens/nav_display.dart';
 import 'package:enos/screens/sign_in.dart';
-import 'package:enos/screens/home.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -19,7 +19,7 @@ class AuthWrapper extends StatelessWidget {
         context,
         ModalRoute.withName('/'),
       );
-      return HomePage();
+      return NavDisplayScreen();
     }
     return SignInPage();
   }

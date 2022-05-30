@@ -1,5 +1,5 @@
-import 'package:enos/models/nft_ticker.dart';
-import 'package:enos/models/stock_ticker.dart';
+import 'package:enos/models/watchlist.dart';
+import 'package:enos/models/comment.dart';
 import 'package:enos/models/user.dart';
 import 'package:enos/widgets/loading.dart';
 import 'package:flutter/cupertino.dart';
@@ -11,14 +11,8 @@ import 'package:google_sign_in/google_sign_in.dart';
 class AuthService {
   final FirebaseAuth _auth;
   AuthService(this._auth);
-
-  Stream<StockTicker> get stockTicker {}
-  Stream<NftTicker> get nftTicker {}
-
-  //missing more user data
-  // UserModel _userFromFirebaseuser(dynamic user) {
-  //   return user != null ? UserModel(uid: user.uid) : null;
-  // }
+  //future? of comments // for future builder for comment section
+  //stream of watchlist // for stream builder for watchlist
 
   Stream<User> get authChanges {
     return _auth.authStateChanges();
