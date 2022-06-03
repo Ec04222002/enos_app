@@ -42,7 +42,7 @@ class AuthButton extends StatelessWidget {
         style: ButtonStyle(
           backgroundColor: MaterialStateProperty.resolveWith((states) {
             if (states.contains(MaterialState.pressed)) {
-              return darken(backgroundColor, 0.2);
+              return Utils.darken(backgroundColor, 0.2);
             }
             return backgroundColor;
           }),

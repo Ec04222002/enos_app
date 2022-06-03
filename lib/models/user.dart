@@ -1,7 +1,9 @@
 import 'package:enos/services/util.dart';
 
-class UserModelField {
-  static const createdTime = 'createdTime';
+class UserField {
+  final String userUid;
+
+  UserField({this.userUid});
 }
 
 class UserModel {
@@ -25,7 +27,7 @@ class UserModel {
 
   static UserModel fromJson(Map<String, dynamic> json) => UserModel(
         userUid: json['user_uid'],
-        createdTime: toDateTime(json['created_time']),
+        createdTime: Utils.toDateTime(json['created_time']),
         profilePic: json['profile_pic'],
         username: json['username'],
         isEmailNotify: json['is_email_notify'],
@@ -35,7 +37,7 @@ class UserModel {
 
   Map<String, dynamic> toJson() => {
         'user_uid': userUid,
-        'created_time': fromDateTimeToJson(createdTime),
+        'created_time': Utils.fromDateTimeToJson(createdTime),
         'profile_pic': profilePic,
         'username': username,
         'is_email_notify': isEmailNotify,

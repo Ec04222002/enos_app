@@ -7,9 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 class ResetPasswordScreen extends StatefulWidget {
-  final Function toggleView;
-
-  const ResetPasswordScreen({Key key, this.toggleView}) : super(key: key);
+  //const ResetPasswordScreen({Key key}) : super(key: key);
 
   @override
   State<ResetPasswordScreen> createState() => _ResetPasswordScreenState();

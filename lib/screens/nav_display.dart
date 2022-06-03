@@ -3,11 +3,12 @@ import 'package:enos/screens/account.dart';
 import 'package:enos/screens/home.dart';
 import 'package:enos/screens/news.dart';
 import 'package:enos/screens/search.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class NavDisplayScreen extends StatefulWidget {
-  const NavDisplayScreen({Key key}) : super(key: key);
+  NavDisplayScreen({Key key}) : super(key: key);
 
   @override
   State<NavDisplayScreen> createState() => _NavDisplayScreenState();

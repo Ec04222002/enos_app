@@ -27,7 +27,7 @@ class Comment {
       commentUid: json['comment_uid'],
       stockUid: json['stock_uid'],
       userUid: json['user_uid'],
-      createdTime: toDateTime(json['created_time']),
+      createdTime: Utils.toDateTime(json['created_time']),
       content: json['content'],
       likes: json['likes'],
       replies: json['replies']);
@@ -36,7 +36,7 @@ class Comment {
         'comment_uid': commentUid,
         'stock_uid': stockUid,
         'user_uid': userUid,
-        'created_time': fromDateTimeToJson(createdTime),
+        'created_time': Utils.fromDateTimeToJson(createdTime),
         'content': content,
         'likes': likes,
         'replies': replies,

@@ -95,14 +95,14 @@ class _RegisterPageState extends State<RegisterPage> {
                           if (_formKey.currentState.validate()) {
                             setState(() {
                               isLoading = true;
-                              print("show loading");
+                              //print("show loading");
                             });
                             dynamic result = await context
                                 .read<AuthService>()
                                 .registerWithEmailAndPassword(
                                     email: _emailTextController.text,
                                     password: _passwordTextController.text);
-                            print("gotten results");
+                            //print("gotten results");
                             if (result == null) {
                               setState(() {
                                 isLoading = false;

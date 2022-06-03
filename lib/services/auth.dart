@@ -14,8 +14,12 @@ class AuthService {
   //future? of comments // for future builder for comment section
   //stream of watchlist // for stream builder for watchlist
 
-  Stream<User> get authChanges {
-    return _auth.authStateChanges();
+  UserField _userFromFirebaseUser(dynamic user) {
+    return user != null ? UserField(userUid: user.uid) : null;
+  }
+
+  Stream<UserField> get authChanges {
+    return _auth.authStateChanges().map(_userFromFirebaseUser);
   }
 
   Future resetPassword({String email}) async {
