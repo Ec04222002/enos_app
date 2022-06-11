@@ -4,6 +4,7 @@
 import 'package:enos/models/user.dart';
 import 'package:enos/screens/nav_display.dart';
 import 'package:enos/screens/sign_in.dart';
+import 'package:enos/services/auth.dart';
 import 'package:enos/services/ticker_provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
@@ -21,9 +22,6 @@ class AuthWrapper extends StatelessWidget {
         context,
         ModalRoute.withName('/'),
       );
-      //loading in watchlist tickers
-      final tickerProvider = context.watch<TickerTileProvider>();
-      tickerProvider.setUser(user.userUid);
       return NavDisplayScreen();
     }
     return SignInPage();

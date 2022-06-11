@@ -14,7 +14,6 @@ class UserModel {
   final String username;
   final bool isEmailNotify;
   final List<bool> metrics;
-  final String watchListUid;
 
   UserModel(
       {this.userUid,
@@ -22,8 +21,7 @@ class UserModel {
       this.profilePic,
       this.username,
       this.isEmailNotify = true,
-      this.metrics,
-      this.watchListUid});
+      this.metrics});
 
   static UserModel fromJson(Map<String, dynamic> json) => UserModel(
         userUid: json['user_uid'],
@@ -32,7 +30,6 @@ class UserModel {
         username: json['username'],
         isEmailNotify: json['is_email_notify'],
         metrics: json['metrics'],
-        watchListUid: json['watchlist_uid'],
       );
 
   Map<String, dynamic> toJson() => {
@@ -42,6 +39,5 @@ class UserModel {
         'username': username,
         'is_email_notify': isEmailNotify,
         'metrics': metrics,
-        'watchlist_uid': watchListUid,
       };
 }

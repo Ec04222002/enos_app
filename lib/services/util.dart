@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:enos/models/ticker_tile.dart';
 import 'package:flutter/material.dart';
 
 class Utils {

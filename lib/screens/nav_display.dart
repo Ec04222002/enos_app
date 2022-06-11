@@ -17,7 +17,6 @@ class NavDisplayScreen extends StatefulWidget {
 class _NavDisplayScreenState extends State<NavDisplayScreen> {
   int currentIndex = 0;
   final screens = [HomePage(), NewsPage(), SearchPage(), AccountPage()];
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(

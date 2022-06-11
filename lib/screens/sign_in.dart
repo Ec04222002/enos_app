@@ -108,13 +108,18 @@ class _SignInPageState extends State<SignInPage> {
                                   email: _emailTextController.text.trim(),
                                   password:
                                       _passwordTextController.text.trim());
+                          print("signed in");
                           if (result == null) {
                             setState(() {
                               isLoading = false;
                               //print("Error logging in");
                               error = 'Please enter a valid email';
                             });
+                            return;
                           }
+                          print("Signed in result: $result");
+                          //setting created user for provider
+                          context.read<AuthService>().setUser(result);
                           //print("completed");
                         }
                       },
@@ -137,6 +142,7 @@ class _SignInPageState extends State<SignInPage> {
                           //print("Showing loading");
                         });
                         dynamic result = await provider.googleLogin();
+                        print("Signed in with google");
                         if (result == null) {
                           setState(() {
                             isLoading = false;
@@ -145,6 +151,8 @@ class _SignInPageState extends State<SignInPage> {
                                 'Google cannot log you in. Please try again later';
                           });
                         }
+                        print("Google results: $result");
+                        context.read<AuthService>().setUser(result);
                       },
                     ),
                     SizedBox(height: 15),

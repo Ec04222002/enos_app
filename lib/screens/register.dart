@@ -100,15 +100,21 @@ class _RegisterPageState extends State<RegisterPage> {
                             dynamic result = await context
                                 .read<AuthService>()
                                 .registerWithEmailAndPassword(
-                                    email: _emailTextController.text,
-                                    password: _passwordTextController.text);
-                            //print("gotten results");
+                                    email: _emailTextController.text.trim(),
+                                    password:
+                                        _passwordTextController.text.trim());
+                            print("registered");
                             if (result == null) {
                               setState(() {
                                 isLoading = false;
                                 error = 'Please enter a valid email';
                               });
+                              return;
                             }
+                            // print("Registered result: $result");
+                            //creating and setting default userModel
+                            //for provider
+                            await context.read<AuthService>().setUser(result);
                           }
                         },
                       ),

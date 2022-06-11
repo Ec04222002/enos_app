@@ -19,16 +19,30 @@ class Watchlist {
     this.isPublic = false,
   });
 
-  static Watchlist fromJson(Map<String, dynamic> json) => Watchlist(
-      watchlistUid: json['watchlist_uid'],
-      items: json['items'],
-      updatedLast: Utils.toDateTime(json['updated_last']),
-      isPublic: json['is_public']);
+  static Watchlist fromJson(Map<String, dynamic> json) {
+    List tickerList = [];
+    List jsonTickerList = json["items"];
 
-  Map<String, dynamic> toJson() => {
-        'watchlist_uid': watchlistUid,
-        'items': items,
-        'updated_last': Utils.fromDateTimeToJson(updatedLast),
-        'is_public': isPublic,
-      };
+    for (var i = 0; i < jsonTickerList.length; ++i) {
+      tickerList.add(jsonTickerList[i].fromJson());
+    }
+    return Watchlist(
+        watchlistUid: json['watchlist_uid'],
+        items: tickerList,
+        updatedLast: Utils.toDateTime(json['updated_last']),
+        isPublic: json['is_public']);
+  }
+
+  Map<String, dynamic> toJson() {
+    List jsonTickerList = [];
+    for (var i = 0; i < items.length; ++i) {
+      jsonTickerList.add(items[i].toJson());
+    }
+    return {
+      'watchlist_uid': watchlistUid,
+      'items': jsonTickerList,
+      'updated_last': Utils.fromDateTimeToJson(updatedLast),
+      'is_public': isPublic
+    };
+  }
 }
