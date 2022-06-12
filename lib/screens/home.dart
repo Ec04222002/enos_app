@@ -28,7 +28,7 @@ class _HomePageState extends State<HomePage> {
     print('in home');
     //for init
     String watchListUid;
-    UserModel user = Provider.of<AuthService>(context).user;
+    final user = context.watch<UserField>();
     if (user != null) {
       watchListUid = user.userUid;
     }
@@ -41,9 +41,7 @@ class _HomePageState extends State<HomePage> {
         leading: IconButton(
           iconSize: 33,
           color: kDarkTextColor.withOpacity(0.9),
-          onPressed: () {
-            print(watchListUid);
-          },
+          onPressed: () {},
           tooltip: "Edit watchlist",
           icon: Icon(Icons.edit_note),
         ),
@@ -57,28 +55,10 @@ class _HomePageState extends State<HomePage> {
         ],
       ),
       //
-      body: StreamBuilder<List<TickerTileModel>>(
-        stream: FirebaseApi.watchlistTickers(watchListUid),
-        builder: (context, snapshot) {
-          switch (snapshot.connectionState) {
-            case ConnectionState.waiting:
-              return Loading();
-            default:
-              if (snapshot.hasError || !snapshot.hasData) {
-                print('error');
-                return Center(
-                  child: Text("Something Went Wrong. Please try again later"),
-                );
-              } else {
-                //print(snapshot.data);
-                final tickers = snapshot.data;
-                print("At home: tickers is: ${tickers}");
-                final provider = Provider.of<TickerTileProvider>(context);
-                provider.setTickers(tickers: tickers);
-                return WatchListWidget();
-              }
-          }
-        },
+      // ?? streambuilder at child property
+      body: StreamProvider<List<TickerTileModel>>.value(
+        value: FirebaseApi.watchlistTickers(watchListUid),
+        child: WatchListWidget(),
       ),
     );
   }

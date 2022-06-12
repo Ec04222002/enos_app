@@ -114,7 +114,7 @@ class _RegisterPageState extends State<RegisterPage> {
                             // print("Registered result: $result");
                             //creating and setting default userModel
                             //for provider
-                            await context.read<AuthService>().setUser(result);
+                            // await context.read<AuthService>().setUser(result);
                           }
                         },
                       ),

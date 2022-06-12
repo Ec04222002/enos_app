@@ -36,7 +36,7 @@ class MyApp extends StatelessWidget {
         StreamProvider(
             create: (context) => context.read<AuthService>().authChanges),
         ChangeNotifierProvider(create: (context) => GoogleSignInProvider()),
-        ChangeNotifierProvider(create: (context) => TickerTileProvider()),
+        //ChangeNotifierProvider(create: (context) => TickerTileProvider()),
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,

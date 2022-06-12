@@ -119,7 +119,7 @@ class _SignInPageState extends State<SignInPage> {
                           }
                           print("Signed in result: $result");
                           //setting created user for provider
-                          context.read<AuthService>().setUser(result);
+                          //await context.read<AuthService>().setUser(result);
                           //print("completed");
                         }
                       },
@@ -152,7 +152,7 @@ class _SignInPageState extends State<SignInPage> {
                           });
                         }
                         print("Google results: $result");
-                        context.read<AuthService>().setUser(result);
+                        //await context.read<AuthService>().setUser(result);
                       },
                     ),
                     SizedBox(height: 15),

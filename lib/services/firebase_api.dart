@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:enos/models/ticker_tile.dart';
@@ -21,9 +23,10 @@ class FirebaseApi {
       dynamic ticker = tickers[i];
       newTickers.add(TickerTileModel(
         tickerName: ticker['ticker_name'],
-        companyName: ticker['company_name'],
-        price: ticker['price'],
-        percentChange: ticker['percent_change'],
+        isNft: ticker['is_nft'],
+        // companyName: ticker['company_name'],
+        // price: ticker['price'],
+        // percentChange: ticker['percent_change'],
       ));
     }
     return newTickers;
@@ -47,7 +50,7 @@ class FirebaseApi {
     // print("update user: ${data}");
     final userDoc = await FirebaseFirestore.instance.collection('Users').doc();
     await userDoc.set(data.toJson());
-    print("finished setting user");
+    print('finished setting user');
     return;
   }
 
@@ -63,8 +66,13 @@ class FirebaseApi {
   }
 
   static Future<bool> isUserExist(userUid) async {
-    final dbRef =
-        await FirebaseFirestore.instance.collection('Users').doc(userUid).get();
-    return dbRef.exists;
+    try {
+      // Get reference to Firestore collection
+      var collectionRef = FirebaseFirestore.instance.collection('Users');
+      var doc = await collectionRef.doc(userUid).get();
+      return doc.exists;
+    } catch (e) {
+      throw e;
+    }
   }
 }

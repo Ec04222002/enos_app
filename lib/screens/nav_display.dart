@@ -31,7 +31,11 @@ class _NavDisplayScreenState extends State<NavDisplayScreen> {
         onTap: (index) => setState(() => currentIndex = index),
         items: [
           BottomNavigationBarItem(icon: Icon(Icons.list), label: 'Watchlist'),
-          BottomNavigationBarItem(icon: Icon(Icons.newspaper), label: 'News'),
+          BottomNavigationBarItem(
+              icon: Icon(
+                Icons.newspaper_sharp,
+              ),
+              label: 'News'),
           BottomNavigationBarItem(icon: Icon(Icons.search), label: 'Search'),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Account'),
         ],

@@ -13,6 +13,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 
 class AuthService {
   final FirebaseAuth _auth;
+  //not used
   UserModel user;
   AuthService(this._auth);
   //future? of comments // for future builder for comment section
@@ -22,41 +23,46 @@ class AuthService {
     return user != null ? UserField(userUid: user.uid) : null;
   }
 
-  void setUser(dynamic fireBaseUser) async {
-    print("in setUser");
-    bool isUserExist = await FirebaseApi.isUserExist(fireBaseUser.uid);
-    dynamic userCollection =
-        await FirebaseFirestore.instance.collection('users');
+  // void setUser(dynamic fireBaseUser) async {
+  //   print("in setUser");
+  //   bool isUserExist = await FirebaseApi.isUserExist(fireBaseUser.uid);
+  //   dynamic userCollection =
+  //       await FirebaseFirestore.instance.collection('Users');
+  //   print("isUserExist: $isUserExist");
+  //   if (isUserExist) {
+  //     print('****userexist');
+  //     Map<String, dynamic> snapshot =
+  //         await userCollection.doc(fireBaseUser.uid) as Map<String, dynamic>;
+  //     print("snapshot: ${snapshot}");
+  //     this.user = UserModel.fromJson(snapshot);
+  //     return;
+  //   }
+  //   print('***new user');
 
-    if (isUserExist) {
-      Map<String, dynamic> snapshot =
-          await userCollection.doc(fireBaseUser.uid) as Map<String, dynamic>;
-      this.user = UserModel.fromJson(snapshot);
-      return;
-    }
-    //add init watchlist to database
-    await FirebaseApi.updateWatchList(Watchlist(
-      watchlistUid: fireBaseUser.uid,
-      items: [
-        TickerTileModel(),
-        TickerTileModel(),
-        TickerTileModel(),
-        TickerTileModel(),
-        TickerTileModel(),
-        TickerTileModel(),
-      ],
-      updatedLast: DateTime.now(),
-    ));
-    //add init user to database
-    final UserModel defaultUser = UserModel(
-      userUid: fireBaseUser.uid,
-      createdTime: DateTime.now(),
-      username: fireBaseUser.email,
-      metrics: List.filled(22, true),
-    );
-    this.user = defaultUser;
-    await FirebaseApi.updateUserData(defaultUser);
-  }
+  //   //add init user to database
+  //   final UserModel defaultUser = UserModel(
+  //     userUid: fireBaseUser.uid,
+  //     createdTime: DateTime.now(),
+  //     username: fireBaseUser.email,
+  //     metrics: List.filled(22, true),
+  //   );
+  //   this.user = defaultUser;
+  //   await FirebaseApi.updateUserData(defaultUser);
+
+  //   //add init watchlist to database
+  //   await FirebaseApi.updateWatchList(Watchlist(
+  //     watchlistUid: fireBaseUser.uid,
+  //     items: [
+  //       TickerTileModel(),
+  //       TickerTileModel(),
+  //       TickerTileModel(),
+  //       TickerTileModel(),
+  //       TickerTileModel(),
+  //       TickerTileModel(),
+  //     ],
+  //     updatedLast: DateTime.now(),
+  //   ));
+  // }
 
   Stream<UserField> get authChanges {
     return _auth.authStateChanges().map(_userFromFirebaseUser);
@@ -89,6 +95,17 @@ class AuthService {
       dynamic result = await _auth.createUserWithEmailAndPassword(
           email: email, password: password);
       dynamic user = result.user;
+      FirebaseApi.updateUserData(UserModel(
+        userUid: user.uid,
+        createdTime: DateTime.now(),
+        username: user.email,
+        metrics: List.filled(22, true),
+      ));
+      FirebaseApi.updateWatchList(Watchlist(
+        watchlistUid: user.uid,
+        items: defaultTickerTileModels,
+        updatedLast: DateTime.now(),
+      ));
       return user;
     } catch (error) {
       print(error.toString());
@@ -124,6 +141,18 @@ class GoogleSignInProvider extends ChangeNotifier {
         idToken: googleAuth.idToken,
       );
       await FirebaseAuth.instance.signInWithCredential(credential);
+      //default
+      FirebaseApi.updateUserData(UserModel(
+        userUid: _user.id,
+        createdTime: DateTime.now(),
+        username: _user.email,
+        metrics: List.filled(22, true),
+      ));
+      FirebaseApi.updateWatchList(Watchlist(
+        watchlistUid: _user.id,
+        items: defaultTickerTileModels,
+        updatedLast: DateTime.now(),
+      ));
       notifyListeners();
       return _user;
     } catch (error) {

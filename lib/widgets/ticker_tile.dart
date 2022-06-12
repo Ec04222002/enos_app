@@ -6,7 +6,7 @@ import 'package:enos/constants.dart';
 class TickerTile extends StatelessWidget {
   final ticker;
   const TickerTile({this.ticker, Key key}) : super(key: key);
-
+  //create tile from yahoo api
   @override
   Widget build(BuildContext context) {
     return ClipRRect(
