@@ -56,7 +56,7 @@ class _HomePageState extends State<HomePage> {
       ),
       //
       // ?? streambuilder at child property
-      body: StreamProvider<List<TickerTileModel>>.value(
+      body: StreamProvider<List<String>>.value(
         value: FirebaseApi.watchlistTickers(watchListUid),
         child: WatchListWidget(),
       ),

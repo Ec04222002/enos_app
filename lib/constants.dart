@@ -14,21 +14,11 @@ const kDisabledColor = Color(0xFFB8BFC7);
 const kRedColor = Color(0xFFdb505a);
 const kGreenColor = Color(0xFF34C85a);
 
-const defaultTickerTileModels = const [
-  TickerTileModel(
-    tickerName: "Dow Jones",
-  ),
-  TickerTileModel(
-    tickerName: "S&P 500",
-  ),
-  TickerTileModel(tickerName: "BTC-USD"),
-  TickerTileModel(tickerName: "ETH-USD"),
-  TickerTileModel(
-    tickerName: "Bored Ape Yacht Club #8817",
-    isNft: true,
-  ),
-  TickerTileModel(
-    tickerName: "Bored Ape Yacht Club #3749",
-    isNft: true,
-  ),
+const List<String> defaultTickerTileModels = const [
+  "^DJI",
+  "^GSPC",
+  "BTC-USD",
+  "ETH-USD",
+  "Bored Ape Yacht Club #8817",
+  "Bored Ape Yacht Club #3749",
 ];

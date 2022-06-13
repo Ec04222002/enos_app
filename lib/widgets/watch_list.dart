@@ -13,8 +13,7 @@ class WatchListWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     // final provider = Provider.of<TickerTileProvider>(context);
     // List<TickerTileModel> tickers = provider.tickers ?? [];
-    List<TickerTileModel> tickers =
-        Provider.of<List<TickerTileModel>>(context) ?? [];
+    List<String> tickers = Provider.of<List<String>>(context) ?? [];
     return tickers.isEmpty
         ? Center(
             child: Text(
@@ -26,9 +25,7 @@ class WatchListWidget extends StatelessWidget {
             padding: EdgeInsets.all(12),
             separatorBuilder: (context, _) => SizedBox(height: 8),
             itemBuilder: (context, index) {
-              final ticker = tickers[index];
-              print(ticker.tickerName);
-              return Text(ticker.tickerName);
+              return Text(tickers[index]);
               //return TickerTile(ticker: ticker);
             },
             itemCount: tickers.length,
