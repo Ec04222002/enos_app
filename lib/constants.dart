@@ -1,14 +1,34 @@
+import 'package:enos/models/ticker_tile.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
-const kDarkBackgroundColor = Color(0x001a0f30);
-const kLightBackgroundColor = Color(0x0022143e);
+const kDarkBackgroundColor = Color(0xFF1a0F30);
+const kLightBackgroundColor = Color(0xFF22143e);
 
-const kBrightTextColor = Color(0x00FCFBFE);
-const kDarkTextColor = Color(0x00E8F1F2);
+const kBrightTextColor = Color(0xFFFCFBFE);
+const kDarkTextColor = Color(0xFFE8F1F2);
 
-const kLinkColor = Color(0x005643fd);
-const kDisabledColor = Color(0x00B8BFC7);
+const kActiveColor = Color(0xFF5643fd);
+const kDisabledColor = Color(0xFFB8BFC7);
 
-const kRedColor = Color(0x00db505a);
-const kGreenColor = Color(0x0034C85a);
+const kRedColor = Color(0xFFdb505a);
+const kGreenColor = Color(0xFF34C85a);
+
+const defaultTickerTileModels = const [
+  TickerTileModel(
+    tickerName: "Dow Jones",
+  ),
+  TickerTileModel(
+    tickerName: "S&P 500",
+  ),
+  TickerTileModel(tickerName: "BTC-USD"),
+  TickerTileModel(tickerName: "ETH-USD"),
+  TickerTileModel(
+    tickerName: "Bored Ape Yacht Club #8817",
+    isNft: true,
+  ),
+  TickerTileModel(
+    tickerName: "Bored Ape Yacht Club #3749",
+    isNft: true,
+  ),
+];

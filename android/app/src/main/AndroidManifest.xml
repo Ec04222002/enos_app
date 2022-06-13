@@ -1,7 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.enos">
    <application
-        android:label="enos"
+        android:label="Enos"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

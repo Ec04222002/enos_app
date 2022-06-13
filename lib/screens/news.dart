@@ -1,9 +1,9 @@
 // news page
 
-import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 
 class NewsPage extends StatefulWidget {
-  //const HomePage({Key key}) : super(key: key);
+  const NewsPage({Key key}) : super(key: key);
 
   @override
   State<NewsPage> createState() => _NewsPageState();
@@ -12,6 +12,6 @@ class NewsPage extends StatefulWidget {
 class _NewsPageState extends State<NewsPage> {
   @override
   Widget build(BuildContext context) {
-    return Scaffold();
+    return Container();
   }
 }
