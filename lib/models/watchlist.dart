@@ -8,7 +8,7 @@ class WatchlistField {
 
 class Watchlist {
   final String watchlistUid;
-  final List<TickerTileModel> items;
+  final List<String> items;
   final DateTime updatedLast;
   final bool isPublic;
 
@@ -20,27 +20,27 @@ class Watchlist {
   });
 
   static Watchlist fromJson(Map<String, dynamic> json) {
-    List tickerList = [];
-    List jsonTickerList = json["items"];
+    // List tickerList = [];
+    // List jsonTickerList = json["items"];
 
-    for (var i = 0; i < jsonTickerList.length; ++i) {
-      tickerList.add(jsonTickerList[i].fromJson());
-    }
+    // for (var i = 0; i < jsonTickerList.length; ++i) {
+    //   tickerList.add(jsonTickerList[i].fromJson());
+    // }
     return Watchlist(
         watchlistUid: json['watchlist_uid'],
-        items: tickerList,
+        items: json['items'],
         updatedLast: Utils.toDateTime(json['updated_last']),
         isPublic: json['is_public']);
   }
 
   Map<String, dynamic> toJson() {
-    List jsonTickerList = [];
-    for (var i = 0; i < items.length; ++i) {
-      jsonTickerList.add(items[i].toJson());
-    }
+    // List jsonTickerList = [];
+    // for (var i = 0; i < items.length; ++i) {
+    //   jsonTickerList.add(items[i].toJson());
+    // }
     return {
       'watchlist_uid': watchlistUid,
-      'items': jsonTickerList,
+      'items': items,
       'updated_last': Utils.fromDateTimeToJson(updatedLast),
       'is_public': isPublic
     };

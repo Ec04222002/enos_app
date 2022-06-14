@@ -1,12 +1,14 @@
 import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:enos/services/yahoo_api.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:enos/models/ticker_tile.dart';
 import 'package:enos/models/user.dart';
 import 'package:enos/models/watchlist.dart';
 import 'package:enos/widgets/ticker_tile.dart';
 import 'package:enos/services/util.dart';
+import 'package:provider/provider.dart';
 
 //access data from yahoo data base
 //access data & stream from firestore
@@ -14,27 +16,17 @@ import 'package:enos/services/util.dart';
 class FirebaseApi {
   //transform the list into stream
 
-  static List<TickerTileModel> _tickerDataFromSnapshot(
-      DocumentSnapshot snapshot) {
-    dynamic tickers = snapshot.get('items');
-    List<TickerTileModel> newTickers = [];
-    //creating list of ticker models from snapshot
-    for (var i = 0; i < tickers.length; ++i) {
-      dynamic ticker = tickers[i];
-      newTickers.add(TickerTileModel(
-        tickerName: ticker['ticker_name'],
-        isNft: ticker['is_nft'],
-        // companyName: ticker['company_name'],
-        // price: ticker['price'],
-        // percentChange: ticker['percent_change'],
-      ));
-    }
+  static List<String> _tickerDataFromSnapshot(DocumentSnapshot snapshot) {
+    print("convert ticker data");
+    List<dynamic> tickers = snapshot.get('items');
+    List<String> newTickers = tickers.map((e) => e.toString()).toList();
+    print("newTickers ${newTickers.runtimeType}");
     return newTickers;
   }
 
-  static Stream<List<TickerTileModel>> watchlistTickers(String watchListUid) {
+  static Stream<List<String>> watchlistTickers(String watchListUid) {
     try {
-      Stream<List<TickerTileModel>> watchListStream = FirebaseFirestore.instance
+      Stream<List<String>> watchListStream = FirebaseFirestore.instance
           .collection('Watchlists')
           .doc(watchListUid)
           .snapshots()
@@ -65,14 +57,14 @@ class FirebaseApi {
     return;
   }
 
-  static Future<bool> isUserExist(userUid) async {
-    try {
-      // Get reference to Firestore collection
-      var collectionRef = FirebaseFirestore.instance.collection('Users');
-      var doc = await collectionRef.doc(userUid).get();
-      return doc.exists;
-    } catch (e) {
-      throw e;
-    }
-  }
+  // static Future<bool> isUserExist(userUid) async {
+  //   try {
+  //     // Get reference to Firestore collection
+  //     var collectionRef = FirebaseFirestore.instance.collection('Users');
+  //     var doc = await collectionRef.doc(userUid).get();
+  //     return doc.exists;
+  //   } catch (e) {
+  //     throw e;
+  //   }
+  // }
 }
