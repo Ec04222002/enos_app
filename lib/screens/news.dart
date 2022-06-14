@@ -42,7 +42,7 @@ class _NewsPageState extends State<NewsPage> {
                 children: <Widget>[
                   TextButton(
                     onPressed: (){},
-                    child: Text('All'),
+                     child: Text('All'),
                   ),
 
                 ],
@@ -55,14 +55,35 @@ class _NewsPageState extends State<NewsPage> {
   }
 }
 
-class CategoryTile extends StatelessWidget {
+List<CategoryTile> getCategories() {
+  List<CategoryTile> ret = [];
+}
+
+
+class CategoryTile extends StatefulWidget {
+  @override
+  String text;
+  bool selected = false;
+
+  CategoryTile(String text, bool inSelect) {
+    this.text = text;
+    selected = inSelect;
+  }
+  State<CategoryTile> createState() => _CategoryTileState();
+}
+
+class _CategoryTileState extends State<CategoryTile> {
   @override
   Widget build(BuildContext context) {
-    return Card(
-      child: Row(
-        children: <Widget>[
-
-        ],
+    return Container(
+      color: this.widget.selected? Colors.white:Colors.blue,
+      child: TextButton(
+        child: Text(this.widget.text),
+        onPressed: () {
+          setState(() {
+            this.widget.selected = true;
+          });
+        },
       ),
     );
   }
