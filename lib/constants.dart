@@ -19,6 +19,6 @@ const List<String> defaultTickerTileModels = const [
   "^GSPC",
   "BTC-USD",
   "ETH-USD",
-  "Bored Ape Yacht Club #8817",
-  "Bored Ape Yacht Club #3749",
+  // "Bored Ape Yacht Club #8817",
+  // "Bored Ape Yacht Club #3749",
 ];

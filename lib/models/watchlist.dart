@@ -20,12 +20,6 @@ class Watchlist {
   });
 
   static Watchlist fromJson(Map<String, dynamic> json) {
-    // List tickerList = [];
-    // List jsonTickerList = json["items"];
-
-    // for (var i = 0; i < jsonTickerList.length; ++i) {
-    //   tickerList.add(jsonTickerList[i].fromJson());
-    // }
     return Watchlist(
         watchlistUid: json['watchlist_uid'],
         items: json['items'],
@@ -34,10 +28,6 @@ class Watchlist {
   }
 
   Map<String, dynamic> toJson() {
-    // List jsonTickerList = [];
-    // for (var i = 0; i < items.length; ++i) {
-    //   jsonTickerList.add(items[i].toJson());
-    // }
     return {
       'watchlist_uid': watchlistUid,
       'items': items,

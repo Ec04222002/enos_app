@@ -23,47 +23,6 @@ class AuthService {
     return user != null ? UserField(userUid: user.uid) : null;
   }
 
-  // void setUser(dynamic fireBaseUser) async {
-  //   print("in setUser");
-  //   bool isUserExist = await FirebaseApi.isUserExist(fireBaseUser.uid);
-  //   dynamic userCollection =
-  //       await FirebaseFirestore.instance.collection('Users');
-  //   print("isUserExist: $isUserExist");
-  //   if (isUserExist) {
-  //     print('****userexist');
-  //     Map<String, dynamic> snapshot =
-  //         await userCollection.doc(fireBaseUser.uid) as Map<String, dynamic>;
-  //     print("snapshot: ${snapshot}");
-  //     this.user = UserModel.fromJson(snapshot);
-  //     return;
-  //   }
-  //   print('***new user');
-
-  //   //add init user to database
-  //   final UserModel defaultUser = UserModel(
-  //     userUid: fireBaseUser.uid,
-  //     createdTime: DateTime.now(),
-  //     username: fireBaseUser.email,
-  //     metrics: List.filled(22, true),
-  //   );
-  //   this.user = defaultUser;
-  //   await FirebaseApi.updateUserData(defaultUser);
-
-  //   //add init watchlist to database
-  //   await FirebaseApi.updateWatchList(Watchlist(
-  //     watchlistUid: fireBaseUser.uid,
-  //     items: [
-  //       TickerTileModel(),
-  //       TickerTileModel(),
-  //       TickerTileModel(),
-  //       TickerTileModel(),
-  //       TickerTileModel(),
-  //       TickerTileModel(),
-  //     ],
-  //     updatedLast: DateTime.now(),
-  //   ));
-  // }
-
   Stream<UserField> get authChanges {
     return _auth.authStateChanges().map(_userFromFirebaseUser);
   }

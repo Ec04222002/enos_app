@@ -17,7 +17,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 class HomePage extends StatefulWidget {
-  //const HomePage({Key key}) : super(key: key);
+  // final List<TickerTileModel> data;
+  // const HomePage({this.data, Key key}) : super(key: key);
   @override
   State<HomePage> createState() => _HomePageState();
 }
@@ -27,24 +28,17 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     print('in home');
     //for init
-    String watchListUid;
-    final user = context.watch<UserField>();
-    if (user != null) {
-      watchListUid = user.userUid;
-    }
-    print(watchListUid);
+    // String watchListUid;
+    // final user = context.watch<UserField>();
+    // if (user != null) {
+    //   watchListUid = user.userUid;
+    // }
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: kLightBackgroundColor,
         centerTitle: true,
         title: Image.asset('assets/logo2.png', width: 133),
-        leading: IconButton(
-          iconSize: 33,
-          color: kDarkTextColor.withOpacity(0.9),
-          onPressed: () {},
-          tooltip: "Edit watchlist",
-          icon: Icon(Icons.edit_note),
-        ),
         actions: [
           IconButton(
               iconSize: 30,
@@ -56,10 +50,7 @@ class _HomePageState extends State<HomePage> {
       ),
       //
       // ?? streambuilder at child property
-      body: StreamProvider<List<String>>.value(
-        value: FirebaseApi.watchlistTickers(watchListUid),
-        child: WatchListWidget(),
-      ),
+      body: WatchListWidget(),
     );
   }
 }

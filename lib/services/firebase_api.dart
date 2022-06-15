@@ -14,13 +14,10 @@ import 'package:provider/provider.dart';
 //access data & stream from firestore
 
 class FirebaseApi {
-  //transform the list into stream
-
   static List<String> _tickerDataFromSnapshot(DocumentSnapshot snapshot) {
-    print("convert ticker data");
     List<dynamic> tickers = snapshot.get('items');
     List<String> newTickers = tickers.map((e) => e.toString()).toList();
-    print("newTickers ${newTickers.runtimeType}");
+    print("converting to ${newTickers}");
     return newTickers;
   }
 
@@ -49,22 +46,25 @@ class FirebaseApi {
   static Future<void> updateWatchList(Watchlist list) async {
     // print("updating watchlist:${list}");
     // print(list.watchlistUid);
-    final watchListDoc = FirebaseFirestore.instance
+    final watchListDoc = await FirebaseFirestore.instance
         .collection('Watchlists')
         .doc(list.watchlistUid);
-    print("watchlist ${watchListDoc}");
+
     await watchListDoc.set(list.toJson());
     return;
   }
 
-  // static Future<bool> isUserExist(userUid) async {
-  //   try {
-  //     // Get reference to Firestore collection
-  //     var collectionRef = FirebaseFirestore.instance.collection('Users');
-  //     var doc = await collectionRef.doc(userUid).get();
-  //     return doc.exists;
-  //   } catch (e) {
-  //     throw e;
-  //   }
-  // }
+  static Future<DocumentSnapshot<Map<String, dynamic>>> getWatchListDoc(
+      String watchListUid) async {
+    try {
+      final watchListStream = await FirebaseFirestore.instance
+          .collection('Watchlists')
+          .doc(watchListUid)
+          .get();
+      return watchListStream;
+    } catch (error) {
+      print("watchlist doesn't exist");
+      return null;
+    }
+  }
 }

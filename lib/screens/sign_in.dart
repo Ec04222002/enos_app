@@ -33,7 +33,9 @@ class _SignInPageState extends State<SignInPage> {
   @override
   Widget build(BuildContext context) {
     return isLoading
-        ? Loading()
+        ? Loading(
+            loadText: "Signing in ...",
+          )
         : Scaffold(
             body: SingleChildScrollView(
                 child: Padding(
@@ -117,10 +119,6 @@ class _SignInPageState extends State<SignInPage> {
                             });
                             return;
                           }
-                          print("Signed in result: $result");
-                          //setting created user for provider
-                          //await context.read<AuthService>().setUser(result);
-                          //print("completed");
                         }
                       },
                     ),

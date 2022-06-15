@@ -34,7 +34,9 @@ class _RegisterPageState extends State<RegisterPage> {
   @override
   Widget build(BuildContext context) {
     return isLoading
-        ? Loading()
+        ? Loading(
+            loadText: "Registering ...",
+          )
         : Scaffold(
             extendBodyBehindAppBar: true,
             appBar: AppBar(
@@ -111,10 +113,6 @@ class _RegisterPageState extends State<RegisterPage> {
                               });
                               return;
                             }
-                            // print("Registered result: $result");
-                            //creating and setting default userModel
-                            //for provider
-                            // await context.read<AuthService>().setUser(result);
                           }
                         },
                       ),

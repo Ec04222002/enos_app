@@ -1,19 +1,37 @@
 import 'package:enos/models/ticker_tile.dart';
+import 'package:enos/models/watchlist.dart';
 import 'package:enos/services/ticker_provider.dart';
+import 'package:enos/services/yahoo_api.dart';
 import 'package:enos/widgets/loading.dart';
 import 'package:enos/widgets/ticker_tile.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:enos/constants.dart';
 
-class WatchListWidget extends StatelessWidget {
+class WatchListWidget extends StatefulWidget {
   const WatchListWidget({Key key}) : super(key: key);
 
   @override
+  State<WatchListWidget> createState() => _WatchListWidgetState();
+}
+
+class _WatchListWidgetState extends State<WatchListWidget> {
+  YahooApi yahooApi = YahooApi();
+  TickerTileProvider tickerProvider;
+  List<TickerTileModel> tickers;
+
+  // @override
+  // void initState() {
+  //   super.initState();
+  //   setTickerData();
+  // }
+
+  @override
   Widget build(BuildContext context) {
-    // final provider = Provider.of<TickerTileProvider>(context);
-    // List<TickerTileModel> tickers = provider.tickers ?? [];
-    List<String> tickers = Provider.of<List<String>>(context) ?? [];
+    print("**in watchlist widget");
+    tickerProvider = Provider.of<TickerTileProvider>(context);
+    tickers = tickerProvider.tickers;
+    print(tickers);
     return tickers.isEmpty
         ? Center(
             child: Text(
@@ -22,11 +40,10 @@ class WatchListWidget extends StatelessWidget {
             ),
           )
         : ListView.separated(
-            padding: EdgeInsets.all(12),
+            padding: EdgeInsets.all(10),
             separatorBuilder: (context, _) => SizedBox(height: 8),
             itemBuilder: (context, index) {
-              return Text(tickers[index]);
-              //return TickerTile(ticker: ticker);
+              return TickerTile(tickerTileData: tickers[index]);
             },
             itemCount: tickers.length,
           );

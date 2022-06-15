@@ -22,7 +22,7 @@ class AuthWrapper extends StatelessWidget {
         context,
         ModalRoute.withName('/'),
       );
-      return NavDisplayScreen();
+      return NavDisplayScreen(uid: user.userUid);
     }
     return SignInPage();
   }
