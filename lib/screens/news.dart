@@ -13,6 +13,16 @@ class NewsPage extends StatefulWidget {
 }
 
 class _NewsPageState extends State<NewsPage> {
+
+  List<CategoryTile> categories = [];
+
+  void initState() {
+    super.initState();
+    categories = getCategories();
+    print('urmom');
+  }
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -37,17 +47,14 @@ class _NewsPageState extends State<NewsPage> {
       body: Container(
         child: Column(
             children: <Widget>[
-              // categories
-              Row(
-                children: <Widget>[
-                  TextButton(
-                    onPressed: (){},
-                     child: Text('All'),
-                  ),
-
-                ],
-
-              ),
+              Container(
+                child: ListView.builder(
+                  itemCount: categories.length,
+                  itemBuilder: (context,index) {
+                    return CategoryTile(categories[index].text, categories[index].selected);
+                  },
+                ),
+              )
             ],
         ),
       ),
@@ -57,6 +64,23 @@ class _NewsPageState extends State<NewsPage> {
 
 List<CategoryTile> getCategories() {
   List<CategoryTile> ret = [];
+
+  CategoryTile tile = CategoryTile("All", true);
+  ret.add(tile);
+
+  tile = CategoryTile("Stock", false);
+  ret.add(tile);
+
+  tile = CategoryTile("NFT", false);
+  ret.add(tile);
+
+  tile = CategoryTile("Crypto", false);
+  ret.add(tile);
+
+  tile = CategoryTile("Tech", false);
+  ret.add(tile);
+  print('ur mom gay');
+  return ret;
 }
 
 
@@ -76,9 +100,9 @@ class _CategoryTileState extends State<CategoryTile> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: this.widget.selected? Colors.white:Colors.blue,
+      color: this.widget.selected? Colors.lightBlueAccent:Colors.blue,
       child: TextButton(
-        child: Text(this.widget.text),
+        child: Text(this.widget.text, style: TextStyle(color: Colors.white,fontSize: 18),),
         onPressed: () {
           setState(() {
             this.widget.selected = true;
