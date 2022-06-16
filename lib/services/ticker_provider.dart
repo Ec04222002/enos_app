@@ -28,7 +28,22 @@ class TickerTileProvider extends ChangeNotifier {
     _tickers = tickers;
   }
 
-  void removeTickerModel(int index) {
+  void moveTicker(int startIndex, int endIndex) {
+    // print("Inital Symbols: ${_symbols}");
+    // print("Initial Model: ${_tickers}");
+    if (startIndex < endIndex) {
+      endIndex -= 1;
+    }
+    final TickerTileModel ticker = tickers.removeAt(startIndex);
+    final String symbol = symbols.removeAt(startIndex);
+    tickers.insert(endIndex, ticker);
+    symbols.insert(endIndex, symbol);
+    // print("Final Symbols: ${_symbols}");
+    // print("Final models: ${_tickers}");
+    //notifyListeners();
+  }
+
+  void removeTicker(int index) {
     print("removing");
     _tickers.removeAt(index);
     notifyListeners();

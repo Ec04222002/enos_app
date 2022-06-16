@@ -27,13 +27,6 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     print('in home');
-    //for init
-    // String watchListUid;
-    // final user = context.watch<UserField>();
-    // if (user != null) {
-    //   watchListUid = user.userUid;
-    // }
-
     return Scaffold(
       appBar: AppBar(
         backgroundColor: kLightBackgroundColor,

@@ -22,16 +22,12 @@ class TickerTile extends StatefulWidget {
 
 class _TickerState extends State<TickerTile> {
   //for updating list
-  String watchListUid;
   TickerTileModel tickerTileData;
   bool isPublic = false;
-  TickerTileProvider tickerProvider;
+
   //create tile from yahoo api
   @override
   Widget build(BuildContext context) {
-    tickerProvider = Provider.of<TickerTileProvider>(context);
-    watchListUid = tickerProvider.watchListUid;
-
     tickerTileData = widget.tickerTileData;
     return tickerTileData == null
         ? Loading()
@@ -59,6 +55,7 @@ class _TickerState extends State<TickerTile> {
     return GestureDetector(
       onTap: () => showInfo(context, tickerTileData),
       child: Container(
+        margin: EdgeInsets.only(bottom: 10),
         color: kLightBackgroundColor,
         child: ListTile(
           title: Column(
@@ -75,7 +72,7 @@ class _TickerState extends State<TickerTile> {
                       fontWeight: FontWeight.w800),
                 ),
                 SizedBox(
-                  height: 3,
+                  height: 4,
                 ),
                 Text(
                   "${tickerTileData.companyName}",
@@ -84,12 +81,12 @@ class _TickerState extends State<TickerTile> {
                     color: kDisabledColor,
                   ),
                 ),
-                SizedBox(height: 5),
+                SizedBox(height: 6),
               ]),
           trailing: Column(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: <Widget>[
-                SizedBox(height: 5),
+                SizedBox(height: 3),
                 Text(
                   "${tickerTileData.price}",
                   style: TextStyle(
@@ -97,7 +94,7 @@ class _TickerState extends State<TickerTile> {
                       fontSize: 20,
                       fontWeight: FontWeight.w600),
                 ),
-                SizedBox(height: 3),
+                SizedBox(height: 5),
                 Container(
                   alignment: Alignment.center,
                   decoration: BoxDecoration(
@@ -108,6 +105,7 @@ class _TickerState extends State<TickerTile> {
                   width: 60,
                   height: 20,
                   child: Text("${tickerTileData.percentChange}",
+                      textAlign: TextAlign.right,
                       style: TextStyle(color: kBrightTextColor)),
                 )
               ]),
@@ -117,11 +115,13 @@ class _TickerState extends State<TickerTile> {
   }
 
   void deleteTicker(BuildContext context) {
+    TickerTileProvider tickerProvider =
+        Provider.of<TickerTileProvider>(context, listen: false);
     List<String> tickers = tickerProvider.symbols;
-    tickerProvider.removeTickerModel(tickers.indexOf(tickerTileData.symbol));
+    tickerProvider.removeTicker(tickers.indexOf(tickerTileData.symbol));
     tickers.remove(tickerTileData.symbol);
     FirebaseApi.updateWatchList(Watchlist(
-        watchlistUid: watchListUid,
+        watchlistUid: tickerProvider.watchListUid,
         items: tickers,
         updatedLast: DateTime.now(),
         isPublic: tickerProvider.isPublic));

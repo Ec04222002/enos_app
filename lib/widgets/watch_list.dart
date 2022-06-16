@@ -1,5 +1,6 @@
 import 'package:enos/models/ticker_tile.dart';
 import 'package:enos/models/watchlist.dart';
+import 'package:enos/services/firebase_api.dart';
 import 'package:enos/services/ticker_provider.dart';
 import 'package:enos/services/yahoo_api.dart';
 import 'package:enos/widgets/loading.dart';
@@ -9,7 +10,7 @@ import 'package:provider/provider.dart';
 import 'package:enos/constants.dart';
 
 class WatchListWidget extends StatefulWidget {
-  const WatchListWidget({Key key}) : super(key: key);
+  //const WatchListWidget({Key key}) : super(key: key);
 
   @override
   State<WatchListWidget> createState() => _WatchListWidgetState();
@@ -31,7 +32,6 @@ class _WatchListWidgetState extends State<WatchListWidget> {
     print("**in watchlist widget");
     tickerProvider = Provider.of<TickerTileProvider>(context);
     tickers = tickerProvider.tickers;
-    print(tickers);
     return tickers.isEmpty
         ? Center(
             child: Text(
@@ -39,13 +39,38 @@ class _WatchListWidgetState extends State<WatchListWidget> {
               style: TextStyle(color: kDisabledColor, fontSize: 18),
             ),
           )
-        : ListView.separated(
-            padding: EdgeInsets.all(10),
-            separatorBuilder: (context, _) => SizedBox(height: 8),
-            itemBuilder: (context, index) {
-              return TickerTile(tickerTileData: tickers[index]);
-            },
-            itemCount: tickers.length,
+        : Theme(
+            data: ThemeData(canvasColor: Colors.transparent),
+            child: ReorderableListView.builder(
+              padding: EdgeInsets.all(10),
+              itemBuilder: (context, index) {
+                return TickerTile(
+                    key: ValueKey(index), tickerTileData: tickers[index]);
+              },
+              itemCount: tickers.length,
+              onReorder: _onReorder,
+            ),
           );
+    // : ListView.separated(
+    //     padding: EdgeInsets.all(10),
+    //     separatorBuilder: (context, _) => SizedBox(height: 8),
+    //     itemBuilder: (context, index) {
+    //       return TickerTile(tickerTileData: tickers[index]);
+    //     },
+    //     itemCount: tickers.length,
+    //   );
+  }
+
+  void _onReorder(int startIndex, int endIndex) {
+    print("StartIndex: $startIndex");
+    print("EndIndex: $endIndex");
+    setState(() {
+      tickerProvider.moveTicker(startIndex, endIndex);
+      FirebaseApi.updateWatchList(Watchlist(
+          watchlistUid: tickerProvider.watchListUid,
+          items: tickerProvider.symbols,
+          updatedLast: DateTime.now(),
+          isPublic: tickerProvider.isPublic));
+    });
   }
 }
