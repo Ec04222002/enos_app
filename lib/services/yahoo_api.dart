@@ -11,7 +11,7 @@ class YahooApi {
     'X-RapidAPI-Host': 'yh-finance.p.rapidapi.com'
   };
 
-  Future<TickerTileModel> get({
+  static Future<TickerTileModel> get({
     @required String endpoint,
     @required Map<String, String> query,
   }) async {
@@ -33,5 +33,16 @@ class YahooApi {
       );
     }
     throw Exception("Failed to load json data");
+  }
+
+  static Stream<TickerTileModel> getTileStream(String symbol) =>
+      Stream.periodic(Duration(seconds: 3))
+          .asyncMap((_) => getTileData(symbol));
+
+  static Future<TickerTileModel> getTileData(String symbol) async {
+    TickerTileModel data = await YahooApi.get(
+        endpoint: "stock/v2/get-summary",
+        query: {"symbol": symbol, "region": "US"});
+    return data;
   }
 }

@@ -6,17 +6,17 @@ class TickerTileModel {
   final bool isNft;
 
   const TickerTileModel(
-      {this.symbol = "__",
-      this.companyName = "____",
-      this.price = "___",
-      this.percentChange = "__",
+      {this.symbol,
+      this.companyName,
+      this.price,
+      this.percentChange,
       this.isNft = false});
 
   static TickerTileModel fromJson(Map<String, dynamic> json) => TickerTileModel(
-      symbol: json['symbol'],
-      companyName: json['company_name'],
-      price: json['price'],
-      percentChange: json['percent_change'],
+      symbol: json['symbol'] ?? "__",
+      companyName: json['company_name'] ?? "____",
+      price: json['price'] ?? "___",
+      percentChange: json['percent_change'] ?? "__",
       isNft: json['is_nft']);
 
   Map<String, dynamic> toJson() => {

@@ -17,7 +17,7 @@ class WatchListWidget extends StatefulWidget {
 }
 
 class _WatchListWidgetState extends State<WatchListWidget> {
-  YahooApi yahooApi = YahooApi();
+  // YahooApi yahooApi = YahooApi();
   TickerTileProvider tickerProvider;
   List<TickerTileModel> tickers;
 
@@ -62,8 +62,8 @@ class _WatchListWidgetState extends State<WatchListWidget> {
   }
 
   void _onReorder(int startIndex, int endIndex) {
-    print("StartIndex: $startIndex");
-    print("EndIndex: $endIndex");
+    // print("StartIndex: $startIndex");
+    // print("EndIndex: $endIndex");
     setState(() {
       tickerProvider.moveTicker(startIndex, endIndex);
       FirebaseApi.updateWatchList(Watchlist(

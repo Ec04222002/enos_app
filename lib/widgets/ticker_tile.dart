@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:enos/models/ticker_tile.dart';
@@ -13,7 +14,7 @@ import 'package:enos/constants.dart';
 import 'package:provider/provider.dart';
 
 class TickerTile extends StatefulWidget {
-  TickerTileModel tickerTileData;
+  final TickerTileModel tickerTileData;
   TickerTile({this.tickerTileData, Key key}) : super(key: key);
 
   @override
@@ -23,9 +24,8 @@ class TickerTile extends StatefulWidget {
 class _TickerState extends State<TickerTile> {
   //for updating list
   TickerTileModel tickerTileData;
-  bool isPublic = false;
-
   //create tile from yahoo api
+
   @override
   Widget build(BuildContext context) {
     tickerTileData = widget.tickerTileData;
@@ -83,35 +83,57 @@ class _TickerState extends State<TickerTile> {
                 ),
                 SizedBox(height: 6),
               ]),
-          trailing: Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: <Widget>[
-                SizedBox(height: 3),
-                Text(
-                  "${tickerTileData.price}",
-                  style: TextStyle(
-                      color: kBrightTextColor,
-                      fontSize: 20,
-                      fontWeight: FontWeight.w600),
-                ),
-                SizedBox(height: 5),
-                Container(
-                  alignment: Alignment.center,
-                  decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(3),
-                      color: tickerTileData.percentChange[0] == "-"
-                          ? kRedColor
-                          : kGreenColor),
-                  width: 60,
-                  height: 20,
-                  child: Text("${tickerTileData.percentChange}",
-                      textAlign: TextAlign.right,
-                      style: TextStyle(color: kBrightTextColor)),
-                )
-              ]),
+          trailing: StreamBuilder<TickerTileModel>(
+              initialData: tickerTileData,
+              stream: YahooApi.getTileStream(tickerTileData.symbol),
+              builder: (context, snapshot) {
+                switch (snapshot.connectionState) {
+                  case ConnectionState.waiting:
+                    return priceWidget(
+                        tickerTileData.price, tickerTileData.percentChange);
+                  default:
+                    if (snapshot.hasError) {
+                      print(snapshot.error);
+                      return Text("Error", style: TextStyle(color: kRedColor));
+                    } else {
+                      TickerTileModel data = snapshot.data;
+                      tickerTileData = data;
+                      return priceWidget(data.price, data.percentChange);
+                    }
+                }
+              }),
         ),
       ),
     );
+  }
+
+  Widget priceWidget(String price, String percentChange) {
+    return Column(
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: <Widget>[
+          SizedBox(height: 3),
+          Text(
+            "$price",
+            style: TextStyle(
+                color: kBrightTextColor,
+                fontSize: 20,
+                fontWeight: FontWeight.w600),
+          ),
+          SizedBox(height: 5),
+          Container(
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(3),
+                color: tickerTileData.percentChange[0] == "-"
+                    ? kRedColor
+                    : kGreenColor),
+            width: 60,
+            height: 20,
+            child: Text("$percentChange",
+                textAlign: TextAlign.right,
+                style: TextStyle(color: kBrightTextColor)),
+          )
+        ]);
   }
 
   void deleteTicker(BuildContext context) {
