@@ -24,6 +24,7 @@ class TickerTile extends StatefulWidget {
 class _TickerState extends State<TickerTile> {
   //for updating list
   TickerTileModel tickerTileData;
+  YahooApi api = YahooApi();
   //create tile from yahoo api
 
   @override
@@ -85,7 +86,7 @@ class _TickerState extends State<TickerTile> {
               ]),
           trailing: StreamBuilder<TickerTileModel>(
               initialData: tickerTileData,
-              stream: YahooApi.getTileStream(tickerTileData.symbol),
+              stream: api.getTileStream(tickerTileData.symbol),
               builder: (context, snapshot) {
                 switch (snapshot.connectionState) {
                   case ConnectionState.waiting:
@@ -93,7 +94,12 @@ class _TickerState extends State<TickerTile> {
                         tickerTileData.price, tickerTileData.percentChange);
                   default:
                     if (snapshot.hasError) {
-                      print(snapshot.error);
+                      if (snapshot.error ==
+                          "Exception: Failed to load json data") {
+                        print("reseting api key");
+                        api.resetApiKey(api.increApiIndex());
+                        return null;
+                      }
                       return Text("Error", style: TextStyle(color: kRedColor));
                     } else {
                       TickerTileModel data = snapshot.data;
@@ -108,6 +114,7 @@ class _TickerState extends State<TickerTile> {
   }
 
   Widget priceWidget(String price, String percentChange) {
+    print("in widget");
     return Column(
         crossAxisAlignment: CrossAxisAlignment.end,
         children: <Widget>[

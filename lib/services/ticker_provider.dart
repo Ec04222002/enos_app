@@ -57,7 +57,7 @@ class TickerTileProvider extends ChangeNotifier {
     List<dynamic> tickers = watchListDoc['items'];
 
     for (var symbol in tickers) {
-      TickerTileModel data = await YahooApi.get(
+      TickerTileModel data = await YahooApi().get(
           endpoint: "stock/v2/get-summary",
           query: {"symbol": symbol.toString(), "region": "US"});
       _symbols.add(symbol.toString());

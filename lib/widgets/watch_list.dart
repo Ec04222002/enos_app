@@ -51,14 +51,6 @@ class _WatchListWidgetState extends State<WatchListWidget> {
               onReorder: _onReorder,
             ),
           );
-    // : ListView.separated(
-    //     padding: EdgeInsets.all(10),
-    //     separatorBuilder: (context, _) => SizedBox(height: 8),
-    //     itemBuilder: (context, index) {
-    //       return TickerTile(tickerTileData: tickers[index]);
-    //     },
-    //     itemCount: tickers.length,
-    //   );
   }
 
   void _onReorder(int startIndex, int endIndex) {
