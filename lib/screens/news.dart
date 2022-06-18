@@ -1,9 +1,11 @@
 // news page
 
 import 'package:enos/screens/search.dart';
+import 'package:enos/services/news_api.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 import '../constants.dart';
 
 class NewsPage extends StatefulWidget {
@@ -37,7 +39,8 @@ class _NewsPageState extends State<NewsPage> {
                 iconSize: 30,
                 color: kDarkTextColor.withOpacity(0.9),
                 onPressed: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (context)=> SearchPage()));
+                  NewsAPI.getArticles("crypto");
+                  //Navigator.push(context, MaterialPageRoute(builder: (context)=> SearchPage()));
                 },
                 tooltip: "Search",
                 icon: Icon(Icons.search))
