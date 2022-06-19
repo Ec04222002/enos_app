@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:enos/models/user.dart';
 import 'package:enos/services/firebase_api.dart';
+import 'package:enos/services/util.dart';
 import 'package:enos/services/yahoo_api.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:enos/models/ticker_tile.dart';
@@ -10,16 +11,24 @@ import 'package:flutter/material.dart';
 // // access list of tickers
 class TickerTileProvider extends ChangeNotifier {
   String watchListUid;
-
   List<TickerTileModel> _tickers = [];
   List<String> _symbols = [];
   bool isPublic = false;
-  YahooApi yahooApi = YahooApi();
-  //UserModel user;
-  TickerTileProvider({this.watchListUid});
+  bool isLive = false;
 
+  YahooApi yahooApi = YahooApi();
+  bool toggle = false;
+  List<int> times = [1, 3];
+
+  TickerTileProvider({this.watchListUid});
+  // List<Future<TickerTileModel>> get futureTickers => _futureTickers;
   List<TickerTileModel> get tickers => _tickers;
   List<String> get symbols => _symbols;
+
+  // Future<TickerTileModel> futureTickerAt(int index) => _futureTickers[index];
+  TickerTileModel tickerAt(int index) => _tickers[index];
+  String symbolAt(int index) => _symbols[index];
+
   void setUid(String uid) {
     this.watchListUid = uid;
   }
@@ -29,23 +38,19 @@ class TickerTileProvider extends ChangeNotifier {
   }
 
   void moveTicker(int startIndex, int endIndex) {
-    // print("Inital Symbols: ${_symbols}");
-    // print("Initial Model: ${_tickers}");
     if (startIndex < endIndex) {
       endIndex -= 1;
     }
     final TickerTileModel ticker = tickers.removeAt(startIndex);
     final String symbol = symbols.removeAt(startIndex);
-    tickers.insert(endIndex, ticker);
-    symbols.insert(endIndex, symbol);
-    // print("Final Symbols: ${_symbols}");
-    // print("Final models: ${_tickers}");
-    //notifyListeners();
+    _tickers.insert(endIndex, ticker);
+    _symbols.insert(endIndex, symbol);
   }
 
   void removeTicker(int index) {
-    print("removing");
     _tickers.removeAt(index);
+    // _futureTickers.removeAt(index);
+    _symbols.removeAt(index);
     notifyListeners();
   }
 
@@ -55,9 +60,13 @@ class TickerTileProvider extends ChangeNotifier {
 
     isPublic = watchListDoc['is_public'];
     List<dynamic> tickers = watchListDoc['items'];
-
+    print("setting all init");
     for (var symbol in tickers) {
-      TickerTileModel data = await YahooApi().get(
+      print("getting data for $symbol");
+      // _futureTickers.add(futureData);
+
+      TickerTileModel data = await yahooApi.get(
+          init: true,
           endpoint: "stock/v2/get-summary",
           query: {"symbol": symbol.toString(), "region": "US"});
       _symbols.add(symbol.toString());
@@ -66,9 +75,23 @@ class TickerTileProvider extends ChangeNotifier {
     print("completed getting all ticker data");
   }
 
-  // void readTickers() {}
-  // //add tickerModel to stream
-  // void addTile(TickerTileModel tileData) => FirebaseApi.addTile(tileData);
-  // void removeTile(TickerTileModel tileData) => FirebaseApi.removeTile(tileData);
-  //remove tickerModel ftom stream
+  Stream<TickerTileModel> getTileStream(String symbol) {
+    int time = toggle ? times[0] : times[1];
+    toggle = !toggle;
+    return Stream.periodic(Duration(seconds: time)).asyncMap((_) {
+      return getTileData(symbol);
+    });
+  }
+
+  Future<TickerTileModel> getTileData(String symbol) async {
+    TickerTileModel data = _tickers[_symbols.indexOf(symbol)];
+    if (!Utils.isMarketTime() && !data.isLive) {
+      print("not calling");
+      return data;
+    }
+    data = await YahooApi().get(
+        endpoint: "stock/v2/get-summary",
+        query: {"symbol": symbol, "region": "US"});
+    return data;
+  }
 }

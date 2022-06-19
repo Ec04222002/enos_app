@@ -17,21 +17,14 @@ class WatchListWidget extends StatefulWidget {
 }
 
 class _WatchListWidgetState extends State<WatchListWidget> {
-  // YahooApi yahooApi = YahooApi();
   TickerTileProvider tickerProvider;
-  List<TickerTileModel> tickers;
-
-  // @override
-  // void initState() {
-  //   super.initState();
-  //   setTickerData();
-  // }
+  List<String> tickers;
 
   @override
   Widget build(BuildContext context) {
     print("**in watchlist widget");
     tickerProvider = Provider.of<TickerTileProvider>(context);
-    tickers = tickerProvider.tickers;
+    tickers = tickerProvider.symbols;
     return tickers.isEmpty
         ? Center(
             child: Text(
@@ -45,7 +38,10 @@ class _WatchListWidgetState extends State<WatchListWidget> {
               padding: EdgeInsets.all(10),
               itemBuilder: (context, index) {
                 return TickerTile(
-                    key: ValueKey(index), tickerTileData: tickers[index]);
+                  key: ValueKey(index),
+                  context: context,
+                  index: index,
+                );
               },
               itemCount: tickers.length,
               onReorder: _onReorder,
@@ -56,6 +52,7 @@ class _WatchListWidgetState extends State<WatchListWidget> {
   void _onReorder(int startIndex, int endIndex) {
     // print("StartIndex: $startIndex");
     // print("EndIndex: $endIndex");
+
     setState(() {
       tickerProvider.moveTicker(startIndex, endIndex);
       FirebaseApi.updateWatchList(Watchlist(

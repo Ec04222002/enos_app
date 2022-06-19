@@ -9,6 +9,7 @@ import 'package:enos/models/watchlist.dart';
 import 'package:enos/services/firebase_api.dart';
 import 'package:enos/services/ticker_provider.dart';
 import 'package:enos/services/auth.dart';
+import 'package:enos/services/util.dart';
 import 'package:enos/widgets/loading.dart';
 import 'package:enos/widgets/ticker_tile.dart';
 import 'package:enos/widgets/watch_list.dart';
@@ -17,16 +18,17 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 class HomePage extends StatefulWidget {
-  // final List<TickerTileModel> data;
-  // const HomePage({this.data, Key key}) : super(key: key);
   @override
   State<HomePage> createState() => _HomePageState();
 }
 
+TickerTileProvider provider;
+double btnOpacity = 1;
+
 class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
-    print('in home');
+    provider = Provider.of<TickerTileProvider>(context);
     return Scaffold(
       appBar: AppBar(
         backgroundColor: kLightBackgroundColor,
@@ -40,6 +42,70 @@ class _HomePageState extends State<HomePage> {
               tooltip: "Add ticker to watchlist",
               icon: Icon(Icons.add_circle_outline))
         ],
+      ),
+      floatingActionButton: GestureDetector(
+        onLongPress: () {
+          Utils().showTopBar(context, "Streaming Data ...");
+          setState(() {
+            btnOpacity = 0.85;
+            provider.isLive = true;
+          });
+        },
+        onLongPressEnd: (_) {
+          print("end press");
+          setState(() {
+            btnOpacity = 1;
+            provider.isLive = false;
+          });
+        },
+        onLongPressCancel: () {
+          print("cancel press");
+          setState(() {
+            btnOpacity = 1;
+            provider.isLive = false;
+          });
+        },
+        onTap: () {
+          print("tap");
+          setState(() {
+            btnOpacity = 0.85;
+            provider.isLive = false;
+          });
+        },
+        onTapCancel: () {
+          print("tap cancel");
+          setState(() {
+            btnOpacity = 1;
+            provider.isLive = false;
+          });
+        },
+        onTapUp: (_) {
+          print('tap up');
+          setState(() {
+            btnOpacity = 1;
+            provider.isLive = false;
+          });
+        },
+        onDoubleTap: () {
+          setState(() {
+            provider.isLive = false;
+          });
+        },
+        onDoubleTapCancel: () {
+          setState(() {
+            btnOpacity = 1;
+            provider.isLive = false;
+          });
+          print("double tap end");
+        },
+        child: FloatingActionButton(
+          child: Icon(
+            Icons.keyboard_double_arrow_up_outlined,
+            size: 50,
+            color: kDarkTextColor,
+          ),
+          backgroundColor: kActiveColor.withOpacity(btnOpacity),
+        ),
       ),
       //
       // ?? streambuilder at child property

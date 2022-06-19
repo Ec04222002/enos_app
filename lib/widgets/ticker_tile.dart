@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:convert';
 
 import 'package:enos/models/ticker_tile.dart';
 import 'package:enos/models/user.dart';
@@ -14,8 +13,9 @@ import 'package:enos/constants.dart';
 import 'package:provider/provider.dart';
 
 class TickerTile extends StatefulWidget {
-  final TickerTileModel tickerTileData;
-  TickerTile({this.tickerTileData, Key key}) : super(key: key);
+  final int index;
+  final BuildContext context;
+  TickerTile({this.index, this.context, Key key}) : super(key: key);
 
   @override
   State<TickerTile> createState() => _TickerState();
@@ -24,12 +24,14 @@ class TickerTile extends StatefulWidget {
 class _TickerState extends State<TickerTile> {
   //for updating list
   TickerTileModel tickerTileData;
-  YahooApi api = YahooApi();
-  //create tile from yahoo api
+  TickerTileProvider tickerProvider;
+  Widget trailingWidget;
 
   @override
   Widget build(BuildContext context) {
-    tickerTileData = widget.tickerTileData;
+    tickerProvider = Provider.of<TickerTileProvider>(widget.context);
+    tickerTileData = tickerProvider.tickerAt(widget.index);
+    trailingWidget = tickerProvider.isLive ? getStreamWidget() : priceWidget();
     return tickerTileData == null
         ? Loading()
         : ClipRRect(
@@ -84,43 +86,42 @@ class _TickerState extends State<TickerTile> {
                 ),
                 SizedBox(height: 6),
               ]),
-          trailing: StreamBuilder<TickerTileModel>(
-              initialData: tickerTileData,
-              stream: api.getTileStream(tickerTileData.symbol),
-              builder: (context, snapshot) {
-                switch (snapshot.connectionState) {
-                  case ConnectionState.waiting:
-                    return priceWidget(
-                        tickerTileData.price, tickerTileData.percentChange);
-                  default:
-                    if (snapshot.hasError) {
-                      if (snapshot.error ==
-                          "Exception: Failed to load json data") {
-                        print("reseting api key");
-                        api.resetApiKey(api.increApiIndex());
-                        return null;
-                      }
-                      return Text("Error", style: TextStyle(color: kRedColor));
-                    } else {
-                      TickerTileModel data = snapshot.data;
-                      tickerTileData = data;
-                      return priceWidget(data.price, data.percentChange);
-                    }
-                }
-              }),
+          trailing: trailingWidget,
         ),
       ),
     );
   }
 
-  Widget priceWidget(String price, String percentChange) {
+  Widget getStreamWidget() {
+    return StreamBuilder<TickerTileModel>(
+        initialData: tickerTileData,
+        stream: tickerProvider.getTileStream(tickerTileData.symbol),
+        builder: (context, snapshot) {
+          switch (snapshot.connectionState) {
+            case ConnectionState.waiting:
+              return priceWidget();
+            default:
+              if (snapshot.hasError) {
+                print(snapshot.error);
+                return Text("Error - No Data",
+                    style: TextStyle(color: kRedColor));
+              } else {
+                TickerTileModel data = snapshot.data;
+                tickerTileData = data;
+                return priceWidget();
+              }
+          }
+        });
+  }
+
+  Widget priceWidget() {
     print("in widget");
     return Column(
         crossAxisAlignment: CrossAxisAlignment.end,
         children: <Widget>[
           SizedBox(height: 3),
           Text(
-            "$price",
+            "${tickerTileData.price}",
             style: TextStyle(
                 color: kBrightTextColor,
                 fontSize: 20,
@@ -136,7 +137,7 @@ class _TickerState extends State<TickerTile> {
                     : kGreenColor),
             width: 60,
             height: 20,
-            child: Text("$percentChange",
+            child: Text("${tickerTileData.percentChange}",
                 textAlign: TextAlign.right,
                 style: TextStyle(color: kBrightTextColor)),
           )
