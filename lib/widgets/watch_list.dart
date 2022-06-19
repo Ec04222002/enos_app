@@ -35,6 +35,7 @@ class _WatchListWidgetState extends State<WatchListWidget> {
         : Theme(
             data: ThemeData(canvasColor: Colors.transparent),
             child: ReorderableListView.builder(
+              //itemExtent: 80.0,
               padding: EdgeInsets.all(10),
               itemBuilder: (context, index) {
                 return TickerTile(

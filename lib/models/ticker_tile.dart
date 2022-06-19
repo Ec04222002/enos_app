@@ -3,9 +3,15 @@ class TickerTileModel {
   final String companyName;
   final String price;
   final String percentChange;
+  final String postPercentChange;
+  final String priceChange;
+  final String postPriceChange;
+
   // bool isNft = false;
   //for saving api calls
+  final bool isCrypto;
   final bool isPostMarket;
+
   bool isLive;
   TickerTileModel(
       {this.symbol,
@@ -13,6 +19,10 @@ class TickerTileModel {
       this.price,
       this.percentChange,
       this.isPostMarket = false,
+      this.postPercentChange,
+      this.priceChange,
+      this.postPriceChange,
+      this.isCrypto = false,
       this.isLive = true});
 
   static TickerTileModel fromJson(Map<String, dynamic> json) => TickerTileModel(
@@ -20,7 +30,10 @@ class TickerTileModel {
       companyName: json['company_name'] ?? "____",
       price: json['price'] ?? "___",
       percentChange: json['percent_change'] ?? "__",
-      // isNft: json['is_nft'],
+      postPercentChange: json['post_percent_change'] ?? "__",
+      postPriceChange: json['post_price_change'] ?? "__",
+      priceChange: json['price_change'] ?? "__",
+      isCrypto: json["is_crypto"],
       isPostMarket: json['is_post_market'],
       isLive: json["is_live"]);
 
@@ -29,7 +42,10 @@ class TickerTileModel {
         'company_name': companyName,
         'price': price,
         'percent_change': percentChange,
-        // 'is_nft': isNft,
+        'post_percent_change': postPercentChange,
+        'post_price_change': postPriceChange,
+        'price_change': priceChange,
+        'is_crypto': isCrypto,
         'is_post_market': isPostMarket,
         'is_live': isLive,
       };

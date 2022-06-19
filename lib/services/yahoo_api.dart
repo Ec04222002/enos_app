@@ -71,12 +71,26 @@ class YahooApi {
         results['price']['regularMarketChangePercent']["fmt"];
     final bool isPost = !(results['price']["exchangeName"].contains("OTC") ||
         results['quoteType']['quoteType'].contains("INDEX"));
-    print(isPost);
+    final bool isCrypto = results['quoteType']['quoteType'] == "CRYPTOCURRENCY";
+
+    final priceChange = results['price']["regularMarketChange"]['fmt'];
+    String postPercentChange;
+    String postPriceChange;
+    if (isPost && !isCrypto) {
+      postPercentChange = results['price']['postMarketChangePercent']['fmt'];
+      postPriceChange = results['price']['postMarketChange']['fmt'];
+    }
+    print("isPost: $isPost");
+    print("isCrypto: $isCrypto");
     TickerTileModel data = TickerTileModel(
       symbol: symbol,
       companyName: companyName,
       price: price,
       percentChange: percentChange,
+      postPercentChange: postPercentChange,
+      priceChange: priceChange,
+      postPriceChange: postPriceChange,
+      isCrypto: isCrypto,
       isPostMarket: isPost,
     );
     if (!Utils.isMarketTime() && !isPost) {

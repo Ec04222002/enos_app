@@ -23,7 +23,7 @@ class HomePage extends StatefulWidget {
 }
 
 TickerTileProvider provider;
-double btnOpacity = 1;
+double btnOpacity = 0.2;
 
 class _HomePageState extends State<HomePage> {
   @override
@@ -33,7 +33,7 @@ class _HomePageState extends State<HomePage> {
       appBar: AppBar(
         backgroundColor: kLightBackgroundColor,
         centerTitle: true,
-        title: Image.asset('assets/logo2.png', width: 133),
+        title: Image.asset('assets/logo2.png', width: 130),
         actions: [
           IconButton(
               iconSize: 30,
@@ -45,44 +45,46 @@ class _HomePageState extends State<HomePage> {
       ),
       floatingActionButton: GestureDetector(
         onLongPress: () {
-          Utils().showTopBar(context, "Streaming Data ...");
+          //Utils().showTopBar(context, "Streaming Data ...");
+          Utils().showSnackBar(context, "Streaming Data ...");
+          print("in long press");
           setState(() {
-            btnOpacity = 0.85;
+            btnOpacity = 0;
             provider.isLive = true;
           });
         },
         onLongPressEnd: (_) {
           print("end press");
           setState(() {
-            btnOpacity = 1;
+            btnOpacity = 0.2;
             provider.isLive = false;
           });
         },
         onLongPressCancel: () {
-          print("cancel press");
+          //print("cancel press");
           setState(() {
-            btnOpacity = 1;
+            btnOpacity = 0.2;
             provider.isLive = false;
           });
         },
         onTap: () {
-          print("tap");
+          //print("tap");
           setState(() {
-            btnOpacity = 0.85;
+            btnOpacity = 0.2;
             provider.isLive = false;
           });
         },
         onTapCancel: () {
-          print("tap cancel");
+          //print("tap cancel");
           setState(() {
-            btnOpacity = 1;
+            btnOpacity = 0.2;
             provider.isLive = false;
           });
         },
         onTapUp: (_) {
-          print('tap up');
+          //print('tap up');
           setState(() {
-            btnOpacity = 1;
+            btnOpacity = 0.2;
             provider.isLive = false;
           });
         },
@@ -93,10 +95,10 @@ class _HomePageState extends State<HomePage> {
         },
         onDoubleTapCancel: () {
           setState(() {
-            btnOpacity = 1;
+            btnOpacity = 0.2;
             provider.isLive = false;
           });
-          print("double tap end");
+          //print("double tap end");
         },
         child: FloatingActionButton(
           child: Icon(

@@ -37,6 +37,11 @@ class TickerTileProvider extends ChangeNotifier {
     _tickers = tickers;
   }
 
+  void replaceTickerAt(int index, TickerTileModel replacement) {
+    _tickers[index] = replacement;
+    _symbols[index] = replacement.symbol;
+  }
+
   void moveTicker(int startIndex, int endIndex) {
     if (startIndex < endIndex) {
       endIndex -= 1;
@@ -86,12 +91,14 @@ class TickerTileProvider extends ChangeNotifier {
   Future<TickerTileModel> getTileData(String symbol) async {
     TickerTileModel data = _tickers[_symbols.indexOf(symbol)];
     if (!Utils.isMarketTime() && !data.isLive) {
-      print("not calling");
+      print("$symbol not calling");
       return data;
     }
+    print("$symbol is calling");
     data = await YahooApi().get(
         endpoint: "stock/v2/get-summary",
         query: {"symbol": symbol, "region": "US"});
+    print(data.price);
     return data;
   }
 }

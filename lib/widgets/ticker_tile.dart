@@ -5,6 +5,7 @@ import 'package:enos/models/user.dart';
 import 'package:enos/models/watchlist.dart';
 import 'package:enos/services/firebase_api.dart';
 import 'package:enos/services/ticker_provider.dart';
+import 'package:enos/services/util.dart';
 import 'package:enos/services/yahoo_api.dart';
 import 'package:enos/widgets/loading.dart';
 import 'package:flutter/material.dart';
@@ -26,12 +27,13 @@ class _TickerState extends State<TickerTile> {
   TickerTileModel tickerTileData;
   TickerTileProvider tickerProvider;
   Widget trailingWidget;
-
+  bool _toggle = false;
   @override
   Widget build(BuildContext context) {
     tickerProvider = Provider.of<TickerTileProvider>(widget.context);
     tickerTileData = tickerProvider.tickerAt(widget.index);
-    trailingWidget = tickerProvider.isLive ? getStreamWidget() : priceWidget();
+    trailingWidget =
+        tickerProvider.isLive ? getStreamWidget(widget.context) : priceWidget();
     return tickerTileData == null
         ? Loading()
         : ClipRRect(
@@ -61,12 +63,12 @@ class _TickerState extends State<TickerTile> {
         margin: EdgeInsets.only(bottom: 10),
         color: kLightBackgroundColor,
         child: ListTile(
+          visualDensity: VisualDensity(horizontal: 0, vertical: 2.5),
+          contentPadding: EdgeInsets.symmetric(horizontal: 15, vertical: 0),
           title: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
-                SizedBox(
-                  height: 7,
-                ),
                 Text(
                   "${tickerTileData.symbol}",
                   style: TextStyle(
@@ -75,16 +77,16 @@ class _TickerState extends State<TickerTile> {
                       fontWeight: FontWeight.w800),
                 ),
                 SizedBox(
-                  height: 4,
+                  height: 3,
                 ),
                 Text(
                   "${tickerTileData.companyName}",
                   style: TextStyle(
-                    fontSize: 12,
+                    fontSize: 13,
                     color: kDisabledColor,
                   ),
                 ),
-                SizedBox(height: 6),
+                // SizedBox(height: 6),
               ]),
           trailing: trailingWidget,
         ),
@@ -92,7 +94,7 @@ class _TickerState extends State<TickerTile> {
     );
   }
 
-  Widget getStreamWidget() {
+  Widget getStreamWidget(BuildContext context) {
     return StreamBuilder<TickerTileModel>(
         initialData: tickerTileData,
         stream: tickerProvider.getTileStream(tickerTileData.symbol),
@@ -107,6 +109,8 @@ class _TickerState extends State<TickerTile> {
                     style: TextStyle(color: kRedColor));
               } else {
                 TickerTileModel data = snapshot.data;
+                Provider.of<TickerTileProvider>(context)
+                    .replaceTickerAt(widget.index, data);
                 tickerTileData = data;
                 return priceWidget();
               }
@@ -115,11 +119,30 @@ class _TickerState extends State<TickerTile> {
   }
 
   Widget priceWidget() {
+    Color regularMarketChangeColor = kRedColor;
+    Color postMarketChangeColor = kRedColor;
+    String regularMarketOp = "";
+    String postMarketOp = "";
+
+    String changeShown =
+        _toggle ? tickerTileData.priceChange : tickerTileData.percentChange;
+    String postChangeShown = _toggle
+        ? tickerTileData.postPriceChange
+        : tickerTileData.postPercentChange;
+    double containerWidth = changeShown.length > 6 ? 70 : 60;
+    if (changeShown != null && changeShown[0] != "-") {
+      regularMarketChangeColor = kGreenColor;
+      regularMarketOp = "+";
+    }
+    if (postChangeShown != null && postChangeShown[0] != '-') {
+      postMarketOp = "+";
+      postMarketChangeColor = kGreenColor;
+    }
     print("in widget");
     return Column(
         crossAxisAlignment: CrossAxisAlignment.end,
+        mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
-          SizedBox(height: 3),
           Text(
             "${tickerTileData.price}",
             style: TextStyle(
@@ -127,20 +150,52 @@ class _TickerState extends State<TickerTile> {
                 fontSize: 20,
                 fontWeight: FontWeight.w600),
           ),
-          SizedBox(height: 5),
-          Container(
-            alignment: Alignment.center,
-            decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(3),
-                color: tickerTileData.percentChange[0] == "-"
-                    ? kRedColor
-                    : kGreenColor),
-            width: 60,
-            height: 20,
-            child: Text("${tickerTileData.percentChange}",
-                textAlign: TextAlign.right,
-                style: TextStyle(color: kBrightTextColor)),
-          )
+          SizedBox(height: 2),
+          GestureDetector(
+            onTap: () => setState(() {
+              _toggle = !_toggle;
+            }),
+            child: Container(
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(3),
+                  color: regularMarketChangeColor),
+              width: containerWidth,
+              height: 16,
+              child: Text("$regularMarketOp${changeShown}",
+                  textAlign: TextAlign.right,
+                  style: TextStyle(color: kBrightTextColor)),
+            ),
+          ),
+          SizedBox(
+            height: 2,
+          ),
+          (tickerTileData.isPostMarket &&
+                  Utils.isPostMarket() &&
+                  !tickerTileData.isCrypto)
+              ? GestureDetector(
+                  onTap: () => setState(() {
+                    _toggle = !_toggle;
+                  }),
+                  child: RichText(
+                    overflow: TextOverflow.clip,
+                    maxLines: 1,
+                    text: TextSpan(
+                      text: "Post: ",
+                      style: DefaultTextStyle.of(context)
+                          .style
+                          .copyWith(fontWeight: FontWeight.w500, fontSize: 12),
+                      children: <TextSpan>[
+                        TextSpan(
+                            text: "$postMarketOp${postChangeShown}",
+                            style: TextStyle(color: postMarketChangeColor))
+                      ],
+                    ),
+                  ),
+                )
+              : SizedBox(
+                  height: 1,
+                ),
         ]);
   }
 

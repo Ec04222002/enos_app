@@ -2,7 +2,6 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:enos/models/ticker_tile.dart';
 import 'package:flutter/material.dart';
-import 'package:flushbar/flushbar.dart';
 import 'package:enos/constants.dart';
 
 class Utils {
@@ -28,18 +27,12 @@ class Utils {
   void showSnackBar(BuildContext context, String text) =>
       ScaffoldMessenger.of(context)
         ..removeCurrentSnackBar()
-        ..showSnackBar(SnackBar(content: Text(text)));
-
-  void showTopBar(BuildContext context, String text) {
-    Flushbar(
-      flushbarPosition: FlushbarPosition.TOP,
-      message: text,
-      isDismissible: true,
-      duration: Duration(seconds: 3),
-      flushbarStyle: FlushbarStyle.FLOATING,
-      backgroundColor: kDarkBackgroundColor,
-    )..show(context);
-  }
+        ..showSnackBar(SnackBar(
+          backgroundColor: kLightBackgroundColor,
+          behavior: SnackBarBehavior.floating,
+          content: Text(text),
+          width: 145,
+        ));
 
   static DateTime toDateTime(Timestamp value) {
     if (value == null) return null;
@@ -81,6 +74,8 @@ class Utils {
       case "edt":
       case "eastern daylight time":
         return checkTimeInRange(times: marketOpenTimes['est']);
+      default:
+        return null;
     }
   }
 
@@ -112,7 +107,13 @@ class Utils {
       case "edt":
       case "eastern daylight time":
         return checkTimeInRange(times: marketPostTimes['est']);
+      default:
+        return null;
     }
+  }
+
+  static bool isPostMarket() {
+    return (!isMarketTime() && !isPastPostMarket());
   }
 
   static bool checkTimeInRange(
