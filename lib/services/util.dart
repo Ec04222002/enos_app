@@ -81,32 +81,40 @@ class Utils {
 
   static bool isPastPostMarket() {
     Map<String, List<String>> marketPostTimes = {
-      "pst": ["05:00PM", "06:30PM"],
-      "mst": ["06:00PM", "07:30PM"],
-      "cst": ["07:00PM", "08:30AM"],
-      "est": ["08:00PM", "09:30AM"],
+      "pst1": ["05:00PM", "11:59PM"],
+      "pst2": ["12:00AM", "06:30AM"],
+      "mst1": ["06:00PM", "11:59PM"],
+      "mst2": ["12:00AM", "07:30AM"],
+      "cst1": ["07:00PM", "11:59PM"],
+      "cst2": ["12:00AM", "08:30AM"],
+      "est1": ["08:00PM", "11:59PM"],
+      "est2": ["12:00AM", "09:30AM"],
     };
     switch (DateTime.now().timeZoneName.toLowerCase()) {
       case "pst":
       case "pacific standard time":
       case "pdt":
       case "pacific daylight time":
-        return checkTimeInRange(times: marketPostTimes['pst']);
+        return checkTimeInRange(times: marketPostTimes['pst1']) ||
+            checkTimeInRange(times: marketPostTimes["pst2"]);
       case "mst":
       case "mountain standard time":
       case "mdt":
       case "mountain daylight time":
-        return checkTimeInRange(times: marketPostTimes['mst']);
+        return checkTimeInRange(times: marketPostTimes['mst1']) ||
+            checkTimeInRange(times: marketPostTimes["mst2"]);
       case "cst":
       case "central standard time":
       case "cdt":
       case "central daylight time":
-        return checkTimeInRange(times: marketPostTimes['cst']);
+        return checkTimeInRange(times: marketPostTimes['cst1']) ||
+            checkTimeInRange(times: marketPostTimes["cst2"]);
       case "est":
       case "eastern standard time":
       case "edt":
       case "eastern daylight time":
-        return checkTimeInRange(times: marketPostTimes['est']);
+        return checkTimeInRange(times: marketPostTimes['est1']) ||
+            checkTimeInRange(times: marketPostTimes["est2"]);
       default:
         return null;
     }
@@ -127,7 +135,7 @@ class Utils {
     //if AM then its ok but if PM then? 12+time (12+10=22)
     if (times != null) {
       openTime = times[0];
-      closedTime = times[0];
+      closedTime = times[1];
     }
     TimeOfDay timeNow = TimeOfDay.now();
     String openHr = openTime.substring(0, 2);

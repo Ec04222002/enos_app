@@ -1,8 +1,10 @@
 import 'dart:async';
 
+import 'package:enos/models/ticker_page_info.dart';
 import 'package:enos/models/ticker_tile.dart';
 import 'package:enos/models/user.dart';
 import 'package:enos/models/watchlist.dart';
+import 'package:enos/screens/ticker_info.dart';
 import 'package:enos/services/firebase_api.dart';
 import 'package:enos/services/ticker_provider.dart';
 import 'package:enos/services/util.dart';
@@ -65,7 +67,7 @@ class _TickerState extends State<TickerTile> {
         child: ListTile(
           visualDensity: VisualDensity(horizontal: 0, vertical: 2.6),
           contentPadding: EdgeInsets.symmetric(horizontal: 15, vertical: 0),
-          title: Column(
+          leading: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
@@ -88,6 +90,7 @@ class _TickerState extends State<TickerTile> {
                 ),
                 // SizedBox(height: 6),
               ]),
+          title: Container(),
           trailing: trailingWidget,
         ),
       ),
@@ -171,7 +174,7 @@ class _TickerState extends State<TickerTile> {
             height: 2,
           ),
           (tickerTileData.isPostMarket &&
-                  Utils.isPostMarket() &&
+                  (Utils.isPostMarket() || Utils.isPastPostMarket()) &&
                   !tickerTileData.isCrypto)
               ? GestureDetector(
                   onTap: () => setState(() {
@@ -211,6 +214,14 @@ class _TickerState extends State<TickerTile> {
         updatedLast: DateTime.now(),
         isPublic: tickerProvider.isPublic));
   }
-}
 
-void showInfo(BuildContext context, TickerTileModel data) {}
+  void showInfo(BuildContext context, TickerTileModel data) {
+    Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => TickerInfo(
+            info: TickerInfoModel(tileData: data),
+          ),
+        ));
+  }
+}

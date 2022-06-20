@@ -80,8 +80,8 @@ class YahooApi {
       postPercentChange = results['price']['postMarketChangePercent']['fmt'];
       postPriceChange = results['price']['postMarketChange']['fmt'];
     }
-    print("isPost: $isPost");
-    print("isCrypto: $isCrypto");
+    // print("isPost: $isPost");
+    // print("isCrypto: $isCrypto");
     TickerTileModel data = TickerTileModel(
       symbol: symbol,
       companyName: companyName,
@@ -94,10 +94,9 @@ class YahooApi {
       isPostMarket: isPost,
     );
     if (!Utils.isMarketTime() && !isPost) {
-      print("***");
       data.isLive = false;
     }
-    if (Utils.isPastPostMarket()) {
+    if (Utils.isPastPostMarket() && !isCrypto) {
       data.isLive = false;
     }
     return data;
