@@ -84,13 +84,20 @@ class YahooApi {
         results['quoteType']['quoteType'].contains("INDEX"));
     final bool isCrypto = results['quoteType']['quoteType'] == "CRYPTOCURRENCY";
     final String priceChange = results['price']["regularMarketChange"]['fmt'];
-    List chartDataY = lastData.chartDataY;
-    List chartDataX = lastData.chartDataX;
+    List chartDataX;
+    List chartDataY;
     if (chartResults != null) {
-      chartDataY =
+      List<dynamic> initChartDataY =
           chartResults['chart']['result'][0]["indicators"]["quote"][0]["open"];
-      chartDataX = chartResults['chart']['result'][0]["timestamp"];
+      chartDataY = initChartDataY.map((e) => e.toDouble()).toList();
+      List<dynamic> initChartDataX =
+          chartResults['chart']['result'][0]["timestamp"];
+      chartDataX = initChartDataX.map((e) => e.toDouble()).toList();
+    } else {
+      chartDataX = lastData.chartDataX;
+      chartDataY = lastData.chartDataY;
     }
+    ;
 
     String postPercentChange;
     String postPriceChange;

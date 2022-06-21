@@ -37,7 +37,6 @@ class _LineChartWidgetState extends State<LineChartWidget> {
 
     return SizedBox(
       height: 30,
-      width: 100,
       child: LineChart(LineChartData(
           lineTouchData: LineTouchData(enabled: false),
           minX: minMaxX['min'],
@@ -53,6 +52,7 @@ class _LineChartWidgetState extends State<LineChartWidget> {
           ]),
           lineBarsData: [
             LineChartBarData(
+                isStepLineChart: false,
                 belowBarData: BarAreaData(
                   show: true,
                   colors: [chartColor.withOpacity(0.4)],
