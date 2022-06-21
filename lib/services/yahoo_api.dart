@@ -7,13 +7,11 @@ import 'package:flutter/material.dart';
 
 class YahooApi {
   static const selfApiKey =
-      "3e4b16a5fcmsh98d8c8751778553p164b44jsnb5e4782d31b9";
+      "de6457e88cmsh9e1d1dab80a425dp1ae1f3jsnc28d0be79a56";
 
-  int apiIndex = 0;
-  //bac
-  //
   List<String> apiKeys = [
-    "ecd583d7c6msh82839fd3dd7d7fep18f51fjsn1a7cee19b400",
+    "de6457e88cmsh9e1d1dab80a425dp1ae1f3jsnc28d0be79a56"
+        "ecd583d7c6msh82839fd3dd7d7fep18f51fjsn1a7cee19b400",
     "3e4b16a5fcmsh98d8c8751778553p164b44jsnb5e4782d31b9",
     "0a9bd9ad36msh9da804e09688e05p1fcfcejsne6c5cc60e965",
     "402d2f8e5amsh4d113d00393064ep173f23jsn6c05b23ecc6d",
@@ -91,11 +89,7 @@ class YahooApi {
     if (chartResults != null) {
       chartDataY =
           chartResults['chart']['result'][0]["indicators"]["quote"][0]["open"];
-      // final List chartDataY =
-      //     initChartDataY.map<dynamic>((e) => e.toDouble()).toList();
-
       chartDataX = chartResults['chart']['result'][0]["timestamp"];
-      // final List chartDataX = initChartDataX.map((e) => e.toDouble()).toList();
     }
 
     String postPercentChange;
