@@ -9,6 +9,7 @@ import 'package:enos/services/firebase_api.dart';
 import 'package:enos/services/ticker_provider.dart';
 import 'package:enos/services/yahoo_api.dart';
 import 'package:enos/widgets/loading.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -36,6 +37,10 @@ class _NavDisplayScreenState extends State<NavDisplayScreen> {
     await tickerProvider.setAllInitData();
     setState(() {
       isLoading = false;
+      Navigator.popUntil(
+        context,
+        ModalRoute.withName('/'),
+      );
     });
   }
 
@@ -47,35 +52,35 @@ class _NavDisplayScreenState extends State<NavDisplayScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return isLoading
-        ? Loading(loadText: "Retrieving Watchlist ...")
-        : Scaffold(
-            body: ChangeNotifierProvider<TickerTileProvider>(
-              create: (context) => tickerProvider,
-              child: screens[currentIndex],
-            ),
-            bottomNavigationBar: BottomNavigationBar(
-              currentIndex: currentIndex,
-              type: BottomNavigationBarType.fixed,
-              iconSize: 35,
-              backgroundColor: kDarkBackgroundColor,
-              unselectedItemColor: kDisabledColor,
-              selectedItemColor: kActiveColor,
-              onTap: (index) => setState(() => currentIndex = index),
-              items: [
-                BottomNavigationBarItem(
-                    icon: Icon(Icons.list), label: 'Watchlist'),
-                BottomNavigationBarItem(
-                    icon: Icon(
-                      Icons.newspaper_sharp,
-                    ),
-                    label: 'News'),
-                BottomNavigationBarItem(
-                    icon: Icon(Icons.search), label: 'Search'),
-                BottomNavigationBarItem(
-                    icon: Icon(Icons.person), label: 'Account'),
-              ],
-            ),
-          );
+    if (!isLoading) {
+      return Scaffold(
+        body: ChangeNotifierProvider<TickerTileProvider>(
+          create: (context) => tickerProvider,
+          child: screens[currentIndex],
+        ),
+        bottomNavigationBar: BottomNavigationBar(
+          currentIndex: currentIndex,
+          type: BottomNavigationBarType.fixed,
+          iconSize: 35,
+          backgroundColor: kDarkBackgroundColor,
+          unselectedItemColor: kDisabledColor,
+          selectedItemColor: kActiveColor,
+          onTap: (index) => setState(() => currentIndex = index),
+          items: [
+            BottomNavigationBarItem(icon: Icon(Icons.list), label: 'Watchlist'),
+            BottomNavigationBarItem(
+                icon: Icon(
+                  Icons.newspaper_sharp,
+                ),
+                label: 'News'),
+            BottomNavigationBarItem(icon: Icon(Icons.search), label: 'Search'),
+            BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Account'),
+          ],
+        ),
+      );
+    }
+    return Loading(
+      loadText: "Setting watchlist ...",
+    );
   }
 }

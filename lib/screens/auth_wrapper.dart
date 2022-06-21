@@ -18,10 +18,6 @@ class AuthWrapper extends StatelessWidget {
   Widget build(BuildContext context) {
     final user = context.watch<UserField>();
     if (user != null) {
-      Navigator.popUntil(
-        context,
-        ModalRoute.withName('/'),
-      );
       return NavDisplayScreen(uid: user.userUid);
     }
     return SignInPage();

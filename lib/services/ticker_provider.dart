@@ -67,13 +67,10 @@ class TickerTileProvider extends ChangeNotifier {
     List<dynamic> tickers = watchListDoc['items'];
     print("setting all init");
     for (var symbol in tickers) {
-      print("getting data for $symbol");
+      // print("getting data for $symbol");
       // _futureTickers.add(futureData);
 
-      TickerTileModel data = await yahooApi.get(
-          init: true,
-          endpoint: "stock/v2/get-summary",
-          query: {"symbol": symbol.toString(), "region": "US"});
+      TickerTileModel data = await yahooApi.get(symbol: symbol.toString());
       _symbols.add(symbol.toString());
       _tickers.add(data);
     }
@@ -90,15 +87,14 @@ class TickerTileProvider extends ChangeNotifier {
 
   Future<TickerTileModel> getTileData(String symbol) async {
     TickerTileModel data = _tickers[_symbols.indexOf(symbol)];
-    if (!Utils.isMarketTime() && !data.isLive) {
+    if (!Utils.isMarketTime() && !data.isLive ||
+        (!data.isCrypto && Utils.isWeekend())) {
       print("$symbol not calling");
       return data;
     }
     print("$symbol is calling");
-    data = await YahooApi().get(
-        endpoint: "stock/v2/get-summary",
-        query: {"symbol": symbol, "region": "US"});
-    print(data.price);
+    data = await yahooApi.get(symbol: symbol, lastData: data);
+    //print(data.price);
     return data;
   }
 }

@@ -9,6 +9,7 @@ import 'package:enos/services/firebase_api.dart';
 import 'package:enos/services/ticker_provider.dart';
 import 'package:enos/services/util.dart';
 import 'package:enos/services/yahoo_api.dart';
+import 'package:enos/widgets/line_chart.dart';
 import 'package:enos/widgets/loading.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
@@ -37,7 +38,9 @@ class _TickerState extends State<TickerTile> {
     trailingWidget =
         tickerProvider.isLive ? getStreamWidget(widget.context) : priceWidget();
     return tickerTileData == null
-        ? Loading()
+        ? Loading(
+            type: "dot",
+          )
         : ClipRRect(
             borderRadius: BorderRadius.circular(3),
             child: Slidable(
@@ -67,30 +70,41 @@ class _TickerState extends State<TickerTile> {
         child: ListTile(
           visualDensity: VisualDensity(horizontal: 0, vertical: 2.6),
           contentPadding: EdgeInsets.symmetric(horizontal: 15, vertical: 0),
-          leading: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                Text(
-                  "${tickerTileData.symbol}",
-                  style: TextStyle(
-                      fontSize: 21,
-                      color: kBrightTextColor,
-                      fontWeight: FontWeight.w800),
-                ),
-                SizedBox(
-                  height: 3,
-                ),
-                Text(
-                  "${tickerTileData.companyName}",
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: kDisabledColor,
+          leading: Container(
+            width: 135,
+            child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Text(
+                    "${tickerTileData.symbol}",
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                        fontSize: 21,
+                        color: kBrightTextColor,
+                        fontWeight: FontWeight.w800),
                   ),
-                ),
-                // SizedBox(height: 6),
-              ]),
-          title: Container(),
+                  SizedBox(
+                    height: 3,
+                  ),
+                  Text(
+                    "${tickerTileData.companyName}",
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: kDisabledColor,
+                    ),
+                  ),
+                  // SizedBox(height: 6),
+                ]),
+          ),
+          title: LineChartWidget(
+            chartDataX: tickerTileData.chartDataX,
+            chartDataY: tickerTileData.chartDataY,
+            openPrice: tickerTileData.openPrice,
+          ),
           trailing: trailingWidget,
         ),
       ),

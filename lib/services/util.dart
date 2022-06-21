@@ -46,6 +46,11 @@ class Utils {
     return date.toUtc();
   }
 
+  static bool isWeekend() {
+    var today = DateTime.now().weekday;
+    return today == 6 || today == 7;
+  }
+
   static bool isMarketTime() {
     Map<String, List<String>> marketOpenTimes = {
       "pst": ["06:30AM", "01:00PM"],
@@ -209,5 +214,15 @@ class Utils {
     }
 
     return false;
+  }
+
+  static Map maxMin(List lis) {
+    Map maxMinList = {"max": 0, "min": 0};
+    maxMinList['min'] =
+        lis.reduce((value, element) => value < element ? value : element);
+    maxMinList['max'] =
+        lis.reduce((value, element) => value > element ? value : element);
+
+    return maxMinList;
   }
 }

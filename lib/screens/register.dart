@@ -22,6 +22,7 @@ class _RegisterPageState extends State<RegisterPage> {
   String error = '';
   bool isLoading = false;
   final _formKey = GlobalKey<FormState>();
+  Widget loader = Loading(loadText: "Registering ...");
 
   @override
   void dispose() {
@@ -34,9 +35,7 @@ class _RegisterPageState extends State<RegisterPage> {
   @override
   Widget build(BuildContext context) {
     return isLoading
-        ? Loading(
-            loadText: "Registering ...",
-          )
+        ? loader
         : Scaffold(
             extendBodyBehindAppBar: true,
             appBar: AppBar(
@@ -105,6 +104,7 @@ class _RegisterPageState extends State<RegisterPage> {
                                     email: _emailTextController.text.trim(),
                                     password:
                                         _passwordTextController.text.trim());
+
                             print("registered");
                             if (result == null) {
                               setState(() {
@@ -113,6 +113,10 @@ class _RegisterPageState extends State<RegisterPage> {
                               });
                               return;
                             }
+                            setState(() {
+                              loader =
+                                  Loading(loadText: "Retrieving Watchlist ...");
+                            });
                           }
                         },
                       ),

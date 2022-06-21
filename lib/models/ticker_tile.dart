@@ -6,7 +6,9 @@ class TickerTileModel {
   final String postPercentChange;
   final String priceChange;
   final String postPriceChange;
-
+  final double openPrice;
+  final List chartDataY;
+  final List chartDataX;
   // bool isNft = false;
   //for saving api calls
   final bool isCrypto;
@@ -22,6 +24,9 @@ class TickerTileModel {
       this.postPercentChange,
       this.priceChange,
       this.postPriceChange,
+      this.openPrice,
+      this.chartDataX,
+      this.chartDataY,
       this.isCrypto = false,
       this.isLive = true});
 
@@ -33,6 +38,9 @@ class TickerTileModel {
       postPercentChange: json['post_percent_change'] ?? "__",
       postPriceChange: json['post_price_change'] ?? "__",
       priceChange: json['price_change'] ?? "__",
+      openPrice: json["open_price"],
+      chartDataX: json['chart_data_x'],
+      chartDataY: json["chart_data_y"],
       isCrypto: json["is_crypto"],
       isPostMarket: json['is_post_market'],
       isLive: json["is_live"]);
@@ -45,6 +53,9 @@ class TickerTileModel {
         'post_percent_change': postPercentChange,
         'post_price_change': postPriceChange,
         'price_change': priceChange,
+        'open_price': openPrice,
+        'chart_data_x': chartDataX,
+        'chart_data_y': chartDataY,
         'is_crypto': isCrypto,
         'is_post_market': isPostMarket,
         'is_live': isLive,
