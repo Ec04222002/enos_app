@@ -45,16 +45,15 @@ class _HomePageState extends State<HomePage> {
       ),
       floatingActionButton: GestureDetector(
         onLongPress: () {
-          //Utils().showTopBar(context, "Streaming Data ...");
           Utils().showSnackBar(context, "Streaming Data ...");
-          print("in long press");
+          //print("in long press");
           setState(() {
             btnOpacity = 0;
             provider.isLive = true;
           });
         },
         onLongPressEnd: (_) {
-          print("end press");
+          //print("end press");
           setState(() {
             btnOpacity = 0.2;
             provider.isLive = false;

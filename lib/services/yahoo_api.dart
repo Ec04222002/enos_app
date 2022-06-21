@@ -8,7 +8,7 @@ import 'package:flutter/material.dart';
 class YahooApi {
   static const selfApiKey =
       "de6457e88cmsh9e1d1dab80a425dp1ae1f3jsnc28d0be79a56";
-
+  int validApiIndex = 0;
   List<String> apiKeys = [
     "de6457e88cmsh9e1d1dab80a425dp1ae1f3jsnc28d0be79a56"
         "ecd583d7c6msh82839fd3dd7d7fep18f51fjsn1a7cee19b400",
@@ -42,36 +42,60 @@ class YahooApi {
     return null;
   }
 
+  Future<dynamic> getTickerData(String symbol) async {
+    return await getData(
+        endpoint: "stock/v2/get-summary",
+        query: {"symbol": symbol, "region": "US"});
+  }
+
+  Future<dynamic> getChartData(String symbol) async {
+    return await getData(endpoint: "stock/v3/get-chart", query: {
+      "symbol": symbol,
+      "interval": "30m",
+      "range": "1d",
+      "region": "US"
+    });
+  }
+
   Future<TickerTileModel> get(
       {@required String symbol, TickerTileModel lastData}) async {
-    //checking all api keys
-    var results;
-    var chartResults;
-    for (var i = 0; i < apiKeys.length; ++i) {
-      resetApiKey(i);
-      results = await getData(
-          endpoint: "stock/v2/get-summary",
-          query: {"symbol": symbol, "region": "US"});
-      //preventing extra chart data call
+    var results = await getTickerData(symbol);
+    //if results null => current api key surpassed
+    if (results == null) {
+      //check all api keys to get valid api key
+      for (var i = 0; i < apiKeys.length; ++i) {
+        resetApiKey(i);
+        results = await getTickerData(symbol);
+        if (results != null) {
+          validApiIndex = i;
+          break;
+        }
+        ;
+      }
+      // if result persist to be null => all api keys surpassed
       if (results == null) {
-        continue;
-      }
-      // api only has markettime data for charts
-      // but always run during init or when lastData is not present
-      if (Utils.isMarketTime() || lastData == null) {
-        chartResults = await getData(endpoint: "stock/v3/get-chart", query: {
-          "symbol": symbol,
-          "interval": "30m",
-          "range": "1d",
-          "region": "US"
-        });
-      }
-      if (chartResults != null) {
-        break;
+        throw Exception("Surpassed Api Limit");
       }
     }
-    if (chartResults == null) {
-      throw Exception("Surpassed Api Limit");
+    var chartResults;
+    if (Utils.isMarketTime() || lastData == null) {
+      // using last working header
+      chartResults = await getChartData(symbol);
+      //In case api just hit limit => look for valid api keys again
+      if (chartResults == null) {
+        for (var i = validApiIndex + 1; i < apiKeys.length; ++i) {
+          resetApiKey(i);
+          chartResults = await getChartData(symbol);
+          if (chartResults != null) {
+            validApiIndex = i;
+            break;
+          }
+        }
+        // results are still null => checked all apis and all is surpassed
+        if (chartResults == null) {
+          throw Exception("Surpassed Api Limit");
+        }
+      }
     }
 
     final String tickerSymbol = results['quoteType']['symbol'];
@@ -101,7 +125,7 @@ class YahooApi {
 
     String postPercentChange;
     String postPriceChange;
-    if (isPost && !isCrypto) {
+    if (isPost && !isCrypto && !Utils.isMarketTime()) {
       postPercentChange = results['price']['postMarketChangePercent']['fmt'];
       postPriceChange = results['price']['postMarketChange']['fmt'];
     }

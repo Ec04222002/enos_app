@@ -187,9 +187,7 @@ class _TickerState extends State<TickerTile> {
           SizedBox(
             height: 2,
           ),
-          (tickerTileData.isPostMarket &&
-                  (Utils.isPostMarket() || Utils.isPastPostMarket()) &&
-                  !tickerTileData.isCrypto)
+          (tickerTileData.postPercentChange != null)
               ? GestureDetector(
                   onTap: () => setState(() {
                     _toggle = !_toggle;
