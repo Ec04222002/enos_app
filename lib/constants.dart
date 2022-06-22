@@ -20,6 +20,4 @@ const List<String> defaultTickerTileModels = const [
   "TSLA",
   "AMZN",
   "BTC-USD",
-  // "Bored Ape Yacht Club #8817",
-  // "Bored Ape Yacht Club #3749",
 ];

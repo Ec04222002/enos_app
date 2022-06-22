@@ -58,7 +58,9 @@ class YahooApi {
   }
 
   Future<TickerTileModel> get(
-      {@required String symbol, TickerTileModel lastData}) async {
+      {@required String symbol,
+      TickerTileModel lastData,
+      bool requestChartData}) async {
     var results = await getTickerData(symbol);
     //if results null => current api key surpassed
     if (results == null) {
@@ -78,7 +80,8 @@ class YahooApi {
       }
     }
     var chartResults;
-    if (Utils.isMarketTime() || lastData == null) {
+    if (requestChartData || lastData == null) {
+      print("getting chart data");
       // using last working header
       chartResults = await getChartData(symbol);
       //In case api just hit limit => look for valid api keys again
@@ -113,7 +116,9 @@ class YahooApi {
     if (chartResults != null) {
       List<dynamic> initChartDataY =
           chartResults['chart']['result'][0]["indicators"]["quote"][0]["open"];
-      chartDataY = initChartDataY.map((e) => e.toDouble()).toList();
+      chartDataY = initChartDataY
+          .map((e) => e != null ? e.toDouble() : openPrice)
+          .toList();
       List<dynamic> initChartDataX =
           chartResults['chart']['result'][0]["timestamp"];
       chartDataX = initChartDataX.map((e) => e.toDouble()).toList();

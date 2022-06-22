@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:enos/models/user.dart';
 import 'package:enos/services/firebase_api.dart';
@@ -15,10 +17,10 @@ class TickerTileProvider extends ChangeNotifier {
   List<String> _symbols = [];
   bool isPublic = false;
   bool isLive = false;
-
+  Timer _timer;
   YahooApi yahooApi = YahooApi();
   bool toggle = false;
-  List<int> times = [1, 3];
+  List<int> times = [1, 2];
 
   TickerTileProvider({this.watchListUid});
   // List<Future<TickerTileModel>> get futureTickers => _futureTickers;
@@ -70,7 +72,8 @@ class TickerTileProvider extends ChangeNotifier {
       // print("getting data for $symbol");
       // _futureTickers.add(futureData);
 
-      TickerTileModel data = await yahooApi.get(symbol: symbol.toString());
+      TickerTileModel data =
+          await yahooApi.get(symbol: symbol.toString(), requestChartData: true);
       _symbols.add(symbol.toString());
       _tickers.add(data);
     }
@@ -80,12 +83,19 @@ class TickerTileProvider extends ChangeNotifier {
   Stream<TickerTileModel> getTileStream(String symbol) {
     int time = toggle ? times[0] : times[1];
     toggle = !toggle;
+    int counter = 0;
     return Stream.periodic(Duration(seconds: time)).asyncMap((_) {
-      return getTileData(symbol);
+      counter++;
+      print("Counting $counter");
+      if (counter % 5 == 0) {
+        return getTileData(symbol, true);
+      }
+      return getTileData(symbol, false);
     });
   }
 
-  Future<TickerTileModel> getTileData(String symbol) async {
+  Future<TickerTileModel> getTileData(
+      String symbol, bool requestChartData) async {
     TickerTileModel data = _tickers[_symbols.indexOf(symbol)];
     if (!Utils.isMarketTime() && !data.isLive ||
         (!data.isCrypto && Utils.isWeekend())) {
@@ -93,7 +103,12 @@ class TickerTileProvider extends ChangeNotifier {
       return data;
     }
     print("$symbol is calling");
-    data = await yahooApi.get(symbol: symbol, lastData: data);
+    bool readChartData = false;
+    if (Utils.isMarketTime() && requestChartData) {
+      readChartData = true;
+    }
+    data = await yahooApi.get(
+        symbol: symbol, lastData: data, requestChartData: readChartData);
     //print(data.price);
     return data;
   }

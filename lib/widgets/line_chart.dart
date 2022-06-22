@@ -33,11 +33,12 @@ class _LineChartWidgetState extends State<LineChartWidget> {
     }
     minMaxX = Utils.maxMin(widget.chartDataX);
     minMaxY = Utils.maxMin(widget.chartDataY);
-
+    print("in chart widget");
     return SizedBox(
       height: 30,
       child: LineChart(LineChartData(
-          lineTouchData: LineTouchData(enabled: false),
+          lineTouchData:
+              LineTouchData(enabled: false, handleBuiltInTouches: false),
           minX: minMaxX['min'],
           maxX: minMaxX['max'],
           minY: minMaxY['min'],
@@ -46,9 +47,11 @@ class _LineChartWidgetState extends State<LineChartWidget> {
           gridData: FlGridData(
               show: false, drawHorizontalLine: false, drawVerticalLine: false),
           borderData: FlBorderData(show: false),
-          extraLinesData: ExtraLinesData(horizontalLines: [
-            HorizontalLine(y: widget.openPrice, color: kDisabledColor)
-          ]),
+          extraLinesData: ExtraLinesData(
+              extraLinesOnTop: false,
+              horizontalLines: [
+                HorizontalLine(y: widget.openPrice, color: kDisabledColor)
+              ]),
           lineBarsData: [
             LineChartBarData(
                 isStepLineChart: false,

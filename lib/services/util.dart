@@ -53,10 +53,10 @@ class Utils {
 
   static bool isMarketTime() {
     Map<String, List<String>> marketOpenTimes = {
-      "pst": ["06:30AM", "01:00PM"],
-      "mst": ["07:30AM", "02:00PM"],
-      "cst": ["08:30AM", "03:00PM"],
-      "est": ["09:30AM", "04:00PM"],
+      "pst": ["06:30AM", "12:59PM"],
+      "mst": ["07:30AM", "01:59PM"],
+      "cst": ["08:30AM", "02:59PM"],
+      "est": ["09:30AM", "03:59PM"],
     };
     switch (DateTime.now().timeZoneName.toLowerCase()) {
       case "pst":
