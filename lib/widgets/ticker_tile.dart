@@ -97,7 +97,6 @@ class _TickerState extends State<TickerTile> {
                       color: kDisabledColor,
                     ),
                   ),
-                  // SizedBox(height: 6),
                 ]),
           ),
           title: LineChartWidget(
@@ -156,62 +155,64 @@ class _TickerState extends State<TickerTile> {
       postMarketChangeColor = kGreenColor;
     }
     print("in widget");
-    return Column(
-        crossAxisAlignment: CrossAxisAlignment.end,
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: <Widget>[
-          Text(
-            "${tickerTileData.price}",
-            style: TextStyle(
-                color: kBrightTextColor,
-                fontSize: 20,
-                fontWeight: FontWeight.w600),
-          ),
-          SizedBox(height: 2),
-          GestureDetector(
-            onTap: () => setState(() {
-              _toggle = !_toggle;
-            }),
-            child: Container(
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(3),
-                  color: regularMarketChangeColor),
-              width: containerWidth,
-              height: 16,
-              child: Text("$regularMarketOp${changeShown}",
-                  textAlign: TextAlign.right,
-                  style: TextStyle(color: kBrightTextColor)),
+    return Container(
+      width: 93,
+      child: Column(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            Text(
+              "${tickerTileData.price}",
+              style: TextStyle(
+                  color: kBrightTextColor,
+                  fontSize: 20,
+                  fontWeight: FontWeight.w600),
             ),
-          ),
-          SizedBox(
-            height: 2,
-          ),
-          (tickerTileData.postPercentChange != null)
-              ? GestureDetector(
-                  onTap: () => setState(() {
-                    _toggle = !_toggle;
-                  }),
-                  child: RichText(
-                    overflow: TextOverflow.clip,
-                    maxLines: 1,
-                    text: TextSpan(
-                      text: "Post: ",
-                      style: DefaultTextStyle.of(context)
-                          .style
-                          .copyWith(fontWeight: FontWeight.w500, fontSize: 12),
-                      children: <TextSpan>[
-                        TextSpan(
-                            text: "$postMarketOp${postChangeShown}",
-                            style: TextStyle(color: postMarketChangeColor))
-                      ],
+            SizedBox(height: 2),
+            GestureDetector(
+              onTap: () => setState(() {
+                _toggle = !_toggle;
+              }),
+              child: Container(
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(3),
+                    color: regularMarketChangeColor),
+                width: containerWidth,
+                height: 16,
+                child: Text("$regularMarketOp${changeShown}",
+                    textAlign: TextAlign.right,
+                    style: TextStyle(color: kBrightTextColor)),
+              ),
+            ),
+            SizedBox(
+              height: 2,
+            ),
+            (tickerTileData.postPercentChange != null)
+                ? GestureDetector(
+                    onTap: () => setState(() {
+                      _toggle = !_toggle;
+                    }),
+                    child: RichText(
+                      overflow: TextOverflow.clip,
+                      maxLines: 1,
+                      text: TextSpan(
+                        text: "Post: ",
+                        style: DefaultTextStyle.of(context).style.copyWith(
+                            fontWeight: FontWeight.w500, fontSize: 12),
+                        children: <TextSpan>[
+                          TextSpan(
+                              text: "$postMarketOp${postChangeShown}",
+                              style: TextStyle(color: postMarketChangeColor))
+                        ],
+                      ),
                     ),
+                  )
+                : SizedBox(
+                    height: 1,
                   ),
-                )
-              : SizedBox(
-                  height: 1,
-                ),
-        ]);
+          ]),
+    );
   }
 
   void deleteTicker(BuildContext context) {

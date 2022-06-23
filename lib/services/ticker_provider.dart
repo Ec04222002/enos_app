@@ -17,7 +17,6 @@ class TickerTileProvider extends ChangeNotifier {
   List<String> _symbols = [];
   bool isPublic = false;
   bool isLive = false;
-  Timer _timer;
   YahooApi yahooApi = YahooApi();
   bool toggle = false;
   List<int> times = [1, 2];
@@ -86,8 +85,7 @@ class TickerTileProvider extends ChangeNotifier {
     int counter = 0;
     return Stream.periodic(Duration(seconds: time)).asyncMap((_) {
       counter++;
-      print("Counting $counter");
-      if (counter % 5 == 0) {
+      if (counter % 2 == 0) {
         return getTileData(symbol, true);
       }
       return getTileData(symbol, false);
