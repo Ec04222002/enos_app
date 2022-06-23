@@ -97,7 +97,6 @@ class _TickerState extends State<TickerTile> {
                       color: kDisabledColor,
                     ),
                   ),
-                  // SizedBox(height: 6),
                 ]),
           ),
           title: LineChartWidget(
