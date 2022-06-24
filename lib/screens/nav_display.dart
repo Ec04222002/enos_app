@@ -37,6 +37,7 @@ class _NavDisplayScreenState extends State<NavDisplayScreen> {
     await tickerProvider.setAllInitData();
     setState(() {
       isLoading = false;
+
       Navigator.popUntil(
         context,
         ModalRoute.withName('/'),

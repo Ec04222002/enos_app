@@ -1,3 +1,4 @@
+import 'package:enos/models/search_tile.dart';
 import 'package:enos/models/ticker_tile.dart';
 import 'package:enos/services/ticker_provider.dart';
 import 'package:enos/services/util.dart';
@@ -40,6 +41,18 @@ class YahooApi {
     }
 
     return null;
+  }
+
+  Future<dynamic> getRecommendedStockList({int count = 6}) async {
+    final response = await getData(
+        endpoint: "market/get-trending-tickers", query: {"region": "US"});
+
+    if (response == null) throw Exception("Error getting recommend stocks");
+
+    final List quotes = response['finance']['result'][0]['quotes'];
+    var quotesFirstSix = quotes.take(6);
+
+    return quotesFirstSix.map((json) => SearchTile.fromJson(json)).toList();
   }
 
   Future<dynamic> getTickerData(String symbol) async {

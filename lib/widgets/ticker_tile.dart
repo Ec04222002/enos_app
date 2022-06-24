@@ -64,6 +64,10 @@ class _TickerState extends State<TickerTile> {
   Widget buildTile(BuildContext context) {
     return GestureDetector(
       onTap: () => showInfo(context, tickerTileData),
+      // onTapCancel: () {},
+      // onTapUp: (_) {
+      //   print("in");
+      // },
       child: Container(
         margin: EdgeInsets.only(bottom: 10),
         color: kLightBackgroundColor,

@@ -3,6 +3,7 @@ import 'dart:convert';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:enos/constants.dart';
+import 'package:enos/models/search_tile.dart';
 import 'package:enos/models/ticker_tile.dart';
 import 'package:enos/models/user.dart';
 import 'package:enos/models/watchlist.dart';
@@ -10,7 +11,9 @@ import 'package:enos/services/firebase_api.dart';
 import 'package:enos/services/ticker_provider.dart';
 import 'package:enos/services/auth.dart';
 import 'package:enos/services/util.dart';
+import 'package:enos/services/yahoo_api.dart';
 import 'package:enos/widgets/loading.dart';
+import 'package:enos/widgets/search_list.dart';
 import 'package:enos/widgets/ticker_tile.dart';
 import 'package:enos/widgets/watch_list.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -26,6 +29,21 @@ TickerTileProvider provider;
 double btnOpacity = 0.2;
 
 class _HomePageState extends State<HomePage> {
+  List<SearchTile> recommends = [];
+
+  @override
+  void initState() {
+    super.initState();
+    //loading recommended list already
+    init();
+  }
+
+  Future init() async {
+    final List<SearchTile> response =
+        await YahooApi().getRecommendedStockList();
+    this.recommends = response;
+  }
+
   @override
   Widget build(BuildContext context) {
     provider = Provider.of<TickerTileProvider>(context);
@@ -38,7 +56,7 @@ class _HomePageState extends State<HomePage> {
           IconButton(
               iconSize: 30,
               color: kDarkTextColor.withOpacity(0.9),
-              onPressed: () {},
+              onPressed: showSearch,
               tooltip: "Add ticker to watchlist",
               icon: Icon(Icons.add_circle_outline))
         ],
@@ -112,5 +130,15 @@ class _HomePageState extends State<HomePage> {
       // ?? streambuilder at child property
       body: WatchListWidget(),
     );
+  }
+
+  void showSearch() {
+    Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => SearchList(
+            recommends: recommends,
+          ),
+        ));
   }
 }
