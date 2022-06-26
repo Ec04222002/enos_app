@@ -18,6 +18,6 @@ const List<String> defaultTickerTileModels = const [
   "^DJI",
   "^SPX",
   "TSLA",
-  "AMZN",
-  "BTC-USD",
+  // "AMZN",
+  // "BTC-USD",
 ];

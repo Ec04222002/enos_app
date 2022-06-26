@@ -26,6 +26,7 @@ class _SearchInputState extends State<SearchInput> {
     {'label': "NYSE", 'value': "NYSE"},
     {'label': "INDEX", 'value': "INDEX"},
     {'label': "OTCBB", 'value': "OTCBB"},
+    {'label': "CRYPTO", 'value': "CRYPTO"}
   ];
   @override
   Widget build(BuildContext context) {
@@ -57,7 +58,7 @@ class _SearchInputState extends State<SearchInput> {
                 color: kDisabledColor,
               ),
               suffixIcon: CoolDropdown(
-                resultPadding: EdgeInsets.all(4),
+                resultPadding: EdgeInsets.all(5),
                 resultAlign: Alignment.center,
                 resultBD: BoxDecoration(
                     color: kDarkTextColor,
@@ -67,8 +68,8 @@ class _SearchInputState extends State<SearchInput> {
                     fontSize: 13,
                     color: Colors.grey.withOpacity(0.8),
                     fontWeight: FontWeight.w600),
-                resultWidth: 93,
-                dropdownWidth: 110,
+                resultWidth: 95,
+                dropdownWidth: 90,
                 selectedItemPadding: EdgeInsets.zero,
                 dropdownPadding: EdgeInsets.all(5),
                 dropdownList: items,
@@ -76,7 +77,7 @@ class _SearchInputState extends State<SearchInput> {
                 dropdownItemGap: 0,
                 dropdownItemPadding: EdgeInsets.zero,
                 dropdownAlign: "center",
-                dropdownHeight: 200,
+                dropdownHeight: 260,
                 onChange: (item) {
                   widget.setMarketName(item['value']);
                 },

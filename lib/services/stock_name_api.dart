@@ -60,9 +60,13 @@ class StockNameApi {
       } else {
         uri = "https://ec04222002.github.io/nyse_MtoZ/nyse_MtoZ.json";
       }
+    } else if (lowerMarket == "crypto") {
+      print("crypto");
+      uri = "https://ec04222002.github.io/crypto_symbols/crypto_symbols.json";
     }
     final url = Uri.parse(uri);
     final response = await http.get(url);
+
     if (response.statusCode == 200) {
       final List recs = json.decode(response.body);
       return recs.map((json) => SearchTile.selfApiFromJson(json)).where((item) {

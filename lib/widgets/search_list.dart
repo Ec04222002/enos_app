@@ -60,6 +60,7 @@ class _SearchListState extends State<SearchList> {
         ),
       ];
       trendingRecs = recommends;
+      this.searchTitle = "Recommended Stocks";
     } else {
       recommends = widget.recommends;
       trendingRecs = widget.recommends;
@@ -89,7 +90,7 @@ class _SearchListState extends State<SearchList> {
     return Scaffold(
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.all(10.0),
+          padding: const EdgeInsets.all(8.0),
           child: Column(
             children: <Widget>[
               SearchInput(
