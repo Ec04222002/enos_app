@@ -24,7 +24,43 @@ class Utils {
     return hslLight.toColor();
   }
 
-  void showSnackBar(BuildContext context, String text) =>
+  static void showAlertDialog(BuildContext context, String content,
+      Function cancelCallBack, Function confirmCallBack) {
+    // set up the buttons
+    List<Widget> actionBtns = [];
+
+    Widget cancelButton = TextButton(
+      child: Text("Cancel"),
+      onPressed: cancelCallBack,
+    );
+    Widget continueButton = TextButton(
+      child: Text("Yes"),
+      onPressed: confirmCallBack,
+    );
+    //ok alert
+    if (confirmCallBack == null) {
+      continueButton = TextButton(onPressed: cancelCallBack, child: Text("Ok"));
+      actionBtns.add(continueButton);
+    } else {
+      actionBtns.add(cancelButton);
+      actionBtns.add(continueButton);
+    }
+    // set up the AlertDialog
+    AlertDialog alert = AlertDialog(
+      content: Text(content),
+      actions: actionBtns,
+    );
+
+    // show the dialog
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return alert;
+      },
+    );
+  }
+
+  static void showSnackBar(BuildContext context, String text) =>
       ScaffoldMessenger.of(context)
         ..removeCurrentSnackBar()
         ..showSnackBar(SnackBar(

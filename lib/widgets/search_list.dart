@@ -4,15 +4,19 @@ import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:enos/models/search_tile.dart';
 import 'package:enos/services/stock_name_api.dart';
+import 'package:enos/services/ticker_provider.dart';
+import 'package:enos/services/util.dart';
 import 'package:enos/services/yahoo_api.dart';
 import 'package:enos/widgets/loading.dart';
 import 'package:enos/widgets/search_input.dart';
 import "package:flutter/material.dart";
 import "package:enos/constants.dart";
+import 'package:provider/provider.dart';
 
 class SearchList extends StatefulWidget {
   List<SearchTile> recommends = [];
-  SearchList({this.recommends, Key key}) : super(key: key);
+  BuildContext context;
+  SearchList({this.recommends, this.context, Key key}) : super(key: key);
 
   @override
   State<SearchList> createState() => _SearchListState();
@@ -25,6 +29,8 @@ class _SearchListState extends State<SearchList> {
   Timer debouncer;
   String market = "NASDAQ";
   String searchTitle = "Trending Stocks";
+  List<String> savedSymbols = [];
+  TickerTileProvider provider;
   void setMarket(String marketName) {
     this.market = marketName;
   }
@@ -32,6 +38,8 @@ class _SearchListState extends State<SearchList> {
   @override
   void initState() {
     super.initState();
+    provider = Provider.of<TickerTileProvider>(widget.context);
+    savedSymbols = provider.symbols;
     if (widget.recommends.isEmpty) {
       recommends = [
         SearchTile(
@@ -69,7 +77,10 @@ class _SearchListState extends State<SearchList> {
 
   @override
   void dispose() {
-    debouncer.cancel();
+    if (debouncer != null) {
+      debouncer.cancel();
+    }
+
     super.dispose();
   }
 
@@ -119,7 +130,9 @@ class _SearchListState extends State<SearchList> {
                   itemCount: recommends.length,
                   itemBuilder: (context, index) {
                     final stockTileModel = recommends[index];
-
+                    if (savedSymbols.contains(stockTileModel.symbol)) {
+                      stockTileModel.isSaved = true;
+                    }
                     return buildTile(stockTileModel, index);
                   },
                 ),
@@ -176,7 +189,31 @@ class _SearchListState extends State<SearchList> {
               ),
               trailing: IconButton(
                   onPressed: () => setState(() {
-                        recommends[index].isSaved = !recommends[index].isSaved;
+                        if (!recommends[index].isSaved) {
+                          if (savedSymbols.length >= 10) {
+                            Utils.showAlertDialog(context,
+                                "You have reached your limit of 10 tickers added.",
+                                () {
+                              Navigator.pop(context);
+                            }, null);
+                          } else {
+                            provider.addTicker(stockTileModel.symbol);
+                            recommends[index].isSaved = true;
+                          }
+                        } else {
+                          Utils.showAlertDialog(context,
+                              "Are you sure you want to remove ${stockTileModel.symbol} from your watchlist?",
+                              () {
+                            Navigator.pop(context);
+                          }, () {
+                            provider.removeTicker(
+                                savedSymbols.indexOf(stockTileModel.symbol));
+                            Navigator.pop(context);
+                            setState(() {
+                              recommends[index].isSaved = false;
+                            });
+                          });
+                        }
                       }),
                   icon: stockTileModel.isSaved
                       ? Icon(

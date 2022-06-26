@@ -33,6 +33,7 @@ class _TickerState extends State<TickerTile> {
   bool _toggle = false;
   @override
   Widget build(BuildContext context) {
+    //print("building tickertile ${tickerTileData.price}");
     tickerProvider = Provider.of<TickerTileProvider>(widget.context);
     tickerTileData = tickerProvider.tickerAt(widget.index);
     trailingWidget =
@@ -64,8 +65,6 @@ class _TickerState extends State<TickerTile> {
   Widget buildTile(BuildContext context) {
     return GestureDetector(
       onTap: () => showInfo(context, tickerTileData),
-      onTapCancel: () {},
-      onTapUp: (_) {},
       child: Container(
         margin: EdgeInsets.only(bottom: 10),
         color: kLightBackgroundColor,
@@ -156,7 +155,7 @@ class _TickerState extends State<TickerTile> {
       postMarketOp = "+";
       postMarketChangeColor = kGreenColor;
     }
-    print("in widget");
+    //print("in widget");
     return Container(
       width: 93,
       child: Column(
@@ -222,12 +221,6 @@ class _TickerState extends State<TickerTile> {
         Provider.of<TickerTileProvider>(context, listen: false);
     List<String> tickers = tickerProvider.symbols;
     tickerProvider.removeTicker(tickers.indexOf(tickerTileData.symbol));
-    tickers.remove(tickerTileData.symbol);
-    FirebaseApi.updateWatchList(Watchlist(
-        watchlistUid: tickerProvider.watchListUid,
-        items: tickers,
-        updatedLast: DateTime.now(),
-        isPublic: tickerProvider.isPublic));
   }
 
   void showInfo(BuildContext context, TickerTileModel data) {

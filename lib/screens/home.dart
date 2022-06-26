@@ -54,14 +54,16 @@ class _HomePageState extends State<HomePage> {
           IconButton(
               iconSize: 30,
               color: kDarkTextColor.withOpacity(0.9),
-              onPressed: showSearch,
+              onPressed: () {
+                showSearch(context);
+              },
               tooltip: "Add ticker to watchlist",
               icon: Icon(Icons.add_circle_outline))
         ],
       ),
       floatingActionButton: GestureDetector(
         onLongPress: () {
-          Utils().showSnackBar(context, "Streaming Data ...");
+          Utils.showSnackBar(context, "Streaming Data ...");
           //print("in long press");
           setState(() {
             btnOpacity = 0;
@@ -130,12 +132,13 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  void showSearch() {
+  void showSearch(BuildContext buildContext) {
     Navigator.push(
         context,
         MaterialPageRoute(
           builder: (context) => SearchList(
             recommends: recommends,
+            context: buildContext,
           ),
         ));
   }

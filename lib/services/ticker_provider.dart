@@ -2,6 +2,8 @@ import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:enos/models/user.dart';
+import 'package:enos/models/watchlist.dart';
+import 'package:enos/screens/home.dart';
 import 'package:enos/services/firebase_api.dart';
 import 'package:enos/services/util.dart';
 import 'package:enos/services/yahoo_api.dart';
@@ -57,6 +59,29 @@ class TickerTileProvider extends ChangeNotifier {
     _tickers.removeAt(index);
     // _futureTickers.removeAt(index);
     _symbols.removeAt(index);
+
+    FirebaseApi.updateWatchList(Watchlist(
+        watchlistUid: provider.watchListUid,
+        items: _symbols,
+        updatedLast: DateTime.now(),
+        isPublic: provider.isPublic));
+    notifyListeners();
+  }
+
+  Future<void> addTicker(String symbol) async {
+    if (_symbols.length >= 10) {
+      return;
+    }
+    print("Adding symbol $symbol");
+    TickerTileModel data =
+        await yahooApi.get(symbol: symbol.toString(), requestChartData: true);
+    _tickers.add(data);
+    _symbols.add(symbol);
+    FirebaseApi.updateWatchList(Watchlist(
+        watchlistUid: provider.watchListUid,
+        items: _symbols,
+        updatedLast: DateTime.now(),
+        isPublic: provider.isPublic));
     notifyListeners();
   }
 

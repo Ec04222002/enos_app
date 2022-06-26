@@ -116,6 +116,7 @@ class YahooApi {
 
     final String tickerSymbol = results['quoteType']['symbol'];
     final String companyName = results['quoteType']['shortName'];
+
     final String price = results['price']["regularMarketPrice"]["fmt"];
     final String percentChange =
         results['price']['regularMarketChangePercent']["fmt"];
@@ -144,8 +145,10 @@ class YahooApi {
     String postPercentChange;
     String postPriceChange;
     if (isPost && !isCrypto && !Utils.isMarketTime()) {
-      postPercentChange = results['price']['postMarketChangePercent']['fmt'];
-      postPriceChange = results['price']['postMarketChange']['fmt'];
+      if (results['price']['postMarketChangePercent'] != null) {
+        postPercentChange = results['price']['postMarketChangePercent']['fmt'];
+        postPriceChange = results['price']['postMarketChange']['fmt'];
+      }
     }
     // print("isPost: $isPost");
     // print("isCrypto: $isCrypto");
