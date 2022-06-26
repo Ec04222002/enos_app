@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:enos/models/search_tile.dart';
 import 'package:enos/services/stock_name_api.dart';
 import 'package:enos/services/yahoo_api.dart';
@@ -19,9 +20,15 @@ class SearchList extends StatefulWidget {
 
 class _SearchListState extends State<SearchList> {
   List<SearchTile> recommends = [];
+  List<SearchTile> trendingRecs = [];
   String query = '';
   Timer debouncer;
-  bool isLoading = true;
+  String market = "NASDAQ";
+  String searchTitle = "Trending Stocks";
+  void setMarket(String marketName) {
+    this.market = marketName;
+  }
+
   @override
   void initState() {
     super.initState();
@@ -52,10 +59,11 @@ class _SearchListState extends State<SearchList> {
           name: "Bitcoin USD",
         ),
       ];
+      trendingRecs = recommends;
     } else {
       recommends = widget.recommends;
+      trendingRecs = widget.recommends;
     }
-    //init();
   }
 
   @override
@@ -76,16 +84,6 @@ class _SearchListState extends State<SearchList> {
     debouncer = Timer(duration, callback);
   }
 
-  //get init recommendation
-  // Future init() async {
-  //   final List<SearchTile> response =
-  //       await YahooApi().getRecommendedStockList();
-  //   setState(() {
-  //     this.recommends = response;
-  //     isLoading = false;
-  //   });
-  // }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -96,14 +94,15 @@ class _SearchListState extends State<SearchList> {
             children: <Widget>[
               SearchInput(
                   text: query,
+                  setMarketName: setMarket,
                   onChanged: searchStocks,
                   hintText: "Search Symbol or Name"),
               Align(
                 alignment: Alignment.topLeft,
                 child: Padding(
-                  padding: const EdgeInsets.all(8.0),
+                  padding: const EdgeInsets.all(9.0),
                   child: Text(
-                    "Trending Stocks",
+                    searchTitle,
                     style: TextStyle(
                         color: kDisabledColor,
                         fontSize: 15,
@@ -132,7 +131,25 @@ class _SearchListState extends State<SearchList> {
   }
 
   Future searchStocks(String query) async => debounce((() async {
-        final recs = await StockNameApi().getStock(query: query);
+        print("query: $query");
+        if (query.isEmpty) {
+          setState(() {
+            this.query = query;
+            this.recommends = this.trendingRecs;
+            this.searchTitle = "Trending Stocks";
+          });
+          return;
+        }
+        final recs =
+            await StockNameApi().getStock(query: query, market: market);
+
+        if (!mounted) return;
+
+        setState(() {
+          this.query = query;
+          this.recommends = recs;
+          this.searchTitle = "Search Results";
+        });
       }));
 
   Widget buildTile(SearchTile stockTileModel, int index) => ClipRRect(
@@ -140,38 +157,101 @@ class _SearchListState extends State<SearchList> {
         child: Container(
           color: kLightBackgroundColor,
           child: ListTile(
-            // tileColor: kLightBackgroundColor,
-            title: Text(
-              stockTileModel.symbol,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                  color: kBrightTextColor,
-                  fontSize: 22,
-                  fontWeight: FontWeight.w800),
-            ),
-            subtitle: Text(
-              stockTileModel.name,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(fontSize: 14, color: kDisabledColor),
-            ),
-            trailing: IconButton(
-                onPressed: () => setState(() {
-                      recommends[index].isSaved = !recommends[index].isSaved;
-                    }),
-                icon: stockTileModel.isSaved
-                    ? Icon(
-                        Icons.star,
-                        color: Colors.yellow[400],
-                        size: 35,
-                      )
-                    : Icon(
-                        Icons.star_border,
-                        color: kDisabledColor,
-                        size: 35,
-                      )),
-          ),
+              // tileColor: kLightBackgroundColor,
+              title: Text(
+                stockTileModel.symbol,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                    color: kBrightTextColor,
+                    fontSize: 21,
+                    fontWeight: FontWeight.w800),
+              ),
+              subtitle: Text(
+                stockTileModel.name,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(fontSize: 14, color: kDisabledColor),
+              ),
+              trailing: IconButton(
+                  onPressed: () => setState(() {
+                        recommends[index].isSaved = !recommends[index].isSaved;
+                      }),
+                  icon: stockTileModel.isSaved
+                      ? Icon(
+                          Icons.star,
+                          color: Colors.yellow[400],
+                          size: 35,
+                        )
+                      : Icon(
+                          Icons.star_border,
+                          color: kDisabledColor,
+                          size: 35,
+                        ))),
         ),
       );
+
+  // Widget priceWidget(SearchTile data) {
+  //   Color changeColor = kRedColor;
+  //   String priceOp = "";
+  //   //not checking leftward number expand
+  //   //only checkiing rightward expand
+  //   int roundedEndPriceChange = 2;
+  //   int roundedEndPercentChange = 2;
+  //   int roundedEndPrice = 2;
+  //   double priceFontSize = 20;
+  //   double tagFontSize = 14;
+
+  //   String changeShown =
+  //       data.priceChange.toStringAsFixed(roundedEndPriceChange);
+  //   if (!_toggle) {
+  //     changeShown =
+  //         data.percentChange.toStringAsFixed(roundedEndPercentChange) + "%";
+  //   }
+  //   double containerWidth = 60;
+  //   if (changeShown != null) {
+  //     containerWidth = changeShown.length > 6 ? 70 : 60;
+  //     if (changeShown[0] != "-") {
+  //       changeColor = kGreenColor;
+  //       priceOp = "+";
+  //     }
+  //   }
+  //   // double containerWidth = changeShown.length > 6 ? 70 : 60;
+  //   return Container(
+  //     width: 100,
+  //     child: Column(
+  //         crossAxisAlignment: CrossAxisAlignment.end,
+  //         mainAxisAlignment: MainAxisAlignment.center,
+  //         children: <Widget>[
+  //           Text(
+  //             "${data.price.toStringAsFixed(roundedEndPrice)}",
+  //             style: TextStyle(
+  //                 color: kBrightTextColor,
+  //                 fontSize: priceFontSize,
+  //                 fontWeight: FontWeight.w600),
+  //           ),
+  //           SizedBox(height: 2),
+  //           GestureDetector(
+  //             onTap: () => setState(() {
+  //               _toggle = !_toggle;
+  //             }),
+  //             child: Container(
+  //               padding: EdgeInsets.zero,
+  //               alignment: Alignment.center,
+  //               decoration: BoxDecoration(
+  //                   borderRadius: BorderRadius.circular(3), color: changeColor),
+  //               width: containerWidth,
+  //               height: 17,
+  //               child: Text("$priceOp${changeShown}",
+  //                   textAlign: TextAlign.right,
+  //                   style: TextStyle(
+  //                       color: kBrightTextColor, fontSize: tagFontSize)),
+  //             ),
+  //           ),
+  //           SizedBox(
+  //             height: 2,
+  //           ),
+  //         ]),
+  //   );
+  // }
 }

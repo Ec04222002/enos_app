@@ -46,6 +46,19 @@ class Utils {
     return date.toUtc();
   }
 
+  static checkLeadZero(double num) {
+    List stringRunes = num.toString().runes.toList();
+    int leadZeros = 0;
+    for (var i = 0; i < stringRunes.length; ++i) {
+      if (String.fromCharCode(stringRunes[i]) == "0") {
+        leadZeros++;
+        continue;
+      }
+      break;
+    }
+    return leadZeros;
+  }
+
   static bool isWeekend() {
     var today = DateTime.now().weekday;
     return today == 6 || today == 7;

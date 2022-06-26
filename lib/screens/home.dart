@@ -39,9 +39,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future init() async {
-    final List<SearchTile> response =
-        await YahooApi().getRecommendedStockList();
-    this.recommends = response;
+    this.recommends = await YahooApi().getRecommendedStockList();
   }
 
   @override
