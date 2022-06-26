@@ -21,6 +21,7 @@ class _NavDisplayScreenState extends State<NavDisplayScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: screens[currentIndex],
+
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: currentIndex,
         type: BottomNavigationBarType.fixed,
