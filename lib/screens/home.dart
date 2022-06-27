@@ -13,7 +13,7 @@ import 'package:enos/services/auth.dart';
 import 'package:enos/services/util.dart';
 import 'package:enos/services/yahoo_api.dart';
 import 'package:enos/widgets/loading.dart';
-import 'package:enos/widgets/search_list.dart';
+import 'package:enos/screens/search.dart';
 import 'package:enos/widgets/ticker_tile.dart';
 import 'package:enos/widgets/watch_list.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -29,19 +29,6 @@ TickerTileProvider provider;
 double btnOpacity = 0.2;
 
 class _HomePageState extends State<HomePage> {
-  List<SearchTile> recommends = [];
-
-  @override
-  void initState() {
-    super.initState();
-    //loading recommended list already
-    init();
-  }
-
-  Future init() async {
-    this.recommends = await YahooApi().getRecommendedStockList();
-  }
-
   @override
   Widget build(BuildContext context) {
     provider = Provider.of<TickerTileProvider>(context);
@@ -136,8 +123,8 @@ class _HomePageState extends State<HomePage> {
     Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => SearchList(
-            recommends: recommends,
+          builder: (context) => SearchPage(
+            isMainPage: false,
             context: buildContext,
           ),
         ));

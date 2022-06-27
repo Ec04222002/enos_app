@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:enos/models/search_tile.dart';
 import 'package:enos/models/user.dart';
 import 'package:enos/models/watchlist.dart';
 import 'package:enos/screens/home.dart';
@@ -22,12 +23,13 @@ class TickerTileProvider extends ChangeNotifier {
   YahooApi yahooApi = YahooApi();
   bool toggle = false;
   List<int> times = [1, 2];
+  List<SearchTile> _recs = [];
 
   TickerTileProvider({this.watchListUid});
   // List<Future<TickerTileModel>> get futureTickers => _futureTickers;
   List<TickerTileModel> get tickers => _tickers;
   List<String> get symbols => _symbols;
-
+  List<SearchTile> get recs => _recs;
   // Future<TickerTileModel> futureTickerAt(int index) => _futureTickers[index];
   TickerTileModel tickerAt(int index) => _tickers[index];
   String symbolAt(int index) => _symbols[index];
@@ -38,6 +40,10 @@ class TickerTileProvider extends ChangeNotifier {
 
   void setTickers(List<TickerTileModel> tickers) {
     _tickers = tickers;
+  }
+
+  void setRecs(List<SearchTile> recs) {
+    _recs = recs;
   }
 
   void replaceTickerAt(int index, TickerTileModel replacement) {
@@ -91,16 +97,13 @@ class TickerTileProvider extends ChangeNotifier {
 
     isPublic = watchListDoc['is_public'];
     List<dynamic> tickers = watchListDoc['items'];
-    print("setting all init");
     for (var symbol in tickers) {
-      // print("getting data for $symbol");
-      // _futureTickers.add(futureData);
-
       TickerTileModel data =
           await yahooApi.get(symbol: symbol.toString(), requestChartData: true);
       _symbols.add(symbol.toString());
       _tickers.add(data);
     }
+    this._recs = await yahooApi.getRecommendedStockList();
     print("completed getting all ticker data");
   }
 

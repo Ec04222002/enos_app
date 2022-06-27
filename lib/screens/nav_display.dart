@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:enos/constants.dart';
+import 'package:enos/models/search_tile.dart';
 import 'package:enos/models/ticker_tile.dart';
 import 'package:enos/screens/account.dart';
 import 'package:enos/screens/home.dart';
@@ -45,9 +46,14 @@ class _NavDisplayScreenState extends State<NavDisplayScreen> {
     });
   }
 
+  // Future init() async {
+  //   this.recommends =
+  // }
+
   @override
   void initState() {
     super.initState();
+    //init();
     setAllData();
   }
 
