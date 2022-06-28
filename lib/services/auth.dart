@@ -14,11 +14,12 @@ import 'package:google_sign_in/google_sign_in.dart';
 class AuthService {
   final FirebaseAuth _auth;
   //not used
-  UserModel user;
+  UserModel _user;
   AuthService(this._auth);
   //future? of comments // for future builder for comment section
   //stream of watchlist // for stream builder for watchlist
 
+  UserModel get userModel => _user;
   UserField _userFromFirebaseUser(dynamic user) {
     return user != null ? UserField(userUid: user.uid) : null;
   }
@@ -37,11 +38,16 @@ class AuthService {
     }
   }
 
+  Future<void> setUser(String uid) async {
+    _user = await FirebaseApi.getUser(uid);
+  }
+
   Future signInWithEmailAndPassword({String email, String password}) async {
     try {
       dynamic result = await _auth.signInWithEmailAndPassword(
           email: email, password: password);
       dynamic user = result.user;
+      await setUser(user.uid);
       return user;
     } catch (error) {
       print(error.toString());
@@ -54,12 +60,14 @@ class AuthService {
       dynamic result = await _auth.createUserWithEmailAndPassword(
           email: email, password: password);
       dynamic user = result.user;
-      FirebaseApi.updateUserData(UserModel(
+      _user = UserModel(
         userUid: user.uid,
         createdTime: DateTime.now(),
         username: user.email,
+        userSaved: [],
         metrics: List.filled(22, true),
-      ));
+      );
+      FirebaseApi.updateUserData(_user);
       FirebaseApi.updateWatchList(Watchlist(
         watchlistUid: user.uid,
         items: defaultTickerTileModels,

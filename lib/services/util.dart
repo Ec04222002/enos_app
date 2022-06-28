@@ -82,6 +82,10 @@ class Utils {
     return date.toUtc();
   }
 
+  static Widget createProfilePicWidget(String name) {
+    return Container();
+  }
+
   static checkLeadZero(double num) {
     List stringRunes = num.toString().runes.toList();
     int leadZeros = 0;

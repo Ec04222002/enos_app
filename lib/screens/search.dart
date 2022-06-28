@@ -3,6 +3,10 @@ import 'dart:convert';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:enos/models/search_tile.dart';
+import 'package:enos/models/user.dart';
+import 'package:enos/models/user_tile.dart';
+import 'package:enos/services/auth.dart';
+import 'package:enos/services/firebase_api.dart';
 import 'package:enos/services/stock_name_api.dart';
 import 'package:enos/services/ticker_provider.dart';
 import 'package:enos/services/util.dart';
@@ -23,8 +27,8 @@ class SearchPage extends StatefulWidget {
 }
 
 class _SearchPageState extends State<SearchPage> {
-  List<SearchTile> recommends = [];
-  List<SearchTile> trendingRecs = [];
+  List recommends = [];
+  List trendingRecs = [];
   String query = '';
   Timer debouncer;
   String market = "NASDAQ";
@@ -81,7 +85,6 @@ class _SearchPageState extends State<SearchPage> {
       recommends = provider.recs;
       //check if recommends is empty => put default if so
       checkRecommends();
-      //context = widget.context;
     }
   }
 
@@ -150,12 +153,19 @@ class _SearchPageState extends State<SearchPage> {
                   itemCount: recommends.length,
                   itemBuilder: (context, index) {
                     final stockTileModel = recommends[index];
-                    if (savedSymbols.contains(stockTileModel.symbol)) {
-                      stockTileModel.isSaved = true;
-                    }
 
                     if (market.toLowerCase() == "users") {
-                      return buildUserTile();
+                      UserSearchTile tile =
+                          UserSearchTile.modelToSearchTile(stockTileModel);
+                      UserModel user = context.read<AuthService>().userModel;
+                      if (user.userSaved.contains(tile.uid)) {
+                        tile.isSaved = true;
+                      }
+                      return buildUserTile(tile, index, context);
+                    }
+                    //for stock search tiles
+                    if (savedSymbols.contains(stockTileModel.symbol)) {
+                      stockTileModel.isSaved = true;
                     }
                     return buildTile(stockTileModel, index, context);
                   },
@@ -179,6 +189,7 @@ class _SearchPageState extends State<SearchPage> {
         }
         var recs;
         if (market.toLowerCase() == "users") {
+          recs = await FirebaseApi.getAllUser();
         } else {
           recs = await StockNameApi().getStock(query: query, market: market);
         }
@@ -192,7 +203,46 @@ class _SearchPageState extends State<SearchPage> {
         });
       }));
 
-  Widget buildUserTile() {}
+  Widget buildUserTile(
+      UserSearchTile searchTile, int index, BuildContext context) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(3),
+      child: Container(
+        color: kLightBackgroundColor,
+        child: ListTile(
+            leading: searchTile.leadWidget,
+            title: Text(
+              searchTile.userName,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                  color: kBrightTextColor,
+                  fontSize: 21,
+                  fontWeight: FontWeight.w800),
+            ),
+            trailing: IconButton(
+                onPressed: () => setState(() {
+                      if (searchTile.isSaved) {
+                        recommends[index].isSaved = false;
+                      } else {
+                        recommends[index].isSaved = true;
+                      }
+                    }),
+                icon: searchTile.isSaved
+                    ? Icon(
+                        Icons.bookmark_outlined,
+                        color: Colors.yellow[400],
+                        size: 35,
+                      )
+                    : Icon(
+                        Icons.bookmark_border,
+                        color: kDisabledColor,
+                        size: 35,
+                      ))),
+      ),
+    );
+  }
+
   Widget buildTile(
           SearchTile stockTileModel, int index, BuildContext context) =>
       ClipRRect(

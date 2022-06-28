@@ -120,7 +120,8 @@ class YahooApi {
     final String price = results['price']["regularMarketPrice"]["fmt"];
     final String percentChange =
         results['price']['regularMarketChangePercent']["fmt"];
-    final double openPrice = results['price']['regularMarketOpen']["raw"];
+    final double openPrice =
+        results['price']['regularMarketOpen']["raw"].toDouble();
     final bool isPost = !(results['price']["exchangeName"].contains("OTC") ||
         results['quoteType']['quoteType'].contains("INDEX"));
     final bool isCrypto = results['quoteType']['quoteType'] == "CRYPTOCURRENCY";

@@ -46,14 +46,10 @@ class _NavDisplayScreenState extends State<NavDisplayScreen> {
     });
   }
 
-  // Future init() async {
-  //   this.recommends =
-  // }
 
   @override
   void initState() {
     super.initState();
-    //init();
     setAllData();
   }
 

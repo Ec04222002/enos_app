@@ -23,14 +23,13 @@ class TickerTileProvider extends ChangeNotifier {
   YahooApi yahooApi = YahooApi();
   bool toggle = false;
   List<int> times = [1, 2];
+  //init recommendation
   List<SearchTile> _recs = [];
 
   TickerTileProvider({this.watchListUid});
-  // List<Future<TickerTileModel>> get futureTickers => _futureTickers;
   List<TickerTileModel> get tickers => _tickers;
   List<String> get symbols => _symbols;
   List<SearchTile> get recs => _recs;
-  // Future<TickerTileModel> futureTickerAt(int index) => _futureTickers[index];
   TickerTileModel tickerAt(int index) => _tickers[index];
   String symbolAt(int index) => _symbols[index];
 
@@ -63,7 +62,6 @@ class TickerTileProvider extends ChangeNotifier {
 
   void removeTicker(int index) {
     _tickers.removeAt(index);
-    // _futureTickers.removeAt(index);
     _symbols.removeAt(index);
 
     FirebaseApi.updateWatchList(Watchlist(
@@ -92,17 +90,20 @@ class TickerTileProvider extends ChangeNotifier {
   }
 
   Future<void> setAllInitData() async {
+    //get watchlist
     DocumentSnapshot watchListDoc =
         await FirebaseApi.getWatchListDoc(watchListUid);
-
+    //set needed parameter
     isPublic = watchListDoc['is_public'];
     List<dynamic> tickers = watchListDoc['items'];
+    //getting watchlist data from api
     for (var symbol in tickers) {
       TickerTileModel data =
           await yahooApi.get(symbol: symbol.toString(), requestChartData: true);
       _symbols.add(symbol.toString());
       _tickers.add(data);
     }
+    //get list of recs for search
     this._recs = await yahooApi.getRecommendedStockList();
     print("completed getting all ticker data");
   }

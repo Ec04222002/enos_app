@@ -35,8 +35,22 @@ class FirebaseApi {
     }
   }
 
+  static Future<UserModel> getUser(String uid) async {
+    final user =
+        await FirebaseFirestore.instance.collection("Users").doc(uid).get();
+    return UserModel.fromJson(user.data());
+  }
+
+  static Future<List<UserModel>> getAllUser() async {
+    List<UserModel> listUsers = [];
+    final userDocs = await FirebaseFirestore.instance.collection('Users').get();
+    userDocs.docs.map((doc) {
+      listUsers.add(UserModel.fromJson(doc.data()));
+    });
+    return listUsers;
+  }
+
   static Future<void> updateUserData(UserModel data) async {
-    // print("update user: ${data}");
     final userDoc = await FirebaseFirestore.instance.collection('Users').doc();
     await userDoc.set(data.toJson());
     print('finished setting user');
@@ -44,8 +58,6 @@ class FirebaseApi {
   }
 
   static Future<void> updateWatchList(Watchlist list) async {
-    // print("updating watchlist:${list}");
-    // print(list.watchlistUid);
     final watchListDoc = await FirebaseFirestore.instance
         .collection('Watchlists')
         .doc(list.watchlistUid);
