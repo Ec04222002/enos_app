@@ -22,7 +22,8 @@ class NewsAPI {
 
   static Map<String, List<String>> keywords = {
     "crypto" : [],
-    "stock" : []
+    "stock" : [],
+    "all": ["crypto","tech","stock","block chain", "shareholder", "technology", "cryptocurrency"]
   };
 
   // Base API request to get response
@@ -55,7 +56,6 @@ class NewsAPI {
             image: imageUrl
           ));
       });
-      print(ret.length);
       return ret;
     } else {
       // If that response was not OK, throw an error.
@@ -64,7 +64,13 @@ class NewsAPI {
   }
   static Future<List<ArticleModel>> getArticles(String category, int offset) async {
     var api = NewsAPI();
-    Future<List<ArticleModel>> results = api.get(endpoint: "/news/search", query: {"q":category,"offset":"$offset"});
+    Future<List<ArticleModel>> results;
+    if(category != "All")
+      results = api.get(endpoint: "/news/search", query: {"q":category,"offset":"$offset","count":"20"});
+    else {
+      String query = "crypto OR tech OR stock";
+      results = api.get(endpoint: "/news/search", query: {"q":query,"offset":"$offset","count":"20"});
+    }
     return results;
   }
 }

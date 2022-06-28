@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 import '../constants.dart';
+import '../screens/search.dart';
 import '../services/news_api.dart';
 
 class ArticleModel {
@@ -32,6 +33,7 @@ class ArticleViewer extends StatefulWidget {
             desc: m.description,
             img: m.image,
             title: m.name,
+            provider: m.provider,
           )
       );
     });
@@ -44,6 +46,7 @@ class _ArticleViewerState extends State<ArticleViewer> {
   @override
   Widget build(BuildContext context) {
     return Container(
+      color: kDarkBackgroundColor,
       child: Column(
         children: <Widget>[
           Expanded(
@@ -75,6 +78,7 @@ class _ArticleViewerState extends State<ArticleViewer> {
             desc: m.description,
             img: m.image,
             title: m.name,
+            provider: m.provider,
           )
       );
     });
@@ -83,70 +87,87 @@ class _ArticleViewerState extends State<ArticleViewer> {
 }
 
 class NewsTile extends StatelessWidget {
-  final String title, desc, content, posturl;
+  final String title, provider, desc, content, posturl;
   final String img;
-  final Color bg = Colors.blue;
+  final Color bg = kLightBackgroundColor;
 
-  NewsTile({this.img, this.desc, this.title, this.content, @required this.posturl});
+  NewsTile({this.img, this.desc, this.title, this.provider,this.content, @required this.posturl});
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: (){
-        Navigator.push(context, MaterialPageRoute(
-            builder: (context) => ArticleView(
-              postUrl: posturl,
-            )
-        ));
-      },
-      child: Container(
-        color:  bg,
-          margin: EdgeInsets.only(bottom: 24),
-          width: MediaQuery.of(context).size.width,
-          child: Container(
-            color:  bg,
-            child: Container(
-              padding: EdgeInsets.symmetric(horizontal: 16),
-              alignment: Alignment.bottomCenter,
-              decoration: BoxDecoration(
-                  borderRadius: BorderRadius.only(bottomRight: Radius.circular(6),bottomLeft:  Radius.circular(6))
+        onTap: (){
+          Navigator.push(context, MaterialPageRoute(
+              builder: (context) => ArticleView(
+                postUrl: posturl,
+              )
+          ));
+        },
+        child: Container(
+        margin: EdgeInsets.all(12.0),
+        padding: EdgeInsets.all(8.0),
+        decoration: BoxDecoration(
+            color: bg,
+            borderRadius: BorderRadius.circular(12.0),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black12,
+                blurRadius: 3.0,
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: <Widget>[
-                  ClipRRect(
-                      borderRadius: BorderRadius.circular(6),
-                      child: Image.network(img,width: MediaQuery.of(context).size.width,height: 200,fit: BoxFit.cover,) // come here
-                  ),
-                  SizedBox(height: 12,),
-                  Text(
-                    title,
-                    maxLines: 2,
-                    style: TextStyle(
-                        color: Colors.black87,
-                        fontSize: 20,
-                        fontWeight: FontWeight.w500),
-                  ),
-                  SizedBox(
-                    height: 4,
-                  ),
-                  Text(
-                    desc,
-                    maxLines: 2,
-                    style: TextStyle(color: Colors.black54, fontSize: 14),
-                  )
-                ],
+            ]),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              height: 100.0,
+              width: 100,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                image: DecorationImage(
+                    image: NetworkImage(img),fit: BoxFit.cover),
+                borderRadius: BorderRadius.circular(12.0),
               ),
             ),
-          )),
+            SizedBox(height: 8.0),
+            Container(
+              padding: EdgeInsets.all(6.0),
+              decoration: BoxDecoration(
+                color: Colors.red,
+                borderRadius: BorderRadius.circular(30.0),
+              ),
+              child: Text(
+                provider,
+                style: TextStyle(
+                  color: Colors.white,
+                ),
+              ),
+            ),
+            SizedBox(height: 8.0),
+            Text(
+              title,
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 16.0,
+                color: Colors.white
+              ),
+            ),
+            SizedBox(height: 8.0),
+            Text(
+              desc,
+              maxLines: 3,
+              style: TextStyle(color: Colors.white, fontSize: 14),
+            )
+          ],
+        ),
+      )
     );
   }
 }
 
 class ArticleView extends StatefulWidget {
 
-  final String postUrl;
+     final String postUrl;
   ArticleView({@required this.postUrl});
 
   @override
@@ -155,41 +176,46 @@ class ArticleView extends StatefulWidget {
 
 class _ArticleViewState extends State<ArticleView> {
 
-  final Completer<WebViewController> _controller = Completer<WebViewController>();
+  final Completer<WebViewController> _controller = Completer<
+      WebViewController>();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: kLightBackgroundColor,
         title: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            Text(
-              "Flutter",
-              style:
-              TextStyle(color: Colors.black87, fontWeight: FontWeight.w600),
-            ),
-            Text(
-              "News",
-              style: TextStyle(color: Colors.blue, fontWeight: FontWeight.w600),
-            )
-          ],
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              Text(
+                'News', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),)
+            ]
         ),
-        actions: <Widget>[
-        Opacity(
-        opacity:0,
-        child: Container(
-            padding: EdgeInsets.symmetric(horizontal: 16),
-            child: Icon(Icons.share,)))
+        actions: [
+          IconButton(
+              iconSize: 30,
+              color: kDarkTextColor.withOpacity(0.9),
+              onPressed: () {
+                //  NewsAPI.getArticles("crypto");
+                Navigator.push(context, MaterialPageRoute(builder: (context)=> SearchPage()));
+              },
+              tooltip: "Search",
+              icon: Icon(Icons.search))
         ],
-        backgroundColor: Colors.transparent,
-        elevation: 0.0,
       ),
       body: Container(
-        height: MediaQuery.of(context).size.height,
-        width: MediaQuery.of(context).size.width,
+        height: MediaQuery
+            .of(context)
+            .size
+            .height,
+        width: MediaQuery
+            .of(context)
+            .size
+            .width,
         child: WebView(
-          initialUrl:  widget.postUrl,
-          onWebViewCreated: (WebViewController webViewController){
+          initialUrl: widget.postUrl,
+          javascriptMode: JavascriptMode.unrestricted,
+          onWebViewCreated: (WebViewController webViewController) {
             _controller.complete(webViewController);
           },
         ),
