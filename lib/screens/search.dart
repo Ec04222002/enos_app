@@ -27,7 +27,7 @@ class SearchPage extends StatefulWidget {
 }
 
 class _SearchPageState extends State<SearchPage> {
-  List recommends = [];
+  List<dynamic> recommends = [];
   List trendingRecs = [];
   String query = '';
   Timer debouncer;
@@ -35,6 +35,7 @@ class _SearchPageState extends State<SearchPage> {
   String searchTitle = "Trending Stocks";
   List<String> savedSymbols = [];
   TickerTileProvider provider;
+  UserModel user;
   //BuildContext context;
   void setMarket(String marketName) {
     this.market = marketName;
@@ -82,6 +83,7 @@ class _SearchPageState extends State<SearchPage> {
     if (!widget.isMainPage) {
       provider = Provider.of<TickerTileProvider>(widget.context);
       savedSymbols = provider.symbols;
+      user = widget.context.read<AuthService>().userModel;
       recommends = provider.recs;
       //check if recommends is empty => put default if so
       checkRecommends();
@@ -113,6 +115,7 @@ class _SearchPageState extends State<SearchPage> {
   Widget build(BuildContext context) {
     if (widget.isMainPage) {
       provider = Provider.of<TickerTileProvider>(context);
+      user = context.read<AuthService>().userModel;
       savedSymbols = provider.symbols;
       recommends = provider.recs;
       //check if recommends is empty => put default if so
@@ -157,7 +160,7 @@ class _SearchPageState extends State<SearchPage> {
                     if (market.toLowerCase() == "users") {
                       UserSearchTile tile =
                           UserSearchTile.modelToSearchTile(stockTileModel);
-                      UserModel user = context.read<AuthService>().userModel;
+
                       if (user.userSaved.contains(tile.uid)) {
                         tile.isSaved = true;
                       }
@@ -180,6 +183,15 @@ class _SearchPageState extends State<SearchPage> {
 
   Future searchTiles(String query) async => debounce((() async {
         if (query.isEmpty) {
+          if (market.toLowerCase() == "users") {
+            setState(() {
+              this.query = query;
+              this.recommends = [];
+            });
+            return;
+          }
+
+          //for market
           setState(() {
             this.query = query;
             this.recommends = this.trendingRecs;
@@ -189,7 +201,8 @@ class _SearchPageState extends State<SearchPage> {
         }
         var recs;
         if (market.toLowerCase() == "users") {
-          recs = await FirebaseApi.getAllUser();
+          recs = await FirebaseApi.getAllUser(searchQuery: query);
+          print("recs: ${recs}");
         } else {
           recs = await StockNameApi().getStock(query: query, market: market);
         }
@@ -210,9 +223,9 @@ class _SearchPageState extends State<SearchPage> {
       child: Container(
         color: kLightBackgroundColor,
         child: ListTile(
-            leading: searchTile.leadWidget,
+            //leading: searchTile.leadWidget,
             title: Text(
-              searchTile.userName,
+              "@" + searchTile.userName,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
@@ -221,17 +234,40 @@ class _SearchPageState extends State<SearchPage> {
                   fontWeight: FontWeight.w800),
             ),
             trailing: IconButton(
-                onPressed: () => setState(() {
-                      if (searchTile.isSaved) {
-                        recommends[index].isSaved = false;
-                      } else {
-                        recommends[index].isSaved = true;
-                      }
-                    }),
+                onPressed: () {
+                  if (searchTile.isSaved) {
+                    Utils.showAlertDialog(context,
+                        "Are you sure you want to remove @${searchTile.userName}?",
+                        () {
+                      Navigator.pop(context);
+                    }, () {
+                      setState(() {
+                        user.userSaved
+                            .removeAt(user.userSaved.indexOf(searchTile.uid));
+                      });
+                      Navigator.pop(context);
+                    });
+                  } else {
+                    if (user.userSaved.length > 15) {
+                      Utils.showAlertDialog(context,
+                          "You have reached your limit of 15 people added.",
+                          () {
+                        Navigator.pop(context);
+                      }, null);
+                    } else {
+                      setState(() {
+                        user.userSaved.add(searchTile.uid);
+                      });
+                    }
+                  }
+                  UserModel newUserModel = recommends[index];
+                  newUserModel.userSaved = user.userSaved;
+                  FirebaseApi.updateUserData(newUserModel);
+                },
                 icon: searchTile.isSaved
                     ? Icon(
                         Icons.bookmark_outlined,
-                        color: Colors.yellow[400],
+                        color: kDisabledColor,
                         size: 35,
                       )
                     : Icon(
@@ -267,35 +303,36 @@ class _SearchPageState extends State<SearchPage> {
                 style: TextStyle(fontSize: 14, color: kDisabledColor),
               ),
               trailing: IconButton(
-                  onPressed: () => setState(() {
-                        if (!recommends[index].isSaved) {
-                          if (savedSymbols.length >= 10) {
-                            Utils.showAlertDialog(context,
-                                "You have reached your limit of 10 tickers added.",
-                                () {
-                              Navigator.pop(context);
-                            }, null);
-                          } else {
-                            provider.addTicker(stockTileModel.symbol);
-                            setState(() {
-                              recommends[index].isSaved = true;
-                            });
-                          }
-                        } else {
-                          Utils.showAlertDialog(context,
-                              "Are you sure you want to remove ${stockTileModel.symbol} from your watchlist?",
-                              () {
-                            Navigator.pop(context);
-                          }, () {
-                            provider.removeTicker(
-                                savedSymbols.indexOf(stockTileModel.symbol));
-                            Navigator.pop(context);
-                            setState(() {
-                              recommends[index].isSaved = false;
-                            });
-                          });
-                        }
-                      }),
+                  onPressed: () async {
+                    if (!recommends[index].isSaved) {
+                      if (savedSymbols.length >= 10) {
+                        Utils.showAlertDialog(context,
+                            "You have reached your limit of 10 tickers added.",
+                            () {
+                          Navigator.pop(context);
+                        }, null);
+                      } else {
+                        await provider.addTicker(stockTileModel.symbol);
+                        setState(() {
+                          recommends[index].isSaved = true;
+                        });
+                      }
+                    } else {
+                      Utils.showAlertDialog(context,
+                          "Are you sure you want to remove ${stockTileModel.symbol} from your watchlist?",
+                          () {
+                        Navigator.pop(context);
+                      }, () async {
+                        print("index $index");
+                        setState(() {
+                          recommends[index].isSaved = false;
+                        });
+                        await provider.removeTicker(
+                            savedSymbols.indexOf(stockTileModel.symbol));
+                        Navigator.pop(context);
+                      });
+                    }
+                  },
                   icon: stockTileModel.isSaved
                       ? Icon(
                           Icons.star,

@@ -41,12 +41,19 @@ class FirebaseApi {
     return UserModel.fromJson(user.data());
   }
 
-  static Future<List<UserModel>> getAllUser() async {
+  static Future<List<UserModel>> getAllUser({String searchQuery}) async {
     List<UserModel> listUsers = [];
     final userDocs = await FirebaseFirestore.instance.collection('Users').get();
-    userDocs.docs.map((doc) {
-      listUsers.add(UserModel.fromJson(doc.data()));
+    // print(userDocs.docs.length);
+    // print(userDocs.docs.runtimeType);
+    userDocs.docs.forEach((doc) {
+      String userName = doc.data()['username'].toString().toLowerCase();
+      if (userName.startsWith(searchQuery.toLowerCase())) {
+        listUsers.add(UserModel.fromJson(doc.data()));
+      }
+      print(doc);
     });
+    print(listUsers);
     return listUsers;
   }
 

@@ -13,7 +13,7 @@ class UserModel {
   final String username;
   final bool isEmailNotify;
   final List<bool> metrics;
-  final List<String> userSaved;
+  List<String> userSaved;
 
   UserModel(
       {this.userUid,
@@ -23,14 +23,24 @@ class UserModel {
       this.isEmailNotify = true,
       this.metrics,
       this.userSaved});
-  static UserModel fromJson(Map<String, dynamic> json) => UserModel(
-      userUid: json['user_uid'],
-      createdTime: Utils.toDateTime(json['created_time']),
-      profilePic: json['profile_pic'],
-      username: json['username'],
-      isEmailNotify: json['is_email_notify'],
-      metrics: json['metrics'],
-      userSaved: json['user_saved']);
+  static UserModel fromJson(Map<String, dynamic> json) {
+    List<bool> metrics = [];
+    json['metrics'].forEach((metric) {
+      metrics.add(metrics.toString() == "true");
+    });
+    List<String> userSaved = [];
+    json['user_saved'].forEach((user) {
+      userSaved.add(user.toString());
+    });
+    return UserModel(
+        userUid: json['user_uid'],
+        createdTime: Utils.toDateTime(json['created_time']),
+        profilePic: json['profile_pic'],
+        username: json['username'],
+        isEmailNotify: json['is_email_notify'],
+        metrics: metrics,
+        userSaved: userSaved);
+  }
 
   Map<String, dynamic> toJson() => {
         'user_uid': userUid,

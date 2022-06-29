@@ -60,11 +60,11 @@ class TickerTileProvider extends ChangeNotifier {
     _symbols.insert(endIndex, symbol);
   }
 
-  void removeTicker(int index) {
+  Future<void> removeTicker(int index) async {
     _tickers.removeAt(index);
     _symbols.removeAt(index);
 
-    FirebaseApi.updateWatchList(Watchlist(
+    await FirebaseApi.updateWatchList(Watchlist(
         watchlistUid: provider.watchListUid,
         items: _symbols,
         updatedLast: DateTime.now(),
@@ -81,7 +81,7 @@ class TickerTileProvider extends ChangeNotifier {
         await yahooApi.get(symbol: symbol.toString(), requestChartData: true);
     _tickers.add(data);
     _symbols.add(symbol);
-    FirebaseApi.updateWatchList(Watchlist(
+    await FirebaseApi.updateWatchList(Watchlist(
         watchlistUid: provider.watchListUid,
         items: _symbols,
         updatedLast: DateTime.now(),
