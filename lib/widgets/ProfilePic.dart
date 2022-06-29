@@ -25,6 +25,8 @@ class ProfilePicture extends StatelessWidget {
   Widget hasImage() {
     return Container(
       margin: EdgeInsets.all(10),
+      width: 35,
+      height: 35,
       alignment: Alignment.center,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
@@ -39,6 +41,8 @@ class ProfilePicture extends StatelessWidget {
   Widget noImage() {
     return Container(
       margin: EdgeInsets.all(10),
+      width: 35,
+      height: 35,
       alignment: Alignment.center,
       child: Text(
         name.substring(0,2),
