@@ -16,9 +16,7 @@ class ProfilePicture extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-
-    );
+    return image==null? noImage():hasImage();
   }
 
 
