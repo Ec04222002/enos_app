@@ -5,13 +5,16 @@ import 'package:flutter/material.dart';
 
 class ProfilePicture extends StatelessWidget {
 
+  static const double border_width = 3;
   Image image = null;
   String name;
-  List<Color> colors = [Colors.red,Colors.blue,Colors.grey, Colors.green, Colors.orange,Colors.purple,Colors.black,Colors.yellow];
+  List<Color> colors = [Colors.red,Colors.blue,Colors.grey, Colors.green, Colors.orange,Colors.purple,Colors.black,Colors.yellow, Colors.redAccent, Colors.lightBlue, Colors.amber, Colors.blueGrey, Colors.cyan,Colors.lightGreen, Colors.indigo, Colors.pink, Colors.pinkAccent,Colors.teal,Colors.deepPurple, Colors.brown,Colors.yellowAccent];
   var rng = Random();
-  int pos;
+  int color1;
+  int color2;
   ProfilePicture({this.image,this.name}) {
-    pos = rng.nextInt(colors.length);
+    color1 = rng.nextInt(colors.length);
+    color2 = rng.nextInt(colors.length);
   }
 
   @override
@@ -27,6 +30,10 @@ class ProfilePicture extends StatelessWidget {
       height: 35,
       alignment: Alignment.center,
       decoration: BoxDecoration(
+        border: Border.all(
+          color: colors[color2],
+          width: border_width
+        ),
         shape: BoxShape.circle,
         image: DecorationImage(
             image: image.image,
@@ -43,14 +50,18 @@ class ProfilePicture extends StatelessWidget {
       height: 35,
       alignment: Alignment.center,
       child: Text(
-        name.substring(0,2),
+        name.substring(0,1).toUpperCase() + name.substring(1,2),
         style: TextStyle(
           color: Colors.white,
           fontWeight: FontWeight.bold
         ),
-      ),
+       ),
       decoration: BoxDecoration(
-        color: colors[pos],
+          border: Border.all(
+              color: colors[color2],
+              width: border_width
+          ),
+        color: colors[color1],
         shape: BoxShape.circle
       ),
     );
