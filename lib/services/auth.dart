@@ -44,9 +44,10 @@ class AuthService {
 
   Future signInWithEmailAndPassword({String email, String password}) async {
     try {
+      print("trying to sign in");
       dynamic result = await _auth.signInWithEmailAndPassword(
           email: email, password: password);
-      dynamic user = result.user;
+      User user = result.user;
       await setUser(user.uid);
       return user;
     } catch (error) {
@@ -55,15 +56,19 @@ class AuthService {
     }
   }
 
-  Future registerWithEmailAndPassword({String email, String password}) async {
+  Future registerWithEmailAndPassword(
+      {String email, String password, String userName}) async {
     try {
       dynamic result = await _auth.createUserWithEmailAndPassword(
           email: email, password: password);
-      dynamic user = result.user;
+      User user = result.user;
+      user.updateDisplayName(userName);
+      // print("result: ${result}");
+      // print("user: ${user}");
       _user = UserModel(
         userUid: user.uid,
         createdTime: DateTime.now(),
-        username: user.email,
+        username: userName,
         userSaved: [],
         metrics: List.filled(22, true),
       );

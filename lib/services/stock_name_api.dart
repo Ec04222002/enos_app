@@ -4,13 +4,43 @@ import 'package:enos/models/search_tile.dart';
 import 'package:http/http.dart' as http;
 
 class StockNameApi {
-  Future<List<SearchTile>> getStock({String query, String market}) async {
+  Future<String> getNameFromSymbol({String symbol, String market}) async {
+    Uri uri = _findCorrectUri(symbol, market);
+    final response = await http.get(uri);
+    if (response.statusCode == 200) {
+      final List result = json.decode(response.body);
+      print("**Search symbol ${symbol} in market: $market");
+
+      //implementing binary search to find symbol
+      int first = 0;
+      int last = result.length - 1;
+      String searchSymbol = symbol.toLowerCase();
+      int mid;
+      String currentValue;
+      while (first <= last) {
+        mid = ((first + last) / 2).round();
+        currentValue = result[mid]['symbol'].toString().toLowerCase();
+        if (searchSymbol.compareTo(currentValue) == 0) {
+          return result[mid]['name'];
+        }
+        if (searchSymbol.compareTo(currentValue) < 0) {
+          last = mid - 1;
+        }
+        if (searchSymbol.compareTo(currentValue) > 0) {
+          first = mid + 1;
+        }
+      }
+    }
+    throw Exception("Cannot find name");
+  }
+
+  Uri _findCorrectUri(String query, String market) {
     String lowerQuery = query.toLowerCase();
     String lowerMarket = market.toLowerCase();
     int startCode = lowerQuery.codeUnitAt(0);
     String uri = "https://ec04222002.github.io/index_symbols/index.json";
     if (lowerMarket == "otcbb") {
-      print("otcbb");
+      //print("otcbb");
       //A - B
       if (startCode >= 97 && startCode <= 98) {
         uri = "https://ec04222002.github.io/otcbb_AtoB/otcbb_AtoB.json";
@@ -38,7 +68,7 @@ class StockNameApi {
         uri = "https://ec04222002.github.io/otcbb_TtoZ/otcbb_TtoZ.json";
       }
     } else if (lowerMarket == "nasdaq") {
-      print("nasdaq");
+      //print("nasdaq");
       //A to D
       if (startCode >= 97 && startCode <= 100) {
         uri = "https://ec04222002.github.io/nasdaq_AtoD/nasdaq_AtoD.json";
@@ -54,26 +84,32 @@ class StockNameApi {
         uri = "https://ec04222002.github.io/nasdaq_TtoZ/nasdaq_TtoZ.json";
       }
     } else if (lowerMarket == "nyse") {
-      print('nyse');
+      //print('nyse');
       if (startCode >= 97 && startCode <= 108) {
         uri = "https://ec04222002.github.io/nyse_AtoL/nyse_AtoL.json";
       } else {
         uri = "https://ec04222002.github.io/nyse_MtoZ/nyse_MtoZ.json";
       }
     } else if (lowerMarket == "crypto") {
-      print("crypto");
+      //print("crypto");
       uri = "https://ec04222002.github.io/crypto_symbols/crypto_symbols.json";
     }
-    final url = Uri.parse(uri);
+    return Uri.parse(uri);
+  }
+
+  Future<List<SearchTile>> getStock({String query, String market}) async {
+    Uri url = _findCorrectUri(query, market);
+    print("url: $url");
     final response = await http.get(url);
 
     if (response.statusCode == 200) {
+      print("success");
       final List recs = json.decode(response.body);
       return recs.map((json) => SearchTile.selfApiFromJson(json)).where((item) {
         final symbol = item.symbol.toLowerCase();
         final name = item.name.toLowerCase();
         final search = query.toLowerCase();
-        if (lowerMarket == "index") {
+        if (market.toLowerCase() == "index") {
           final newSearch = "^" + search;
           return symbol.startsWith(newSearch) || name.startsWith(search);
         }
@@ -82,6 +118,5 @@ class StockNameApi {
     } else {
       throw Exception("Cannot find");
     }
-    //if(query.startsWith(pattern))
   }
 }

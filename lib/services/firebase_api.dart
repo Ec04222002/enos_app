@@ -17,7 +17,6 @@ class FirebaseApi {
   static List<String> _tickerDataFromSnapshot(DocumentSnapshot snapshot) {
     List<dynamic> tickers = snapshot.get('items');
     List<String> newTickers = tickers.map((e) => e.toString()).toList();
-    print("converting to ${newTickers}");
     return newTickers;
   }
 
@@ -38,6 +37,7 @@ class FirebaseApi {
   static Future<UserModel> getUser(String uid) async {
     final user =
         await FirebaseFirestore.instance.collection("Users").doc(uid).get();
+    print("getting user ${user}");
     return UserModel.fromJson(user.data());
   }
 

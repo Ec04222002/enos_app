@@ -223,7 +223,7 @@ class _SearchPageState extends State<SearchPage> {
       child: Container(
         color: kLightBackgroundColor,
         child: ListTile(
-            //leading: searchTile.leadWidget,
+            leading: searchTile.leadWidget,
             title: Text(
               "@" + searchTile.userName,
               maxLines: 1,
@@ -312,10 +312,10 @@ class _SearchPageState extends State<SearchPage> {
                           Navigator.pop(context);
                         }, null);
                       } else {
-                        await provider.addTicker(stockTileModel.symbol);
                         setState(() {
                           recommends[index].isSaved = true;
                         });
+                        await provider.addTicker(stockTileModel.symbol);
                       }
                     } else {
                       Utils.showAlertDialog(context,
@@ -323,7 +323,6 @@ class _SearchPageState extends State<SearchPage> {
                           () {
                         Navigator.pop(context);
                       }, () async {
-                        print("index $index");
                         setState(() {
                           recommends[index].isSaved = false;
                         });

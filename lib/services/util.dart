@@ -82,10 +82,6 @@ class Utils {
     return date.toUtc();
   }
 
-  static Widget createProfilePicWidget(String name) {
-    return Container();
-  }
-
   static checkLeadZero(double num) {
     List stringRunes = num.toString().runes.toList();
     int leadZeros = 0;
@@ -267,6 +263,11 @@ class Utils {
     }
 
     return false;
+  }
+
+  static addCommasToNum(String num) {
+    return num.replaceAllMapped(
+        RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]},');
   }
 
   static Map maxMin(List lis) {
