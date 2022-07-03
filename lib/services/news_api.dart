@@ -35,7 +35,7 @@ class NewsAPI {
     final response = await http.get(uri, headers: _headers);
     if (response.statusCode == 200) {
       // If server returns an OK response, parse the JSON.
-      var results = jsonDecode(response.body);
+       var results = jsonDecode(response.body);
       List<ArticleModel> ret = [];
       results['value'].forEach((element) {
           String provider, imageUrl;
@@ -51,7 +51,7 @@ class NewsAPI {
             name:element['name'],
             url: element['url'],
             description: element['description'],
-            datePublished: element['datePublished'],
+            datePublished: element['datePublished'].toString(),
             provider: provider,
             image: imageUrl
           ));

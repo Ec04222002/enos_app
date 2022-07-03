@@ -3,6 +3,7 @@ import 'dart:ui';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
+import 'package:intl/intl.dart';
 
 import '../constants.dart';
 import '../screens/search.dart';
@@ -30,10 +31,10 @@ class ArticleViewer extends StatefulWidget {
       tiles.add(
           NewsTile(
             posturl: m.url,
-            desc: m.description,
             img: m.image,
             title: m.name,
             provider: m.provider,
+            datePublished: m.datePublished,
           )
       );
     });
@@ -75,10 +76,10 @@ class _ArticleViewerState extends State<ArticleViewer> {
       widget.tiles.add(
           NewsTile(
             posturl: m.url,
-            desc: m.description,
             img: m.image,
             title: m.name,
             provider: m.provider,
+            datePublished: m.datePublished == null?"":m.datePublished,
           )
       );
     });
@@ -87,11 +88,27 @@ class _ArticleViewerState extends State<ArticleViewer> {
 }
 
 class NewsTile extends StatelessWidget {
-  final String title, provider, desc, content, posturl;
+  final String title, provider, content, posturl, datePublished;
   final String img;
   final Color bg = kLightBackgroundColor;
+  DateTime time;
+  String desc;
 
-  NewsTile({this.img, this.desc, this.title, this.provider,this.content, @required this.posturl});
+  NewsTile({this.img, this.title, this.provider,this.content, this.datePublished, @required this.posturl}) {
+   time = DateTime.parse(datePublished).toLocal().toUtc();
+    int month = time.month;
+    int day = time.day;
+    int year = time.year;
+    int hour = time.hour;
+    int minute = time.minute;
+    desc = DateFormat('hh:mm a').format(time);
+    if(desc.substring(0,1) == "0") {
+      desc = desc.substring(1);
+    }
+    desc = desc + " - " + provider;
+  }
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -115,10 +132,12 @@ class NewsTile extends StatelessWidget {
                 blurRadius: 3.0,
               ),
             ]),
-        child: Column(
+        child: Row(
           mainAxisAlignment: MainAxisAlignment.start,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            Tile(),
+            SizedBox(width: 5,),
             Container(
               height: 100.0,
               width: 100,
@@ -129,40 +148,56 @@ class NewsTile extends StatelessWidget {
                 borderRadius: BorderRadius.circular(12.0),
               ),
             ),
-            SizedBox(height: 8.0),
-            Container(
-              padding: EdgeInsets.all(6.0),
-              decoration: BoxDecoration(
-                color: Colors.red,
-                borderRadius: BorderRadius.circular(30.0),
-              ),
-              child: Text(
-                provider,
-                style: TextStyle(
-                  color: Colors.white,
-                ),
-              ),
-            ),
-            SizedBox(height: 8.0),
-            Text(
-              title,
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 16.0,
-                color: Colors.white
-              ),
-            ),
-            SizedBox(height: 8.0),
-            Text(
-              desc,
-              maxLines: 3,
-              style: TextStyle(color: Colors.white, fontSize: 14),
-            )
           ],
         ),
       )
     );
   }
+
+
+  Widget Tile() {
+    return Column(
+      children: <Widget>[
+        // Container(
+        //   padding: EdgeInsets.all(6.0),
+        //   decoration: BoxDecoration(
+        //     color: Colors.red,
+        //     borderRadius: BorderRadius.circular(30.0),
+        //   ),
+        //   child: Text(
+        //     provider,
+        //     style: TextStyle(
+        //       color: Colors.white,
+        //     ),
+        //   ),
+        // ),
+        SizedBox(height: 8.0),
+        Container(
+          width: 250,
+          child:Text(
+            title,
+            maxLines: 3,
+            style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 16.0,
+                color: Colors.white
+            ),
+          ),
+        ),
+        SizedBox(height: 8.0),
+        Container(
+          width: 250,
+          child: Text(
+            desc,
+            maxLines: 2,
+            style: TextStyle(color: Colors.grey.shade400, fontSize: 13),
+          ),
+        )
+
+      ],
+    );
+  }
+
 }
 
 class ArticleView extends StatefulWidget {
