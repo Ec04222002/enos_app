@@ -39,7 +39,7 @@ class _LineChartWidgetState extends State<LineChartWidget> {
       child: LineChart(
         LineChartData(
             lineTouchData:
-                LineTouchData(enabled: false, handleBuiltInTouches: false),
+                LineTouchData(enabled: true, handleBuiltInTouches: false),
             minX: minMaxX['min'],
             maxX: minMaxX['max'],
             minY: minMaxY['min'],

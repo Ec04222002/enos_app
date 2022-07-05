@@ -69,6 +69,8 @@ class _TickerState extends State<TickerTile> {
         margin: EdgeInsets.only(bottom: 10),
         color: kLightBackgroundColor,
         child: ListTile(
+          onTap: null,
+          onLongPress: null,
           visualDensity: VisualDensity(horizontal: 0, vertical: 2.6),
           contentPadding: EdgeInsets.symmetric(horizontal: 15, vertical: 0),
           leading: Container(

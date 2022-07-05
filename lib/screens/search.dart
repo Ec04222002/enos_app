@@ -36,6 +36,8 @@ class _SearchPageState extends State<SearchPage> {
   List<String> savedSymbols = [];
   TickerTileProvider provider;
   UserModel user;
+
+  bool isInit = true;
   //BuildContext context;
   void setMarket(String marketName) {
     this.market = marketName;
@@ -72,7 +74,7 @@ class _SearchPageState extends State<SearchPage> {
       trendingRecs = recommends;
       this.searchTitle = "Recommended Stocks";
     } else {
-      recommends = recommends;
+      //recommends = recommends;
       trendingRecs = recommends;
     }
   }
@@ -102,7 +104,7 @@ class _SearchPageState extends State<SearchPage> {
   //cancels recent timer if typed fase
   void debounce(
     VoidCallback callback, {
-    Duration duration = const Duration(milliseconds: 1000),
+    Duration duration = const Duration(milliseconds: 800),
   }) {
     if (debouncer != null) {
       debouncer.cancel();
@@ -113,7 +115,7 @@ class _SearchPageState extends State<SearchPage> {
 
   @override
   Widget build(BuildContext context) {
-    if (widget.isMainPage) {
+    if (widget.isMainPage && isInit) {
       provider = Provider.of<TickerTileProvider>(context);
       user = context.read<AuthService>().userModel;
       savedSymbols = provider.symbols;
@@ -121,6 +123,7 @@ class _SearchPageState extends State<SearchPage> {
       //check if recommends is empty => put default if so
       checkRecommends();
       //context = context;
+      isInit = false;
     }
     return Scaffold(
       body: SafeArea(
