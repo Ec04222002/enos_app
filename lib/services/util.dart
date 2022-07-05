@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:enos/models/ticker_tile.dart';
 import 'package:flutter/material.dart';
 import 'package:enos/constants.dart';
+import 'dart:math';
 
 class Utils {
   static Color darken(Color color, [double amount = .1]) {
@@ -24,7 +25,43 @@ class Utils {
     return hslLight.toColor();
   }
 
-  void showSnackBar(BuildContext context, String text) =>
+  static void showAlertDialog(BuildContext context, String content,
+      Function cancelCallBack, Function confirmCallBack) {
+    // set up the buttons
+    List<Widget> actionBtns = [];
+
+    Widget cancelButton = TextButton(
+      child: Text("Cancel"),
+      onPressed: cancelCallBack,
+    );
+    Widget continueButton = TextButton(
+      child: Text("Yes"),
+      onPressed: confirmCallBack,
+    );
+    //ok alert
+    if (confirmCallBack == null) {
+      continueButton = TextButton(onPressed: cancelCallBack, child: Text("Ok"));
+      actionBtns.add(continueButton);
+    } else {
+      actionBtns.add(cancelButton);
+      actionBtns.add(continueButton);
+    }
+    // set up the AlertDialog
+    AlertDialog alert = AlertDialog(
+      content: Text(content),
+      actions: actionBtns,
+    );
+
+    // show the dialog
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return alert;
+      },
+    );
+  }
+
+  static void showSnackBar(BuildContext context, String text) =>
       ScaffoldMessenger.of(context)
         ..removeCurrentSnackBar()
         ..showSnackBar(SnackBar(
@@ -44,6 +81,83 @@ class Utils {
     if (date == null) return null;
 
     return date.toUtc();
+  }
+
+  static double roundDouble(double value, int places) {
+    double mod = pow(10.0, places);
+    return ((value * mod).round().toDouble() / mod);
+  }
+
+  static String fixNumToFormat(
+      double num, bool isPercentage, bool isConstrain) {
+    // double num = exp(number);
+    // print("num = $num");
+    String numAsString = num.toString();
+
+    int decIndex = numAsString.indexOf(".");
+    String preDecimal = numAsString.substring(0, decIndex);
+    String postDecimal = numAsString.substring(decIndex + 1);
+
+    // print("preDecimal: $preDecimal");
+    // print("postDecimal: $postDecimal");
+    // print(preDecimal.replaceAll("0", "").replaceAll("-", ""));
+    //if number contains e- => number really small
+    if (numAsString.contains("e-")) {
+      return "-0.000";
+    }
+    if (isPercentage ||
+        preDecimal.replaceAll("0", "").replaceAll("-", "").length > 0) {
+      return num.toStringAsFixed(2).replaceAllMapped(
+          RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]},');
+    }
+    //for all 0. nums
+    //find numbers until you find index 3 non-zero digits
+    int index = 0;
+    int pastConsZeroCount = 0;
+    bool startCount = false;
+    for (var i = 0; i < postDecimal.length; ++i) {
+      if (isConstrain && i == 2) {
+        index = i;
+        break;
+      }
+      if (startCount) {
+        pastConsZeroCount++;
+        if (pastConsZeroCount == 3) {
+          index = i;
+          break;
+        }
+        continue;
+      }
+      if (postDecimal[i] != "0") {
+        startCount = true;
+        pastConsZeroCount++;
+      }
+    }
+    print("index: $index");
+    return num.toStringAsFixed(index + 1);
+  }
+
+  static String colorToHexString(Color color) {
+    return color.toString();
+  }
+
+  static Color stringToColor(String color) {
+    String valueString = color.split('(0x')[1].split(')')[0]; // kind of hacky..
+    int value = int.parse(valueString, radix: 16);
+    return new Color(value);
+  }
+
+  static checkLeadZero(double num) {
+    List stringRunes = num.toString().runes.toList();
+    int leadZeros = 0;
+    for (var i = 0; i < stringRunes.length; ++i) {
+      if (String.fromCharCode(stringRunes[i]) == "0") {
+        leadZeros++;
+        continue;
+      }
+      break;
+    }
+    return leadZeros;
   }
 
   static bool isWeekend() {
@@ -214,6 +328,11 @@ class Utils {
     }
 
     return false;
+  }
+
+  static addCommasToNum(String num) {
+    return num.replaceAllMapped(
+        RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]},');
   }
 
   static Map maxMin(List lis) {

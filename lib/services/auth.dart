@@ -5,6 +5,7 @@ import 'package:enos/models/comment.dart';
 import 'package:enos/models/user.dart';
 import 'package:enos/services/firebase_api.dart';
 import 'package:enos/widgets/loading.dart';
+import 'package:enos/widgets/profile_pic.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:enos/constants.dart';
@@ -14,11 +15,12 @@ import 'package:google_sign_in/google_sign_in.dart';
 class AuthService {
   final FirebaseAuth _auth;
   //not used
-  UserModel user;
+  UserModel _user;
   AuthService(this._auth);
   //future? of comments // for future builder for comment section
   //stream of watchlist // for stream builder for watchlist
 
+  UserModel get userModel => _user;
   UserField _userFromFirebaseUser(dynamic user) {
     return user != null ? UserField(userUid: user.uid) : null;
   }
@@ -37,11 +39,17 @@ class AuthService {
     }
   }
 
+  Future<void> setUser(String uid) async {
+    _user = await FirebaseApi.getUser(uid);
+  }
+
   Future signInWithEmailAndPassword({String email, String password}) async {
     try {
+      print("trying to sign in");
       dynamic result = await _auth.signInWithEmailAndPassword(
           email: email, password: password);
-      dynamic user = result.user;
+      User user = result.user;
+      await setUser(user.uid);
       return user;
     } catch (error) {
       print(error.toString());
@@ -49,17 +57,25 @@ class AuthService {
     }
   }
 
-  Future registerWithEmailAndPassword({String email, String password}) async {
+  Future registerWithEmailAndPassword(
+      {String email, String password, String userName}) async {
     try {
       dynamic result = await _auth.createUserWithEmailAndPassword(
           email: email, password: password);
-      dynamic user = result.user;
-      FirebaseApi.updateUserData(UserModel(
+      User user = result.user;
+      user.updateDisplayName(userName);
+      // print("result: ${result}");
+      // print("user: ${user}");
+      _user = UserModel(
         userUid: user.uid,
         createdTime: DateTime.now(),
-        username: user.email,
+        username: userName,
+        userSaved: [],
         metrics: List.filled(22, true),
-      ));
+        profileBgColor: ProfilePicture.getRandomColor(),
+        profileBorderColor: ProfilePicture.getRandomColor(),
+      );
+      FirebaseApi.updateUserData(_user);
       FirebaseApi.updateWatchList(Watchlist(
         watchlistUid: user.uid,
         items: defaultTickerTileModels,

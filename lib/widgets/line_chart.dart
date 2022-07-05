@@ -36,36 +36,42 @@ class _LineChartWidgetState extends State<LineChartWidget> {
     print("in chart widget");
     return SizedBox(
       height: 30,
-      child: LineChart(LineChartData(
-          lineTouchData:
-              LineTouchData(enabled: false, handleBuiltInTouches: false),
-          minX: minMaxX['min'],
-          maxX: minMaxX['max'],
-          minY: minMaxY['min'],
-          maxY: minMaxY['max'],
-          titlesData: FlTitlesData(show: false),
-          gridData: FlGridData(
-              show: false, drawHorizontalLine: false, drawVerticalLine: false),
-          borderData: FlBorderData(show: false),
-          extraLinesData: ExtraLinesData(
-              extraLinesOnTop: false,
-              horizontalLines: [
-                HorizontalLine(y: widget.openPrice, color: kDisabledColor)
-              ]),
-          lineBarsData: [
-            LineChartBarData(
-                isStepLineChart: false,
-                belowBarData: BarAreaData(
-                  show: true,
-                  colors: [chartColor.withOpacity(0.4)],
-                ),
-                colors: [chartColor],
-                isCurved: false,
-                dotData: FlDotData(show: false),
-                spots: chartDataPoints
-                    .map((point) => FlSpot(point['x'], point['y']))
-                    .toList()),
-          ])),
+      child: LineChart(
+        LineChartData(
+            lineTouchData:
+                LineTouchData(enabled: true, handleBuiltInTouches: false),
+            minX: minMaxX['min'],
+            maxX: minMaxX['max'],
+            minY: minMaxY['min'],
+            maxY: minMaxY['max'],
+            titlesData: FlTitlesData(show: false),
+            gridData: FlGridData(
+                show: false,
+                drawHorizontalLine: false,
+                drawVerticalLine: false),
+            borderData: FlBorderData(show: false),
+            extraLinesData: ExtraLinesData(
+                extraLinesOnTop: false,
+                horizontalLines: [
+                  HorizontalLine(y: widget.openPrice, color: kDisabledColor)
+                ]),
+            lineBarsData: [
+              LineChartBarData(
+                  isStepLineChart: false,
+                  belowBarData: BarAreaData(
+                    show: true,
+                    colors: [chartColor.withOpacity(0.4)],
+                  ),
+                  colors: [chartColor],
+                  isCurved: false,
+                  dotData: FlDotData(show: false),
+                  spots: chartDataPoints
+                      .map((point) => FlSpot(point['x'], point['y']))
+                      .toList()),
+            ]),
+        swapAnimationDuration: Duration(milliseconds: 150),
+        swapAnimationCurve: Curves.linear,
+      ),
     );
   }
 }

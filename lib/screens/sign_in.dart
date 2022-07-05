@@ -110,7 +110,6 @@ class _SignInPageState extends State<SignInPage> {
                                   email: _emailTextController.text.trim(),
                                   password:
                                       _passwordTextController.text.trim());
-                          print("signed in");
                           if (result == null) {
                             setState(() {
                               isLoading = false;

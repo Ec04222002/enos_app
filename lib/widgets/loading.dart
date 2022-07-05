@@ -26,11 +26,11 @@ class _LoadingState extends State<Loading> {
             widget.type == "circle"
                 ? SpinKitCircle(
                     color: kBrightTextColor,
-                    size: 60.0,
+                    size: 65.0,
                   )
                 : SpinKitThreeBounce(
                     color: kBrightTextColor,
-                    size: 55.0,
+                    size: 50.0,
                   ),
             SizedBox(
               height: 10,

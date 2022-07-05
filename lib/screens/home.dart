@@ -3,6 +3,7 @@ import 'dart:convert';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:enos/constants.dart';
+import 'package:enos/models/search_tile.dart';
 import 'package:enos/models/ticker_tile.dart';
 import 'package:enos/models/user.dart';
 import 'package:enos/models/watchlist.dart';
@@ -10,7 +11,9 @@ import 'package:enos/services/firebase_api.dart';
 import 'package:enos/services/ticker_provider.dart';
 import 'package:enos/services/auth.dart';
 import 'package:enos/services/util.dart';
+import 'package:enos/services/yahoo_api.dart';
 import 'package:enos/widgets/loading.dart';
+import 'package:enos/screens/search.dart';
 import 'package:enos/widgets/ticker_tile.dart';
 import 'package:enos/widgets/watch_list.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -38,14 +41,16 @@ class _HomePageState extends State<HomePage> {
           IconButton(
               iconSize: 30,
               color: kDarkTextColor.withOpacity(0.9),
-              onPressed: () {},
+              onPressed: () {
+                showSearch(context);
+              },
               tooltip: "Add ticker to watchlist",
               icon: Icon(Icons.add_circle_outline))
         ],
       ),
       floatingActionButton: GestureDetector(
         onLongPress: () {
-          Utils().showSnackBar(context, "Streaming Data ...");
+          Utils.showSnackBar(context, "Streaming Data ...");
           //print("in long press");
           setState(() {
             btnOpacity = 0;
@@ -112,5 +117,16 @@ class _HomePageState extends State<HomePage> {
       // ?? streambuilder at child property
       body: WatchListWidget(),
     );
+  }
+
+  void showSearch(BuildContext buildContext) {
+    Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => SearchPage(
+            isMainPage: false,
+            context: buildContext,
+          ),
+        ));
   }
 }

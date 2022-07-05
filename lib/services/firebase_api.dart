@@ -17,7 +17,6 @@ class FirebaseApi {
   static List<String> _tickerDataFromSnapshot(DocumentSnapshot snapshot) {
     List<dynamic> tickers = snapshot.get('items');
     List<String> newTickers = tickers.map((e) => e.toString()).toList();
-    print("converting to ${newTickers}");
     return newTickers;
   }
 
@@ -35,8 +34,27 @@ class FirebaseApi {
     }
   }
 
+  static Future<UserModel> getUser(String uid) async {
+    final user =
+        await FirebaseFirestore.instance.collection("Users").doc(uid).get();
+    return UserModel.fromJson(user.data());
+  }
+
+  static Future<List<UserModel>> getAllUser({String searchQuery}) async {
+    List<UserModel> listUsers = [];
+    final userDocs = await FirebaseFirestore.instance.collection('Users').get();
+    userDocs.docs.forEach((doc) {
+      String userName = doc.data()['username'].toString().toLowerCase();
+      if (userName.startsWith(searchQuery.toLowerCase())) {
+        listUsers.add(UserModel.fromJson(doc.data()));
+      }
+      print(doc);
+    });
+    print(listUsers);
+    return listUsers;
+  }
+
   static Future<void> updateUserData(UserModel data) async {
-    // print("update user: ${data}");
     final userDoc = await FirebaseFirestore.instance.collection('Users').doc();
     await userDoc.set(data.toJson());
     print('finished setting user');
@@ -44,8 +62,6 @@ class FirebaseApi {
   }
 
   static Future<void> updateWatchList(Watchlist list) async {
-    // print("updating watchlist:${list}");
-    // print(list.watchlistUid);
     final watchListDoc = await FirebaseFirestore.instance
         .collection('Watchlists')
         .doc(list.watchlistUid);

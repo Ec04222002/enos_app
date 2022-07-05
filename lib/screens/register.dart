@@ -103,9 +103,11 @@ class _RegisterPageState extends State<RegisterPage> {
                                 .registerWithEmailAndPassword(
                                     email: _emailTextController.text.trim(),
                                     password:
-                                        _passwordTextController.text.trim());
+                                        _passwordTextController.text.trim(),
+                                    userName:
+                                        _userNameTextController.text.trim());
 
-                            print("registered");
+                            //print("registered");
                             if (result == null) {
                               setState(() {
                                 isLoading = false;

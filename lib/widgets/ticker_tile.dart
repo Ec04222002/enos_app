@@ -33,6 +33,7 @@ class _TickerState extends State<TickerTile> {
   bool _toggle = false;
   @override
   Widget build(BuildContext context) {
+    //print("building tickertile ${tickerTileData.price}");
     tickerProvider = Provider.of<TickerTileProvider>(widget.context);
     tickerTileData = tickerProvider.tickerAt(widget.index);
     trailingWidget =
@@ -68,6 +69,8 @@ class _TickerState extends State<TickerTile> {
         margin: EdgeInsets.only(bottom: 10),
         color: kLightBackgroundColor,
         child: ListTile(
+          onTap: null,
+          onLongPress: null,
           visualDensity: VisualDensity(horizontal: 0, vertical: 2.6),
           contentPadding: EdgeInsets.symmetric(horizontal: 15, vertical: 0),
           leading: Container(
@@ -139,78 +142,86 @@ class _TickerState extends State<TickerTile> {
     Color postMarketChangeColor = kRedColor;
     String regularMarketOp = "";
     String postMarketOp = "";
-
+    String suffix = "";
     String changeShown =
         _toggle ? tickerTileData.priceChange : tickerTileData.percentChange;
     String postChangeShown = _toggle
         ? tickerTileData.postPriceChange
         : tickerTileData.postPercentChange;
     double containerWidth = changeShown.length > 6 ? 70 : 60;
-    if (changeShown != null && changeShown[0] != "-") {
-      regularMarketChangeColor = kGreenColor;
-      regularMarketOp = "+";
+    double priceSize = tickerTileData.price.length > 9 ? 17 : 20;
+    if (changeShown != null) {
+      if (changeShown[0] != "-") {
+        regularMarketChangeColor = kGreenColor;
+        regularMarketOp = "+";
+      }
+      if (!_toggle && changeShown[changeShown.length - 1] != "%") {
+        suffix = "%";
+      }
     }
     if (postChangeShown != null && postChangeShown[0] != '-') {
       postMarketOp = "+";
       postMarketChangeColor = kGreenColor;
     }
-    print("in widget");
-    return Column(
-        crossAxisAlignment: CrossAxisAlignment.end,
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: <Widget>[
-          Text(
-            "${tickerTileData.price}",
-            style: TextStyle(
-                color: kBrightTextColor,
-                fontSize: 20,
-                fontWeight: FontWeight.w600),
-          ),
-          SizedBox(height: 2),
-          GestureDetector(
-            onTap: () => setState(() {
-              _toggle = !_toggle;
-            }),
-            child: Container(
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(3),
-                  color: regularMarketChangeColor),
-              width: containerWidth,
-              height: 16,
-              child: Text("$regularMarketOp${changeShown}",
-                  textAlign: TextAlign.right,
-                  style: TextStyle(color: kBrightTextColor)),
+    //print("in widget");
+    return Container(
+      width: 93,
+      child: Column(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            Text(
+              "${tickerTileData.price}",
+              style: TextStyle(
+                  color: kBrightTextColor,
+                  fontSize: priceSize,
+                  fontWeight: FontWeight.w600),
             ),
-          ),
-          SizedBox(
-            height: 2,
-          ),
-          (tickerTileData.postPercentChange != null)
-              ? GestureDetector(
-                  onTap: () => setState(() {
-                    _toggle = !_toggle;
-                  }),
-                  child: RichText(
-                    overflow: TextOverflow.clip,
-                    maxLines: 1,
-                    text: TextSpan(
-                      text: "Post: ",
-                      style: DefaultTextStyle.of(context)
-                          .style
-                          .copyWith(fontWeight: FontWeight.w500, fontSize: 12),
-                      children: <TextSpan>[
-                        TextSpan(
-                            text: "$postMarketOp${postChangeShown}",
-                            style: TextStyle(color: postMarketChangeColor))
-                      ],
+            SizedBox(height: 2),
+            GestureDetector(
+              onTap: () => setState(() {
+                _toggle = !_toggle;
+              }),
+              child: Container(
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(3),
+                    color: regularMarketChangeColor),
+                width: containerWidth,
+                height: 16,
+                child: Text("$regularMarketOp${changeShown}$suffix",
+                    textAlign: TextAlign.right,
+                    style: TextStyle(color: kBrightTextColor)),
+              ),
+            ),
+            SizedBox(
+              height: 2,
+            ),
+            (tickerTileData.postPercentChange != null)
+                ? GestureDetector(
+                    onTap: () => setState(() {
+                      _toggle = !_toggle;
+                    }),
+                    child: RichText(
+                      overflow: TextOverflow.clip,
+                      maxLines: 1,
+                      text: TextSpan(
+                        text: "Post: ",
+                        style: DefaultTextStyle.of(context).style.copyWith(
+                            fontWeight: FontWeight.w500, fontSize: 12),
+                        children: <TextSpan>[
+                          TextSpan(
+                              text: "$postMarketOp${postChangeShown}$suffix",
+                              style: TextStyle(color: postMarketChangeColor))
+                        ],
+                      ),
                     ),
+                  )
+                : SizedBox(
+                    height: 1,
                   ),
-                )
-              : SizedBox(
-                  height: 1,
-                ),
-        ]);
+          ]),
+    );
   }
 
   void deleteTicker(BuildContext context) {
@@ -218,12 +229,6 @@ class _TickerState extends State<TickerTile> {
         Provider.of<TickerTileProvider>(context, listen: false);
     List<String> tickers = tickerProvider.symbols;
     tickerProvider.removeTicker(tickers.indexOf(tickerTileData.symbol));
-    tickers.remove(tickerTileData.symbol);
-    FirebaseApi.updateWatchList(Watchlist(
-        watchlistUid: tickerProvider.watchListUid,
-        items: tickers,
-        updatedLast: DateTime.now(),
-        isPublic: tickerProvider.isPublic));
   }
 
   void showInfo(BuildContext context, TickerTileModel data) {

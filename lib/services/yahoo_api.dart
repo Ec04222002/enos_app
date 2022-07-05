@@ -1,6 +1,8 @@
+import 'package:enos/models/search_tile.dart';
 import 'package:enos/models/ticker_tile.dart';
 import 'package:enos/services/ticker_provider.dart';
 import 'package:enos/services/util.dart';
+import 'package:flutter/scheduler.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
@@ -42,6 +44,18 @@ class YahooApi {
     return null;
   }
 
+  Future<dynamic> getRecommendedStockList({int count = 6}) async {
+    final response = await getData(
+        endpoint: "market/get-trending-tickers", query: {"region": "US"});
+
+    if (response == null) throw Exception("Error getting recommend stocks");
+
+    final List quotes = response['finance']['result'][0]['quotes'];
+    var quotesFirstSix = quotes.take(6);
+
+    return quotesFirstSix.map((json) => SearchTile.fromJson(json)).toList();
+  }
+
   Future<dynamic> getTickerData(String symbol) async {
     return await getData(
         endpoint: "stock/v2/get-summary",
@@ -57,30 +71,119 @@ class YahooApi {
     });
   }
 
+  Future<List<TickerTileModel>> getInitTickers(List<String> symbols) async {
+    String searchQuery = symbols.join(",");
+    dynamic datas = await getData(endpoint: "market/v2/get-quotes", query: {
+      "symbols": searchQuery,
+      "region": "US",
+    });
+    List<TickerTileModel> listData = [];
+    if (datas == null) {
+      throw Exception("Cannot get init ticker data");
+    }
+    for (dynamic response in datas['quoteResponse']['result']) {
+      String tickerSymbol = response['symbol'],
+          companyName = response['shortName'],
+          price = Utils.fixNumToFormat(
+              response['regularMarketPrice'], false, false),
+          percentChange = Utils.fixNumToFormat(
+              response['regularMarketChangePercent'], true, true),
+          priceChange = Utils.fixNumToFormat(
+              response['regularMarketChange'], false, true),
+          postPercentChange,
+          postPriceChange;
+
+      double openPrice = response['regularMarketOpen'];
+      bool isPost = !(response["fullExchangeName"].contains("OTC") ||
+              response['quoteType'].contains("INDEX")),
+          isCrypto = (response['quoteType'] == "CRYPTOCURRENCY");
+      if (isPost && !isCrypto && !Utils.isMarketTime()) {
+        if (response['postMarketChangePercent'] != null) {
+          postPercentChange = Utils.fixNumToFormat(
+              response['postMarketChangePercent'], true, true);
+          postPriceChange =
+              Utils.fixNumToFormat(response['postMarketChange'], false, true);
+        }
+      }
+      listData.add(await get(
+          symbol: tickerSymbol,
+          lastData: TickerTileModel(
+            symbol: tickerSymbol,
+            companyName: companyName,
+            price: price,
+            priceChange: priceChange,
+            percentChange: percentChange,
+            postPercentChange: postPercentChange,
+            postPriceChange: postPriceChange,
+            openPrice: openPrice,
+            isCrypto: isCrypto,
+            isPostMarket: isPost,
+          ),
+          requestTickerData: false));
+    }
+    return listData;
+  }
+
   Future<TickerTileModel> get(
       {@required String symbol,
       TickerTileModel lastData,
-      bool requestChartData}) async {
-    var results = await getTickerData(symbol);
-    //if results null => current api key surpassed
-    if (results == null) {
-      //check all api keys to get valid api key
-      for (var i = 0; i < apiKeys.length; ++i) {
-        resetApiKey(i);
-        results = await getTickerData(symbol);
-        if (results != null) {
-          validApiIndex = i;
-          break;
-        }
-        ;
-      }
-      // if result persist to be null => all api keys surpassed
+      bool requestChartData = true,
+      bool requestTickerData = true}) async {
+    lastData = lastData == null ? TickerTileModel() : lastData;
+
+    var results;
+    String tickerSymbol = lastData.symbol,
+        companyName = lastData.companyName,
+        price = lastData.price,
+        percentChange = lastData.percentChange,
+        priceChange = lastData.priceChange,
+        postPercentChange = lastData.postPercentChange,
+        postPriceChange = lastData.postPriceChange;
+    double openPrice = lastData.openPrice;
+    bool isPost = lastData.isPostMarket, isCrypto = lastData.isCrypto;
+    if (requestTickerData) {
+      results = await getTickerData(symbol);
+      //if results null => current api key surpassed
       if (results == null) {
-        throw Exception("Surpassed Api Limit");
+        //check all api keys to get valid api key
+        for (var i = 0; i < apiKeys.length; ++i) {
+          resetApiKey(i);
+          results = await getTickerData(symbol);
+          if (results != null) {
+            validApiIndex = i;
+            break;
+          }
+        }
+        // if result persist to be null => all api keys surpassed
+        if (results == null) {
+          throw Exception("Surpassed Api Limit");
+        }
+      }
+      tickerSymbol = results['quoteType']['symbol'];
+      companyName = results['quoteType']['shortName'];
+
+      price = results['price']["regularMarketPrice"]["fmt"];
+      percentChange = results['price']['regularMarketChangePercent']["fmt"];
+      openPrice = results['price']['regularMarketOpen']["raw"].toDouble();
+      isPost = !(results['price']["exchangeName"].contains("OTC") ||
+          results['quoteType']['quoteType'].contains("INDEX"));
+      isCrypto = results['quoteType']['quoteType'] == "CRYPTOCURRENCY";
+      priceChange = results['price']["regularMarketChange"]['fmt'];
+      if (isPost && !isCrypto && !Utils.isMarketTime()) {
+        if (results['price']['postMarketChangePercent'] != null) {
+          postPercentChange =
+              results['price']['postMarketChangePercent']['fmt'];
+          postPriceChange = results['price']['postMarketChange']['fmt'];
+        }
       }
     }
+
     var chartResults;
-    if (requestChartData || lastData == null) {
+    List<dynamic> initChartDataY;
+    List<dynamic> initChartDataX;
+    List chartDataX = lastData.chartDataX;
+    List chartDataY = lastData.chartDataY;
+    if (requestChartData) {
       print("getting chart data");
       // using last working header
       chartResults = await getChartData(symbol);
@@ -99,41 +202,18 @@ class YahooApi {
           throw Exception("Surpassed Api Limit");
         }
       }
+
+      if (chartResults != null) {
+        initChartDataY = chartResults['chart']['result'][0]["indicators"]
+            ["quote"][0]["open"];
+        chartDataY = initChartDataY
+            .map((e) => e != null ? e.toDouble() : openPrice)
+            .toList();
+        initChartDataX = chartResults['chart']['result'][0]["timestamp"];
+        chartDataX = initChartDataX.map((e) => e.toDouble()).toList();
+      }
     }
 
-    final String tickerSymbol = results['quoteType']['symbol'];
-    final String companyName = results['quoteType']['shortName'];
-    final String price = results['price']["regularMarketPrice"]["fmt"];
-    final String percentChange =
-        results['price']['regularMarketChangePercent']["fmt"];
-    final double openPrice = results['price']['regularMarketOpen']["raw"];
-    final bool isPost = !(results['price']["exchangeName"].contains("OTC") ||
-        results['quoteType']['quoteType'].contains("INDEX"));
-    final bool isCrypto = results['quoteType']['quoteType'] == "CRYPTOCURRENCY";
-    final String priceChange = results['price']["regularMarketChange"]['fmt'];
-    List chartDataX;
-    List chartDataY;
-    if (chartResults != null) {
-      List<dynamic> initChartDataY =
-          chartResults['chart']['result'][0]["indicators"]["quote"][0]["open"];
-      chartDataY = initChartDataY
-          .map((e) => e != null ? e.toDouble() : openPrice)
-          .toList();
-      List<dynamic> initChartDataX =
-          chartResults['chart']['result'][0]["timestamp"];
-      chartDataX = initChartDataX.map((e) => e.toDouble()).toList();
-    } else {
-      chartDataX = lastData.chartDataX;
-      chartDataY = lastData.chartDataY;
-    }
-    ;
-
-    String postPercentChange;
-    String postPriceChange;
-    if (isPost && !isCrypto && !Utils.isMarketTime()) {
-      postPercentChange = results['price']['postMarketChangePercent']['fmt'];
-      postPriceChange = results['price']['postMarketChange']['fmt'];
-    }
     // print("isPost: $isPost");
     // print("isCrypto: $isCrypto");
     TickerTileModel data = TickerTileModel(

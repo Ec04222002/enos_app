@@ -1,7 +1,10 @@
 import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:enos/models/search_tile.dart';
 import 'package:enos/models/user.dart';
+import 'package:enos/models/watchlist.dart';
+import 'package:enos/screens/home.dart';
 import 'package:enos/services/firebase_api.dart';
 import 'package:enos/services/util.dart';
 import 'package:enos/services/yahoo_api.dart';
@@ -20,13 +23,13 @@ class TickerTileProvider extends ChangeNotifier {
   YahooApi yahooApi = YahooApi();
   bool toggle = false;
   List<int> times = [1, 2];
+  //init recommendation
+  List<SearchTile> _recs = [];
 
   TickerTileProvider({this.watchListUid});
-  // List<Future<TickerTileModel>> get futureTickers => _futureTickers;
   List<TickerTileModel> get tickers => _tickers;
   List<String> get symbols => _symbols;
-
-  // Future<TickerTileModel> futureTickerAt(int index) => _futureTickers[index];
+  List<SearchTile> get recs => _recs;
   TickerTileModel tickerAt(int index) => _tickers[index];
   String symbolAt(int index) => _symbols[index];
 
@@ -36,6 +39,10 @@ class TickerTileProvider extends ChangeNotifier {
 
   void setTickers(List<TickerTileModel> tickers) {
     _tickers = tickers;
+  }
+
+  void setRecs(List<SearchTile> recs) {
+    _recs = recs;
   }
 
   void replaceTickerAt(int index, TickerTileModel replacement) {
@@ -53,29 +60,55 @@ class TickerTileProvider extends ChangeNotifier {
     _symbols.insert(endIndex, symbol);
   }
 
-  void removeTicker(int index) {
+  Future<void> removeTicker(int index) async {
     _tickers.removeAt(index);
-    // _futureTickers.removeAt(index);
     _symbols.removeAt(index);
+
+    await FirebaseApi.updateWatchList(Watchlist(
+        watchlistUid: provider.watchListUid,
+        items: _symbols,
+        updatedLast: DateTime.now(),
+        isPublic: provider.isPublic));
+    notifyListeners();
+  }
+
+  Future<void> addTicker(String symbol) async {
+    if (_symbols.length >= 10) {
+      return;
+    }
+    print("Adding symbol $symbol");
+    TickerTileModel data =
+        await yahooApi.get(symbol: symbol.toString(), requestChartData: true);
+    _tickers.add(data);
+    _symbols.add(symbol);
+    await FirebaseApi.updateWatchList(Watchlist(
+        watchlistUid: provider.watchListUid,
+        items: _symbols,
+        updatedLast: DateTime.now(),
+        isPublic: provider.isPublic));
     notifyListeners();
   }
 
   Future<void> setAllInitData() async {
+    //get watchlist
     DocumentSnapshot watchListDoc =
         await FirebaseApi.getWatchListDoc(watchListUid);
-
+    //set needed parameter
     isPublic = watchListDoc['is_public'];
     List<dynamic> tickers = watchListDoc['items'];
-    print("setting all init");
-    for (var symbol in tickers) {
-      // print("getting data for $symbol");
-      // _futureTickers.add(futureData);
-
-      TickerTileModel data =
-          await yahooApi.get(symbol: symbol.toString(), requestChartData: true);
-      _symbols.add(symbol.toString());
-      _tickers.add(data);
-    }
+    //getting watchlist data from api
+    tickers.forEach((element) {
+      _symbols.add(element.toString());
+    });
+    // for (var symbol in tickers) {
+    //   // TickerTileModel data =
+    //   //     await yahooApi.get(symbol: symbol.toString(), requestChartData: true);
+    //   _symbols.add(symbol.toString());
+    //   // _tickers.add(data);
+    // }
+    setTickers(await yahooApi.getInitTickers(_symbols));
+    //get list of recs for search
+    this._recs = await yahooApi.getRecommendedStockList();
     print("completed getting all ticker data");
   }
 
@@ -85,7 +118,6 @@ class TickerTileProvider extends ChangeNotifier {
     int counter = 0;
     return Stream.periodic(Duration(seconds: time)).asyncMap((_) {
       counter++;
-      print("Counting $counter");
       if (counter % 2 == 0) {
         return getTileData(symbol, true);
       }
