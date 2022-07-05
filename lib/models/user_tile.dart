@@ -17,10 +17,15 @@ class UserSearchTile {
       searchUserName = searchUserName.substring(0, 10);
     }
 
-    var leadWidget = model.profilePic != null
-        ? Container()
-        : ProfilePicture(image: null, name: searchUserName);
-
+    // var leadWidget = model.profilePic != null
+    //     ? ProfilePicture(image: model.profilePic, name: searchUserName)
+    //     : ProfilePicture(image: null, name: searchUserName);
+    var leadWidget = ProfilePicture(
+      image: null,
+      name: searchUserName,
+      color1: Utils.stringToColor(model.profileBgColor),
+      color2: Utils.stringToColor(model.profileBorderColor),
+    );
     return UserSearchTile(
       userName: searchUserName,
       leadWidget: leadWidget,

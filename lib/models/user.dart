@@ -14,7 +14,8 @@ class UserModel {
   final bool isEmailNotify;
   final List<bool> metrics;
   List<String> userSaved;
-
+  final String profileBgColor;
+  final String profileBorderColor;
   UserModel(
       {this.userUid,
       this.createdTime,
@@ -22,7 +23,9 @@ class UserModel {
       this.username,
       this.isEmailNotify = true,
       this.metrics,
-      this.userSaved});
+      this.userSaved,
+      this.profileBgColor,
+      this.profileBorderColor});
   static UserModel fromJson(Map<String, dynamic> json) {
     List<bool> metrics = [];
     json['metrics'].forEach((metric) {
@@ -33,13 +36,16 @@ class UserModel {
       userSaved.add(user.toString());
     });
     return UserModel(
-        userUid: json['user_uid'],
-        createdTime: Utils.toDateTime(json['created_time']),
-        profilePic: json['profile_pic'],
-        username: json['username'],
-        isEmailNotify: json['is_email_notify'],
-        metrics: metrics,
-        userSaved: userSaved);
+      userUid: json['user_uid'],
+      createdTime: Utils.toDateTime(json['created_time']),
+      profilePic: json['profile_pic'],
+      username: json['username'],
+      isEmailNotify: json['is_email_notify'],
+      metrics: metrics,
+      userSaved: userSaved,
+      profileBgColor: json['profile_bg_color'],
+      profileBorderColor: json['profile_border_color'],
+    );
   }
 
   Map<String, dynamic> toJson() => {
@@ -50,5 +56,7 @@ class UserModel {
         'is_email_notify': isEmailNotify,
         'metrics': metrics,
         'user_saved': userSaved,
+        'profile_bg_color': profileBgColor,
+        'profile_border_color': profileBorderColor,
       };
 }

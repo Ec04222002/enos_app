@@ -140,16 +140,22 @@ class _TickerState extends State<TickerTile> {
     Color postMarketChangeColor = kRedColor;
     String regularMarketOp = "";
     String postMarketOp = "";
-
+    String suffix = "";
     String changeShown =
         _toggle ? tickerTileData.priceChange : tickerTileData.percentChange;
     String postChangeShown = _toggle
         ? tickerTileData.postPriceChange
         : tickerTileData.postPercentChange;
     double containerWidth = changeShown.length > 6 ? 70 : 60;
-    if (changeShown != null && changeShown[0] != "-") {
-      regularMarketChangeColor = kGreenColor;
-      regularMarketOp = "+";
+    double priceSize = tickerTileData.price.length > 9 ? 17 : 20;
+    if (changeShown != null) {
+      if (changeShown[0] != "-") {
+        regularMarketChangeColor = kGreenColor;
+        regularMarketOp = "+";
+      }
+      if (!_toggle && changeShown[changeShown.length - 1] != "%") {
+        suffix = "%";
+      }
     }
     if (postChangeShown != null && postChangeShown[0] != '-') {
       postMarketOp = "+";
@@ -166,7 +172,7 @@ class _TickerState extends State<TickerTile> {
               "${tickerTileData.price}",
               style: TextStyle(
                   color: kBrightTextColor,
-                  fontSize: 20,
+                  fontSize: priceSize,
                   fontWeight: FontWeight.w600),
             ),
             SizedBox(height: 2),
@@ -181,7 +187,7 @@ class _TickerState extends State<TickerTile> {
                     color: regularMarketChangeColor),
                 width: containerWidth,
                 height: 16,
-                child: Text("$regularMarketOp${changeShown}",
+                child: Text("$regularMarketOp${changeShown}$suffix",
                     textAlign: TextAlign.right,
                     style: TextStyle(color: kBrightTextColor)),
               ),
@@ -203,7 +209,7 @@ class _TickerState extends State<TickerTile> {
                             fontWeight: FontWeight.w500, fontSize: 12),
                         children: <TextSpan>[
                           TextSpan(
-                              text: "$postMarketOp${postChangeShown}",
+                              text: "$postMarketOp${postChangeShown}$suffix",
                               style: TextStyle(color: postMarketChangeColor))
                         ],
                       ),

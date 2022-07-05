@@ -97,12 +97,16 @@ class TickerTileProvider extends ChangeNotifier {
     isPublic = watchListDoc['is_public'];
     List<dynamic> tickers = watchListDoc['items'];
     //getting watchlist data from api
-    for (var symbol in tickers) {
-      TickerTileModel data =
-          await yahooApi.get(symbol: symbol.toString(), requestChartData: true);
-      _symbols.add(symbol.toString());
-      _tickers.add(data);
-    }
+    tickers.forEach((element) {
+      _symbols.add(element.toString());
+    });
+    // for (var symbol in tickers) {
+    //   // TickerTileModel data =
+    //   //     await yahooApi.get(symbol: symbol.toString(), requestChartData: true);
+    //   _symbols.add(symbol.toString());
+    //   // _tickers.add(data);
+    // }
+    setTickers(await yahooApi.getInitTickers(_symbols));
     //get list of recs for search
     this._recs = await yahooApi.getRecommendedStockList();
     print("completed getting all ticker data");

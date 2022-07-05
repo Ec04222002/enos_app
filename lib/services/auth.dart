@@ -5,6 +5,7 @@ import 'package:enos/models/comment.dart';
 import 'package:enos/models/user.dart';
 import 'package:enos/services/firebase_api.dart';
 import 'package:enos/widgets/loading.dart';
+import 'package:enos/widgets/profile_pic.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:enos/constants.dart';
@@ -71,6 +72,8 @@ class AuthService {
         username: userName,
         userSaved: [],
         metrics: List.filled(22, true),
+        profileBgColor: ProfilePicture.getRandomColor(),
+        profileBorderColor: ProfilePicture.getRandomColor(),
       );
       FirebaseApi.updateUserData(_user);
       FirebaseApi.updateWatchList(Watchlist(
