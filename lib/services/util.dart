@@ -133,7 +133,6 @@ class Utils {
         pastConsZeroCount++;
       }
     }
-    print("index: $index");
     return num.toStringAsFixed(index + 1);
   }
 

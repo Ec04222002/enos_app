@@ -6,6 +6,7 @@ import 'package:enos/models/user.dart';
 import 'package:enos/services/firebase_api.dart';
 import 'package:enos/widgets/loading.dart';
 import 'package:enos/widgets/profile_pic.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:enos/constants.dart';
@@ -75,8 +76,8 @@ class AuthService {
         profileBgColor: ProfilePicture.getRandomColor(),
         profileBorderColor: ProfilePicture.getRandomColor(),
       );
-      FirebaseApi.updateUserData(_user);
-      FirebaseApi.updateWatchList(Watchlist(
+      await FirebaseApi.updateUserData(_user);
+      await FirebaseApi.updateWatchList(Watchlist(
         watchlistUid: user.uid,
         items: defaultTickerTileModels,
         updatedLast: DateTime.now(),
@@ -101,33 +102,49 @@ class AuthService {
 class GoogleSignInProvider extends ChangeNotifier {
   final googleSignIn = GoogleSignIn();
 
-  GoogleSignInAccount _user;
+  UserModel _user;
 
-  GoogleSignInAccount get user => _user;
+  UserModel get user => _user;
 
   Future googleLogin() async {
     try {
       final googleUser = await googleSignIn.signIn();
       if (googleUser == null) return null;
-      _user = googleUser;
+
       final googleAuth = await googleUser.authentication;
       final credential = GoogleAuthProvider.credential(
         accessToken: googleAuth.accessToken,
         idToken: googleAuth.idToken,
       );
-      await FirebaseAuth.instance.signInWithCredential(credential);
-      //default
-      FirebaseApi.updateUserData(UserModel(
-        userUid: _user.id,
-        createdTime: DateTime.now(),
-        username: _user.email,
-        metrics: List.filled(22, true),
-      ));
-      FirebaseApi.updateWatchList(Watchlist(
-        watchlistUid: _user.id,
-        items: defaultTickerTileModels,
-        updatedLast: DateTime.now(),
-      ));
+      dynamic result =
+          await FirebaseAuth.instance.signInWithCredential(credential);
+      //checking if user exists
+      User u = result.user;
+      bool userExist = await FirebaseApi.checkExist('Users', u.uid);
+      if (userExist) {
+        print("user exists");
+        _user = await FirebaseApi.getUser(u.uid);
+      } else {
+        print('user does not exists');
+        _user = UserModel(
+          userUid: u.uid,
+          createdTime: DateTime.now(),
+          username: u.email.substring(0, u.email.indexOf("@")),
+          metrics: List.filled(22, true),
+          userSaved: [],
+          profileBgColor: ProfilePicture.getRandomColor(),
+          profileBorderColor: ProfilePicture.getRandomColor(),
+        );
+        //default
+        await FirebaseApi.updateUserData(_user);
+        await FirebaseApi.updateWatchList(Watchlist(
+          isPublic: false,
+          watchlistUid: _user.userUid,
+          items: defaultTickerTileModels,
+          updatedLast: DateTime.now(),
+        ));
+      }
+
       notifyListeners();
       return _user;
     } catch (error) {

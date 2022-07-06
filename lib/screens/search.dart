@@ -86,6 +86,9 @@ class _SearchPageState extends State<SearchPage> {
       provider = Provider.of<TickerTileProvider>(widget.context);
       savedSymbols = provider.symbols;
       user = widget.context.read<AuthService>().userModel;
+      if (user == null) {
+        user = context.read<GoogleSignInProvider>().user;
+      }
       recommends = provider.recs;
       //check if recommends is empty => put default if so
       checkRecommends();
@@ -118,6 +121,9 @@ class _SearchPageState extends State<SearchPage> {
     if (widget.isMainPage && isInit) {
       provider = Provider.of<TickerTileProvider>(context);
       user = context.read<AuthService>().userModel;
+      if (user == null) {
+        user = context.read<GoogleSignInProvider>().user;
+      }
       savedSymbols = provider.symbols;
       recommends = provider.recs;
       //check if recommends is empty => put default if so

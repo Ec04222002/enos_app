@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:enos/constants.dart';
 import 'package:enos/models/search_tile.dart';
 import 'package:enos/models/user.dart';
 import 'package:enos/models/watchlist.dart';
@@ -91,25 +92,29 @@ class TickerTileProvider extends ChangeNotifier {
 
   Future<void> setAllInitData() async {
     //get watchlist
+    print("WatchlistUid: $watchListUid");
     DocumentSnapshot watchListDoc =
         await FirebaseApi.getWatchListDoc(watchListUid);
     //set needed parameter
-    isPublic = watchListDoc['is_public'];
-    List<dynamic> tickers = watchListDoc['items'];
-    //getting watchlist data from api
-    tickers.forEach((element) {
-      _symbols.add(element.toString());
-    });
-    // for (var symbol in tickers) {
-    //   // TickerTileModel data =
-    //   //     await yahooApi.get(symbol: symbol.toString(), requestChartData: true);
-    //   _symbols.add(symbol.toString());
-    //   // _tickers.add(data);
-    // }
+
+    try {
+      isPublic = watchListDoc['is_public'];
+      List<dynamic> tickers = watchListDoc['items'];
+      //getting watchlist data from api
+      tickers.forEach((element) {
+        _symbols.add(element.toString());
+      });
+    }
+    //if error exists => google login is updating watchlist
+    //=> set the default settings
+    catch (e) {
+      defaultTickerTileModels.forEach((element) {
+        _symbols.add(element);
+      });
+    }
     setTickers(await yahooApi.getInitTickers(_symbols));
     //get list of recs for search
     this._recs = await yahooApi.getRecommendedStockList();
-    print("completed getting all ticker data");
   }
 
   Stream<TickerTileModel> getTileStream(String symbol) {
