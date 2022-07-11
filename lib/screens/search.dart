@@ -3,8 +3,11 @@ import 'dart:convert';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:enos/models/search_tile.dart';
+import 'package:enos/services/ticker_page_info.dart';
+import 'package:enos/models/ticker_tile.dart';
 import 'package:enos/models/user.dart';
 import 'package:enos/models/user_tile.dart';
+import 'package:enos/screens/ticker_info.dart';
 import 'package:enos/services/auth.dart';
 import 'package:enos/services/firebase_api.dart';
 import 'package:enos/services/stock_name_api.dart';
@@ -290,68 +293,83 @@ class _SearchPageState extends State<SearchPage> {
 
   Widget buildTile(
           SearchTile stockTileModel, int index, BuildContext context) =>
-      ClipRRect(
-        borderRadius: BorderRadius.circular(3),
-        child: Container(
-          color: kLightBackgroundColor,
-          child: ListTile(
-              // tileColor: kLightBackgroundColor,
-              title: Text(
-                stockTileModel.symbol,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                    color: kBrightTextColor,
-                    fontSize: 21,
-                    fontWeight: FontWeight.w800),
-              ),
-              subtitle: Text(
-                stockTileModel.name,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(fontSize: 14, color: kDisabledColor),
-              ),
-              trailing: IconButton(
-                  onPressed: () async {
-                    if (!recommends[index].isSaved) {
-                      if (savedSymbols.length >= 10) {
+      GestureDetector(
+        onTap: (() => showInfo(
+            widget.context, stockTileModel.symbol, stockTileModel.isSaved)),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(3),
+          child: Container(
+            color: kLightBackgroundColor,
+            child: ListTile(
+                // tileColor: kLightBackgroundColor,
+                title: Text(
+                  stockTileModel.symbol,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                      color: kBrightTextColor,
+                      fontSize: 21,
+                      fontWeight: FontWeight.w800),
+                ),
+                subtitle: Text(
+                  stockTileModel.name,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(fontSize: 14, color: kDisabledColor),
+                ),
+                trailing: IconButton(
+                    onPressed: () async {
+                      if (!recommends[index].isSaved) {
+                        if (savedSymbols.length >= 10) {
+                          Utils.showAlertDialog(context,
+                              "You have reached your limit of 10 tickers added.",
+                              () {
+                            Navigator.pop(context);
+                          }, null);
+                        } else {
+                          setState(() {
+                            recommends[index].isSaved = true;
+                          });
+                          await provider.addTicker(stockTileModel.symbol);
+                        }
+                      } else {
                         Utils.showAlertDialog(context,
-                            "You have reached your limit of 10 tickers added.",
+                            "Are you sure you want to remove ${stockTileModel.symbol} from your watchlist?",
                             () {
                           Navigator.pop(context);
-                        }, null);
-                      } else {
-                        setState(() {
-                          recommends[index].isSaved = true;
+                        }, () async {
+                          setState(() {
+                            recommends[index].isSaved = false;
+                          });
+                          await provider.removeTicker(
+                              savedSymbols.indexOf(stockTileModel.symbol));
+                          Navigator.pop(context);
                         });
-                        await provider.addTicker(stockTileModel.symbol);
                       }
-                    } else {
-                      Utils.showAlertDialog(context,
-                          "Are you sure you want to remove ${stockTileModel.symbol} from your watchlist?",
-                          () {
-                        Navigator.pop(context);
-                      }, () async {
-                        setState(() {
-                          recommends[index].isSaved = false;
-                        });
-                        await provider.removeTicker(
-                            savedSymbols.indexOf(stockTileModel.symbol));
-                        Navigator.pop(context);
-                      });
-                    }
-                  },
-                  icon: stockTileModel.isSaved
-                      ? Icon(
-                          Icons.star,
-                          color: Colors.yellow[400],
-                          size: 35,
-                        )
-                      : Icon(
-                          Icons.star_border,
-                          color: kDisabledColor,
-                          size: 35,
-                        ))),
+                    },
+                    icon: stockTileModel.isSaved
+                        ? Icon(
+                            Icons.star,
+                            color: Colors.yellow[400],
+                            size: 35,
+                          )
+                        : Icon(
+                            Icons.star_border,
+                            color: kDisabledColor,
+                            size: 35,
+                          ))),
+          ),
         ),
       );
+  void showInfo(BuildContext buildContext, String symbol, bool isSaved) {
+    Navigator.push(
+        buildContext,
+        MaterialPageRoute(
+          builder: (context) => TickerInfo(
+            symbol: symbol,
+            isSaved: isSaved,
+            provider: Provider.of<TickerTileProvider>(buildContext),
+          ),
+        ));
+  }
 }

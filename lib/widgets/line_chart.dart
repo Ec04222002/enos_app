@@ -7,8 +7,15 @@ class LineChartWidget extends StatefulWidget {
   final List chartDataY;
   final List chartDataX;
   final double openPrice;
+  final Color color;
+  final bool isPreview;
   const LineChartWidget(
-      {this.chartDataX, this.chartDataY, this.openPrice, Key key})
+      {this.chartDataX,
+      this.chartDataY,
+      this.openPrice,
+      this.color,
+      this.isPreview,
+      Key key})
       : super(key: key);
 
   @override
@@ -20,12 +27,10 @@ class _LineChartWidgetState extends State<LineChartWidget> {
   Map minMaxX;
   Map minMaxY;
   Color chartColor;
+
   @override
   Widget build(BuildContext context) {
-    chartColor =
-        widget.chartDataY[widget.chartDataY.length - 1] > widget.openPrice
-            ? kGreenColor
-            : kRedColor;
+    chartColor = widget.isPreview ? widget.color.withOpacity(0) : widget.color;
 
     for (var i = 0; i < widget.chartDataX.length; ++i) {
       chartDataPoints
@@ -33,23 +38,36 @@ class _LineChartWidgetState extends State<LineChartWidget> {
     }
     minMaxX = Utils.maxMin(widget.chartDataX);
     minMaxY = Utils.maxMin(widget.chartDataY);
-    print("in chart widget");
-    return SizedBox(
-      height: 30,
+    return AspectRatio(
+      aspectRatio: widget.isPreview ? 3 : 1.75,
       child: LineChart(
         LineChartData(
-            lineTouchData:
-                LineTouchData(enabled: true, handleBuiltInTouches: false),
+            lineTouchData: LineTouchData(
+              enabled: true,
+              handleBuiltInTouches: false,
+              //getTouchLineEnd: ,
+
+              touchCallback:
+                  (FlTouchEvent event, LineTouchResponse touchResponse) {
+                if (event is FlTapUpEvent) {
+                  // handle tap here
+                  print("up...");
+                }
+                if (event is FlTapDownEvent) {
+                  print('down');
+                }
+                if (event is FlTapCancelEvent) {}
+              },
+            ),
             minX: minMaxX['min'],
             maxX: minMaxX['max'],
             minY: minMaxY['min'],
             maxY: minMaxY['max'],
             titlesData: FlTitlesData(show: false),
             gridData: FlGridData(
-                show: false,
-                drawHorizontalLine: false,
-                drawVerticalLine: false),
+                show: false, drawHorizontalLine: false, drawVerticalLine: true),
             borderData: FlBorderData(show: false),
+            // clipData: FlClipData.all(),
             extraLinesData: ExtraLinesData(
                 extraLinesOnTop: false,
                 horizontalLines: [
@@ -60,9 +78,9 @@ class _LineChartWidgetState extends State<LineChartWidget> {
                   isStepLineChart: false,
                   belowBarData: BarAreaData(
                     show: true,
-                    colors: [chartColor.withOpacity(0.4)],
+                    color: chartColor.withOpacity(0.4),
                   ),
-                  colors: [chartColor],
+                  color: chartColor,
                   isCurved: false,
                   dotData: FlDotData(show: false),
                   spots: chartDataPoints

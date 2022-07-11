@@ -62,11 +62,12 @@ class YahooApi {
         query: {"symbol": symbol, "region": "US"});
   }
 
-  Future<dynamic> getChartData(String symbol) async {
+  Future<dynamic> getChartData(
+      {String symbol, String interval = "30m", String range = "1d"}) async {
     return await getData(endpoint: "stock/v3/get-chart", query: {
       "symbol": symbol,
-      "interval": "30m",
-      "range": "1d",
+      "interval": interval,
+      "range": range,
       "region": "US"
     });
   }
@@ -118,6 +119,7 @@ class YahooApi {
             openPrice: openPrice,
             isCrypto: isCrypto,
             isPostMarket: isPost,
+            isSaved: true,
           ),
           requestTickerData: false));
     }
@@ -140,7 +142,9 @@ class YahooApi {
         postPercentChange = lastData.postPercentChange,
         postPriceChange = lastData.postPriceChange;
     double openPrice = lastData.openPrice;
-    bool isPost = lastData.isPostMarket, isCrypto = lastData.isCrypto;
+    bool isPost = lastData.isPostMarket,
+        isCrypto = lastData.isCrypto,
+        isSaved = lastData.isSaved;
     if (requestTickerData) {
       results = await getTickerData(symbol);
       //if results null => current api key surpassed
@@ -186,12 +190,12 @@ class YahooApi {
     if (requestChartData) {
       print("getting chart data");
       // using last working header
-      chartResults = await getChartData(symbol);
+      chartResults = await getChartData(symbol: symbol);
       //In case api just hit limit => look for valid api keys again
       if (chartResults == null) {
         for (var i = validApiIndex + 1; i < apiKeys.length; ++i) {
           resetApiKey(i);
-          chartResults = await getChartData(symbol);
+          chartResults = await getChartData(symbol: symbol);
           if (chartResults != null) {
             validApiIndex = i;
             break;
@@ -206,11 +210,18 @@ class YahooApi {
       if (chartResults != null) {
         initChartDataY = chartResults['chart']['result'][0]["indicators"]
             ["quote"][0]["open"];
-        chartDataY = initChartDataY
-            .map((e) => e != null ? e.toDouble() : openPrice)
-            .toList();
         initChartDataX = chartResults['chart']['result'][0]["timestamp"];
-        chartDataX = initChartDataX.map((e) => e.toDouble()).toList();
+        chartDataY = [];
+        chartDataX = [];
+
+        for (int i = 0; i < initChartDataX.length; ++i) {
+          if (initChartDataY[i] != null) {
+            chartDataY.add(initChartDataY[i].toDouble());
+          } else {
+            chartDataY.add(openPrice);
+          }
+          chartDataX.add(initChartDataX[i].toDouble());
+        }
       }
     }
 
@@ -229,6 +240,7 @@ class YahooApi {
       chartDataY: chartDataY,
       isCrypto: isCrypto,
       isPostMarket: isPost,
+      isSaved: isSaved,
     );
     if (!Utils.isMarketTime() && !isPost) {
       data.isLive = false;

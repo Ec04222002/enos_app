@@ -4,6 +4,7 @@ import 'package:enos/models/ticker_tile.dart';
 import 'package:flutter/material.dart';
 import 'package:enos/constants.dart';
 import 'dart:math';
+import 'package:intl/intl.dart';
 
 class Utils {
   static Color darken(Color color, [double amount = .1]) {
@@ -86,6 +87,24 @@ class Utils {
   static double roundDouble(double value, int places) {
     double mod = pow(10.0, places);
     return ((value * mod).round().toDouble() / mod);
+  }
+
+  static String formatEpoch(int epoch, bool isJustTime) {
+    DateTime date = DateTime.fromMillisecondsSinceEpoch(epoch * 1000);
+    String result = isJustTime
+        ? DateFormat('hh:mm aaa').format(date)
+        : DateFormat('MMM dd, yyyy, hh:mm aaa').format(date);
+    print(result);
+    return result;
+  }
+
+  static List<DateTime> epochToDateTimeList(List<dynamic> epochs) {
+    List<DateTime> dateList = [];
+    epochs.forEach((element) {
+      dateList
+          .add(DateTime.fromMillisecondsSinceEpoch((element * 1000).toInt()));
+    });
+    return dateList;
   }
 
   static String fixNumToFormat(

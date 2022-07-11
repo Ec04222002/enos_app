@@ -66,10 +66,10 @@ class TickerTileProvider extends ChangeNotifier {
     _symbols.removeAt(index);
 
     await FirebaseApi.updateWatchList(Watchlist(
-        watchlistUid: provider.watchListUid,
+        watchlistUid: watchListUid,
         items: _symbols,
         updatedLast: DateTime.now(),
-        isPublic: provider.isPublic));
+        isPublic: isPublic));
     notifyListeners();
   }
 
@@ -78,15 +78,17 @@ class TickerTileProvider extends ChangeNotifier {
       return;
     }
     print("Adding symbol $symbol");
-    TickerTileModel data =
-        await yahooApi.get(symbol: symbol.toString(), requestChartData: true);
+    TickerTileModel data = await yahooApi.get(
+        symbol: symbol.toString(),
+        lastData: TickerTileModel(isSaved: true),
+        requestChartData: true);
     _tickers.add(data);
     _symbols.add(symbol);
     await FirebaseApi.updateWatchList(Watchlist(
-        watchlistUid: provider.watchListUid,
+        watchlistUid: watchListUid,
         items: _symbols,
         updatedLast: DateTime.now(),
-        isPublic: provider.isPublic));
+        isPublic: isPublic));
     notifyListeners();
   }
 

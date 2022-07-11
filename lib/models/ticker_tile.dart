@@ -13,7 +13,7 @@ class TickerTileModel {
   //for saving api calls
   final bool isCrypto;
   final bool isPostMarket;
-
+  bool isSaved;
   bool isLive;
   TickerTileModel(
       {this.symbol,
@@ -28,22 +28,24 @@ class TickerTileModel {
       this.chartDataX,
       this.chartDataY,
       this.isCrypto = false,
-      this.isLive = true});
+      this.isLive = true,
+      this.isSaved = false});
 
   static TickerTileModel fromJson(Map<String, dynamic> json) => TickerTileModel(
-      symbol: json['symbol'] ?? "__",
-      companyName: json['company_name'] ?? "____",
-      price: json['price'] ?? "___",
-      percentChange: json['percent_change'] ?? "__",
-      postPercentChange: json['post_percent_change'] ?? "__",
-      postPriceChange: json['post_price_change'] ?? "__",
-      priceChange: json['price_change'] ?? "__",
+      symbol: json['symbol'],
+      companyName: json['company_name'],
+      price: json['price'],
+      percentChange: json['percent_change'],
+      postPercentChange: json['post_percent_change'],
+      postPriceChange: json['post_price_change'],
+      priceChange: json['price_change'],
       openPrice: json["open_price"],
       chartDataX: json['chart_data_x'],
       chartDataY: json["chart_data_y"],
       isCrypto: json["is_crypto"],
       isPostMarket: json['is_post_market'],
-      isLive: json["is_live"]);
+      isLive: json["is_live"],
+      isSaved: json['is_saved']);
 
   Map<String, dynamic> toJson() => {
         'symbol': symbol,
@@ -59,5 +61,6 @@ class TickerTileModel {
         'is_crypto': isCrypto,
         'is_post_market': isPostMarket,
         'is_live': isLive,
+        'is_saved': isSaved
       };
 }

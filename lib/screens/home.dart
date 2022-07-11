@@ -25,10 +25,9 @@ class HomePage extends StatefulWidget {
   State<HomePage> createState() => _HomePageState();
 }
 
-TickerTileProvider provider;
-double btnOpacity = 0.2;
-
 class _HomePageState extends State<HomePage> {
+  TickerTileProvider provider;
+  double btnOpacity = 0.2;
   @override
   Widget build(BuildContext context) {
     provider = Provider.of<TickerTileProvider>(context);
