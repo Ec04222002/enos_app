@@ -54,7 +54,7 @@ class _NavDisplayScreenState extends State<NavDisplayScreen> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext bContext) {
     if (!isLoading) {
       return Scaffold(
         body: ChangeNotifierProvider<TickerTileProvider>(

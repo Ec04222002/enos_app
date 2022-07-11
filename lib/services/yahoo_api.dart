@@ -95,9 +95,12 @@ class YahooApi {
           postPriceChange;
 
       double openPrice = response['regularMarketOpen'];
+      print("symbol $tickerSymbol");
       bool isPost = !(response["fullExchangeName"].contains("OTC") ||
-              response['quoteType'].contains("INDEX")),
+              response['quoteType'].contains("INDEX") ||
+              response['postMarketChange'] == null),
           isCrypto = (response['quoteType'] == "CRYPTOCURRENCY");
+      print("ispost: $isPost");
       if (isPost && !isCrypto && !Utils.isMarketTime()) {
         if (response['postMarketChangePercent'] != null) {
           postPercentChange = Utils.fixNumToFormat(
@@ -170,11 +173,14 @@ class YahooApi {
       percentChange = results['price']['regularMarketChangePercent']["fmt"];
       openPrice = results['price']['regularMarketOpen']["raw"].toDouble();
       isPost = !(results['price']["exchangeName"].contains("OTC") ||
-          results['quoteType']['quoteType'].contains("INDEX"));
+          results['quoteType']['quoteType'].contains("INDEX") ||
+          results['price']['postMarketChange']['fmt'] == null);
+      print("symbol: $tickerSymbol");
+      print("isPost: $isPost");
       isCrypto = results['quoteType']['quoteType'] == "CRYPTOCURRENCY";
       priceChange = results['price']["regularMarketChange"]['fmt'];
       if (isPost && !isCrypto && !Utils.isMarketTime()) {
-        if (results['price']['postMarketChangePercent'] != null) {
+        if (results['price']['postMarketChangePercent']['fmt'] != null) {
           postPercentChange =
               results['price']['postMarketChangePercent']['fmt'];
           postPriceChange = results['price']['postMarketChange']['fmt'];

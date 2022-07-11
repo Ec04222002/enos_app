@@ -13,13 +13,15 @@ class TickerPageInfo {
     TickerTileModel tileModel = await api.get(symbol: symbol);
     tileModel.isSaved = isSaved;
     dynamic result = await api.getTickerData(symbol);
+    print("post: ${tileModel.isPostMarket}");
     Map<String, dynamic> compleData = {
       "postPrice": tileModel.isPostMarket
           ? result['price']['postMarketPrice']['fmt']
           : null,
       'shortName': result['quoteType']['shortName'].toString(),
       'marketCloseTime': result['price']['regularMarketTime'],
-      'postMarketCloseTime': result['price']['postMarketTime'],
+      'postMarketCloseTime':
+          tileModel.isPostMarket ? result['price']['postMarketTime'] : null,
     };
     TickerPageModel pageModel = TickerPageModel.fromTickerTileModel(
         data: tileModel, compleData: compleData);

@@ -122,6 +122,7 @@ class _SearchPageState extends State<SearchPage> {
   @override
   Widget build(BuildContext context) {
     if (widget.isMainPage && isInit) {
+      widget.context = context;
       provider = Provider.of<TickerTileProvider>(context);
       user = context.read<AuthService>().userModel;
       if (user == null) {
@@ -362,6 +363,9 @@ class _SearchPageState extends State<SearchPage> {
         ),
       );
   void showInfo(BuildContext buildContext, String symbol, bool isSaved) {
+    print("clicked");
+    print('buildcontext: $buildContext');
+    print("symbol: $symbol");
     Navigator.push(
         buildContext,
         MaterialPageRoute(
