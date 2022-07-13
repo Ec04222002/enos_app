@@ -38,16 +38,28 @@ class _PreTickerInfoState extends State<PreTickerInfo> {
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              data.symbol,
-              style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800),
+            RichText(
+              maxLines: 2,
+              text: TextSpan(
+                text: data.shortName,
+                style: TextStyle(fontSize: 21, fontWeight: FontWeight.w500),
+              ),
             ),
             SizedBox(
               height: 5,
             ),
-            Text(
-              data.marketPrice,
-              style: TextStyle(fontSize: 35, fontWeight: FontWeight.bold),
+            RichText(
+              maxLines: 1,
+              text: TextSpan(
+                children: <TextSpan>[
+                  TextSpan(
+                      text: "\t\tUSD",
+                      style:
+                          TextStyle(fontSize: 18, fontWeight: FontWeight.w600))
+                ],
+                text: data.marketPrice,
+                style: TextStyle(fontSize: 35, fontWeight: FontWeight.w600),
+              ),
             ),
             SizedBox(
               height: 5,

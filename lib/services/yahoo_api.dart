@@ -63,7 +63,7 @@ class YahooApi {
   }
 
   Future<dynamic> getChartData(
-      {String symbol, String interval = "30m", String range = "1d"}) async {
+      {String symbol, String interval = "15m", String range = "1d"}) async {
     return await getData(endpoint: "stock/v3/get-chart", query: {
       "symbol": symbol,
       "interval": interval,
@@ -86,27 +86,44 @@ class YahooApi {
       String tickerSymbol = response['symbol'],
           companyName = response['shortName'],
           price = Utils.fixNumToFormat(
-              response['regularMarketPrice'], false, false),
+              num: response['regularMarketPrice'],
+              isPercentage: false,
+              isConstrain: false),
           percentChange = Utils.fixNumToFormat(
-              response['regularMarketChangePercent'], true, true),
+              num: response['regularMarketChangePercent'],
+              isPercentage: true,
+              isConstrain: true),
           priceChange = Utils.fixNumToFormat(
-              response['regularMarketChange'], false, true),
+              num: response['regularMarketChange'],
+              isPercentage: false,
+              isConstrain: true),
           postPercentChange,
           postPriceChange;
 
       double openPrice = response['regularMarketOpen'];
-      print("symbol $tickerSymbol");
       bool isPost = !(response["fullExchangeName"].contains("OTC") ||
               response['quoteType'].contains("INDEX") ||
               response['postMarketChange'] == null),
           isCrypto = (response['quoteType'] == "CRYPTOCURRENCY");
-      print("ispost: $isPost");
+      //finding marketname
+      String marketName = response['fullExchangeName'].toString().toUpperCase();
+      if (isCrypto)
+        marketName = "Crypto";
+      else if (marketName.contains("OTC"))
+        marketName = "OTCBB";
+      else if (tickerSymbol.startsWith("^"))
+        marketName = "INDEX";
+      else if (marketName != "NYSE") marketName = "NASDAQ";
       if (isPost && !isCrypto && !Utils.isMarketTime()) {
         if (response['postMarketChangePercent'] != null) {
           postPercentChange = Utils.fixNumToFormat(
-              response['postMarketChangePercent'], true, true);
-          postPriceChange =
-              Utils.fixNumToFormat(response['postMarketChange'], false, true);
+              num: response['postMarketChangePercent'],
+              isPercentage: true,
+              isConstrain: true);
+          postPriceChange = Utils.fixNumToFormat(
+              num: response['postMarketChange'],
+              isPercentage: false,
+              isConstrain: true);
         }
       }
       listData.add(await get(
@@ -123,6 +140,7 @@ class YahooApi {
             isCrypto: isCrypto,
             isPostMarket: isPost,
             isSaved: true,
+            marketName: marketName,
           ),
           requestTickerData: false));
     }
@@ -143,11 +161,13 @@ class YahooApi {
         percentChange = lastData.percentChange,
         priceChange = lastData.priceChange,
         postPercentChange = lastData.postPercentChange,
-        postPriceChange = lastData.postPriceChange;
+        postPriceChange = lastData.postPriceChange,
+        marketName = lastData.marketName;
     double openPrice = lastData.openPrice;
     bool isPost = lastData.isPostMarket,
         isCrypto = lastData.isCrypto,
         isSaved = lastData.isSaved;
+
     if (requestTickerData) {
       results = await getTickerData(symbol);
       //if results null => current api key surpassed
@@ -175,10 +195,18 @@ class YahooApi {
       isPost = !(results['price']["exchangeName"].contains("OTC") ||
           results['quoteType']['quoteType'].contains("INDEX") ||
           results['price']['postMarketChange']['fmt'] == null);
-      print("symbol: $tickerSymbol");
-      print("isPost: $isPost");
       isCrypto = results['quoteType']['quoteType'] == "CRYPTOCURRENCY";
       priceChange = results['price']["regularMarketChange"]['fmt'];
+      //finding marketname
+      marketName = results['price']['exchangeName'].toString().toUpperCase();
+      if (isCrypto)
+        marketName = "CRYPTO";
+      else if (marketName.contains("OTC"))
+        marketName = "OTCBB";
+      else if (tickerSymbol.startsWith("^"))
+        marketName = "INDEX";
+      else if (marketName != "NYSE") marketName = "NASDAQ";
+
       if (isPost && !isCrypto && !Utils.isMarketTime()) {
         if (results['price']['postMarketChangePercent']['fmt'] != null) {
           postPercentChange =
@@ -219,10 +247,14 @@ class YahooApi {
         initChartDataX = chartResults['chart']['result'][0]["timestamp"];
         chartDataY = [];
         chartDataX = [];
-
+        double lastNonNullData;
         for (int i = 0; i < initChartDataX.length; ++i) {
           if (initChartDataY[i] != null) {
+            lastNonNullData = initChartDataY[i].toDouble();
             chartDataY.add(initChartDataY[i].toDouble());
+          } else if (lastNonNullData != null) {
+            print("adding last: ${lastNonNullData}");
+            chartDataY.add(lastNonNullData);
           } else {
             chartDataY.add(openPrice);
           }
@@ -247,6 +279,7 @@ class YahooApi {
       isCrypto: isCrypto,
       isPostMarket: isPost,
       isSaved: isSaved,
+      marketName: marketName,
     );
     if (!Utils.isMarketTime() && !isPost) {
       data.isLive = false;

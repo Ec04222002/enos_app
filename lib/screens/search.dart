@@ -363,9 +363,6 @@ class _SearchPageState extends State<SearchPage> {
         ),
       );
   void showInfo(BuildContext buildContext, String symbol, bool isSaved) {
-    print("clicked");
-    print('buildcontext: $buildContext');
-    print("symbol: $symbol");
     Navigator.push(
         buildContext,
         MaterialPageRoute(

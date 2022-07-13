@@ -11,9 +11,13 @@ class TickerPageModel {
   String priceChange;
   String postPriceChange;
   String shortName;
+  String marketName;
   double openPrice;
   List chartDataY;
   List chartDataX;
+  List closePriceData;
+  List highPriceData;
+  List lowPriceData;
   bool isCrypto;
   bool isPostMarket;
   bool isSaved;
@@ -24,6 +28,7 @@ class TickerPageModel {
       {this.symbol,
       this.companyName,
       this.shortName,
+      this.marketName,
       this.marketPrice,
       this.postMarketPrice,
       this.percentChange,
@@ -34,6 +39,9 @@ class TickerPageModel {
       this.openPrice,
       this.chartDataX,
       this.chartDataY,
+      this.closePriceData,
+      this.highPriceData,
+      this.lowPriceData,
       this.isCrypto = false,
       this.isLive = true,
       this.isSaved = false,
@@ -45,6 +53,7 @@ class TickerPageModel {
     TickerPageModel info = TickerPageModel(
       symbol: data.symbol,
       companyName: data.companyName,
+      marketName: data.marketName,
       marketPrice: data.price,
       percentChange: data.percentChange,
       isPostMarket: data.isPostMarket,

@@ -29,10 +29,17 @@ class _TickerInfoState extends State<TickerInfo> {
   bool isLoading = true;
   double btnOpacity = 0.2;
   TickerPageModel pageData;
+
   Future<void> init() async {
     pageData = await TickerPageInfo.getModelData(widget.symbol, widget.isSaved);
     setState(() {
       isLoading = false;
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
+        await TickerPageInfo.addPostLoadData(pageData);
+        // setState(() {
+        //   print("pageData: ${pageData.closePriceData}");
+        // });
+      });
     });
   }
 
@@ -61,7 +68,7 @@ class _TickerInfoState extends State<TickerInfo> {
               backgroundColor: kLightBackgroundColor,
               title: Text(
                 //${pageInfo.shortName()} * ${tileData.price}
-                pageData.shortName,
+                "${pageData.symbol} * ${pageData.marketName}",
                 textAlign: TextAlign.center,
                 style: TextStyle(
                     color: kBrightTextColor,
@@ -131,12 +138,7 @@ class _TickerInfoState extends State<TickerInfo> {
                 Padding(
                   padding: const EdgeInsets.all(3.0),
                   child: LineChartWidget(
-                    chartDataX: pageData.chartDataX,
-                    chartDataY: pageData.chartDataY,
-                    openPrice: pageData.openPrice,
-                    color: pageData.percentChange[0] == '-'
-                        ? kRedColor
-                        : kGreenColor,
+                    pageData: pageData,
                     isPreview: false,
                   ),
                 ),

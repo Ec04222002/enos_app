@@ -107,8 +107,23 @@ class Utils {
     return dateList;
   }
 
+  static int getDecimalPlaces(var number) {
+    int decimals = 0;
+    List<String> substr = number.toString().split('.');
+    if (substr.length > 0) decimals = int.tryParse(substr[1]);
+    return decimals;
+  }
+
+  static int getPostDecimalZeros(double num) {
+    String decimalPlaceNum = getDecimalPlaces(num).toString();
+    return "0".allMatches(decimalPlaceNum).length;
+  }
+
   static String fixNumToFormat(
-      double num, bool isPercentage, bool isConstrain) {
+      {double num,
+      bool isPercentage,
+      bool isConstrain,
+      bool isMainData = false}) {
     // double num = exp(number);
     // print("num = $num");
     String numAsString = num.toString();
@@ -136,12 +151,15 @@ class Utils {
     bool startCount = false;
     for (var i = 0; i < postDecimal.length; ++i) {
       if (isConstrain && i == 2) {
-        index = i;
+        index = i + 1;
         break;
       }
       if (startCount) {
         pastConsZeroCount++;
-        if (pastConsZeroCount == 3) {
+        if (pastConsZeroCount == 3 && !isMainData) {
+          index = i;
+          break;
+        } else if (pastConsZeroCount == 5 && isMainData) {
           index = i;
           break;
         }
@@ -152,7 +170,7 @@ class Utils {
         pastConsZeroCount++;
       }
     }
-    return num.toStringAsFixed(index + 1);
+    return num.toStringAsFixed(index);
   }
 
   static String colorToHexString(Color color) {

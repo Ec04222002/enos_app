@@ -13,6 +13,7 @@ class TickerTileModel {
   //for saving api calls
   final bool isCrypto;
   final bool isPostMarket;
+  final String marketName;
   bool isSaved;
   bool isLive;
   TickerTileModel(
@@ -27,6 +28,7 @@ class TickerTileModel {
       this.openPrice,
       this.chartDataX,
       this.chartDataY,
+      this.marketName,
       this.isCrypto = false,
       this.isLive = true,
       this.isSaved = false});
@@ -45,7 +47,8 @@ class TickerTileModel {
       isCrypto: json["is_crypto"],
       isPostMarket: json['is_post_market'],
       isLive: json["is_live"],
-      isSaved: json['is_saved']);
+      isSaved: json['is_saved'],
+      marketName: json['market_name']);
 
   Map<String, dynamic> toJson() => {
         'symbol': symbol,
@@ -61,6 +64,7 @@ class TickerTileModel {
         'is_crypto': isCrypto,
         'is_post_market': isPostMarket,
         'is_live': isLive,
-        'is_saved': isSaved
+        'is_saved': isSaved,
+        'market_name': marketName,
       };
 }
