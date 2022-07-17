@@ -65,7 +65,7 @@ class _LineChartWidgetState extends State<LineChartWidget> {
     if (occur <= 3 || time == lastTime) return Text("");
     lastTime = time;
     return Padding(
-      padding: EdgeInsets.only(top: 24),
+      padding: EdgeInsets.fromLTRB(15, 23, 0, 0),
       child:
           Text("${time.replaceAll(" ", "")}", style: TextStyle(fontSize: 13)),
     );
@@ -96,7 +96,7 @@ class _LineChartWidgetState extends State<LineChartWidget> {
     int maxConsCount = 0;
     bool isAbove;
     for (List data in datas) {
-      print('getting data: $data');
+      //print('getting data: $data');
       //get each starting check value
       for (int i = 0; i < data.length; i++) {
         int consCount = 0;
@@ -110,7 +110,7 @@ class _LineChartWidgetState extends State<LineChartWidget> {
           }
           break;
         }
-        print("consecutive: $consCount");
+        //print("consecutive: $consCount");
         //if left (default) side has cons => return default
         if (data == leftData && consCount > (0.5 * leftData.length).ceil()) {
           if (isAbove) return "topLeft";
@@ -263,8 +263,8 @@ class _LineChartWidgetState extends State<LineChartWidget> {
                         SideTitles(reservedSize: 0, showTitles: false))),
             gridData: FlGridData(
               show: !widget.isPreview,
-              drawHorizontalLine: false,
-              drawVerticalLine: false,
+              drawHorizontalLine: true,
+              drawVerticalLine: true,
             ),
             borderData: FlBorderData(show: false),
             //clipData: FlClipData.all(),
@@ -274,7 +274,7 @@ class _LineChartWidgetState extends State<LineChartWidget> {
                   y: previousClose,
                   dashArray: [3, 3],
                   color: kDisabledColor,
-                  strokeWidth: 3,
+                  strokeWidth: widget.isPreview ? 2 : 5.5,
                   label: HorizontalLineLabel(
                       show: !widget.isPreview,
                       padding: EdgeInsets.fromLTRB(0, 2, 0, 2),

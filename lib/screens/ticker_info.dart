@@ -134,7 +134,7 @@ class _TickerInfoState extends State<TickerInfo> {
                   ),
                 ),
                 Padding(
-                  padding: EdgeInsets.fromLTRB(18, 10, 18, 0),
+                  padding: EdgeInsets.fromLTRB(15, 10, 15, 0),
                   child: LineChartWidget(
                     pageData: pageData,
                     isPreview: false,
