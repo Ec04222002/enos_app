@@ -111,7 +111,7 @@ class _TickerState extends State<TickerTile> {
             color: tickerTileData.percentChange[0] == "-"
                 ? kRedColor
                 : kGreenColor,
-            openPrice: tickerTileData.openPrice,
+            previousClose: tickerTileData.previousClose,
           ),
           trailing: trailingWidget,
         ),

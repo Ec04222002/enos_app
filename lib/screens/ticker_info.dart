@@ -7,6 +7,7 @@ import 'package:enos/services/ticker_page_info.dart';
 import 'package:enos/models/ticker_tile.dart';
 import 'package:enos/services/ticker_provider.dart';
 import 'package:enos/services/util.dart';
+import 'package:enos/widgets/chart_dates_bar.dart';
 import 'package:enos/widgets/line_chart.dart';
 import 'package:enos/widgets/loading.dart';
 import 'package:enos/widgets/pre_ticker_prices.dart';
@@ -36,9 +37,6 @@ class _TickerInfoState extends State<TickerInfo> {
       isLoading = false;
       WidgetsBinding.instance.addPostFrameCallback((_) async {
         await TickerPageInfo.addPostLoadData(pageData);
-        // setState(() {
-        //   print("pageData: ${pageData.closePriceData}");
-        // });
       });
     });
   }
@@ -136,12 +134,18 @@ class _TickerInfoState extends State<TickerInfo> {
                   ),
                 ),
                 Padding(
-                  padding: const EdgeInsets.all(3.0),
+                  padding: EdgeInsets.fromLTRB(18, 10, 18, 0),
                   child: LineChartWidget(
                     pageData: pageData,
                     isPreview: false,
                   ),
                 ),
+                Padding(
+                  padding: EdgeInsets.symmetric(vertical: 16),
+                  child: DatesBar(onTap: (index) {
+                    print("index: $index");
+                  }),
+                )
               ],
             )),
           );

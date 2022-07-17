@@ -89,12 +89,31 @@ class Utils {
     return ((value * mod).round().toDouble() / mod);
   }
 
+  //for chart side titles
+  static String formatSideTitle(
+      {double epoch, bool isTime = true, bool isJustPrefix = true}) {
+    DateTime time = DateTime.fromMillisecondsSinceEpoch((epoch * 1000).toInt());
+    String result;
+    if (isTime) {
+      result = DateFormat("hh aa").format(time);
+      if (!isJustPrefix) {
+        result = DateFormat("hh:mm aa").format(time);
+      }
+      if (result.startsWith("0")) result = result.replaceFirst("0", "");
+    }
+
+    //print('hour: $result');
+
+    return result;
+  }
+
+  //for post widget
   static String formatEpoch(int epoch, bool isJustTime) {
     DateTime date = DateTime.fromMillisecondsSinceEpoch(epoch * 1000);
     String result = isJustTime
         ? DateFormat('hh:mm aaa').format(date)
-        : DateFormat('MMM dd, yyyy, hh:mm aaa').format(date);
-    print(result);
+        : DateFormat('E, MMM dd, yyyy, hh:mm aaa').format(date);
+    //print(result);
     return result;
   }
 

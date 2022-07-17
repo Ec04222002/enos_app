@@ -13,6 +13,7 @@ class TickerPageModel {
   String shortName;
   String marketName;
   double openPrice;
+  double previousClose;
   List chartDataY;
   List chartDataX;
   List closePriceData;
@@ -36,7 +37,7 @@ class TickerPageModel {
       this.postPercentChange,
       this.priceChange,
       this.postPriceChange,
-      this.openPrice,
+      this.previousClose,
       this.chartDataX,
       this.chartDataY,
       this.closePriceData,
@@ -50,6 +51,7 @@ class TickerPageModel {
 
   static TickerPageModel fromTickerTileModel(
       {TickerTileModel data, dynamic compleData}) {
+    print("data previous close: ${data.previousClose}");
     TickerPageModel info = TickerPageModel(
       symbol: data.symbol,
       companyName: data.companyName,
@@ -60,7 +62,7 @@ class TickerPageModel {
       postPercentChange: data.postPercentChange,
       priceChange: data.priceChange,
       postPriceChange: data.postPriceChange,
-      openPrice: data.openPrice,
+      previousClose: data.previousClose,
       chartDataX: data.chartDataX,
       chartDataY: data.chartDataY,
       isCrypto: data.isCrypto,

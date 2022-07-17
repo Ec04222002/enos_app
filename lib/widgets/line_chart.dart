@@ -8,12 +8,12 @@ import 'package:fl_chart/fl_chart.dart';
 class LineChartWidget extends StatefulWidget {
   final TickerPageModel pageData;
   Color color;
-  double openPrice;
+  double previousClose;
   List chartDataX, chartDataY;
   final bool isPreview;
   LineChartWidget(
       {this.color,
-      this.openPrice,
+      this.previousClose,
       this.chartDataX,
       this.chartDataY,
       this.pageData,
@@ -35,28 +35,107 @@ class _LineChartWidgetState extends State<LineChartWidget> {
   List closePriceData;
   List highPriceData;
   List lowPriceData;
-  double openPrice;
+
+  List modTimeDataX = [];
+  double previousClose;
   @override
   void initState() {
     super.initState();
     if (widget.pageData != null) {
       chartColor =
           widget.pageData.percentChange[0] == '-' ? kRedColor : kGreenColor;
-      openPrice = widget.pageData.openPrice;
+      previousClose = widget.pageData.previousClose;
       chartDataY = widget.pageData.chartDataY;
       chartDataX = widget.pageData.chartDataX;
     } else {
-      openPrice = widget.openPrice;
+      previousClose = widget.previousClose;
       chartDataX = widget.chartDataX;
       chartDataY = widget.chartDataY;
       chartColor = widget.color;
     }
+    for (var i = 0; i < chartDataX.length; i++) {
+      modTimeDataX.add(Utils.formatSideTitle(epoch: chartDataX[i]));
+    }
+  }
+
+  String lastTime;
+  Widget bottomTitleWidget(double value, TitleMeta _) {
+    String time = Utils.formatSideTitle(epoch: value);
+    int occur = modTimeDataX.where((value) => value == time).toList().length;
+    if (occur <= 3 || time == lastTime) return Text("");
+    lastTime = time;
+    return Padding(
+      padding: EdgeInsets.only(top: 24),
+      child:
+          Text("${time.replaceAll(" ", "")}", style: TextStyle(fontSize: 13)),
+    );
+  }
+
+  String _optimalLabelSpot() {
+    if (chartDataX.isEmpty) return "leftTop";
+    if (chartDataX.length < 6) {
+      if (chartDataY.first >= previousClose) return "leftBottom";
+      return "leftTop";
+    }
+    //space with respect to amount of y's
+    int space = (chartDataY.length * 0.1).round();
+
+    List leftData = chartDataY.sublist(0, space);
+    List centerData = chartDataY.length % 2 != 0
+        ? chartDataY.sublist(
+            (chartDataY.length / 2).floor() - (space / 2).round(),
+            ((chartDataY.length / 2).floor() + (space / 2).round() + 1))
+        : chartDataY.sublist(
+            (chartDataY.length / 2).floor() - (space / 2).round(),
+            ((chartDataY.length / 2).floor() + (space / 2).round()));
+    List rightData = chartDataY.sublist(chartDataY.length - space);
+
+    List datas = [leftData, centerData, rightData];
+    //checking for most consecutive below or above
+    List mostConsData;
+    int maxConsCount = 0;
+    bool isAbove;
+    for (List data in datas) {
+      print('getting data: $data');
+      //get each starting check value
+      for (int i = 0; i < data.length; i++) {
+        int consCount = 0;
+        double valueToCheck = data[i].toDouble();
+        isAbove = valueToCheck <= previousClose;
+        //checking each value
+        for (int j = i + 1; j < data.length; j++) {
+          if ((data[j].toDouble() <= previousClose) == isAbove) {
+            consCount++;
+            continue;
+          }
+          break;
+        }
+        print("consecutive: $consCount");
+        //if left (default) side has cons => return default
+        if (data == leftData && consCount > (0.5 * leftData.length).ceil()) {
+          if (isAbove) return "topLeft";
+          return "bottomLeft";
+        }
+
+        //setting maxconscount and data
+        if (consCount > maxConsCount) {
+          mostConsData = data;
+          maxConsCount = consCount;
+        }
+      }
+    }
+
+    String topOrBottom = isAbove ? "top" : "bottom";
+    String leftCenterOrRight = "Right";
+
+    if (mostConsData == leftData) leftCenterOrRight = "Left";
+    if (mostConsData == centerData) leftCenterOrRight = "Center";
+    print("Result: ${topOrBottom + leftCenterOrRight}");
+    return topOrBottom + leftCenterOrRight;
   }
 
   @override
   Widget build(BuildContext context) {
-    //chartColor = widget.color;
-    //print("openPrice: ${widget.openPrice}");
     for (var i = 0; i < chartDataX.length; ++i) {
       chartDataPoints.add({"x": chartDataX[i], "y": chartDataY[i]});
     }
@@ -71,17 +150,47 @@ class _LineChartWidgetState extends State<LineChartWidget> {
               enabled: !widget.isPreview,
               handleBuiltInTouches: true,
               //getTouchLineEnd: ,
+              getTouchedSpotIndicator:
+                  (LineChartBarData barData, List<int> spotIndexes) {
+                return spotIndexes.map((spotIndex) {
+                  double value = barData.spots[spotIndex].y;
+                  return TouchedSpotIndicatorData(
+                    FlLine(
+                      color: Colors.blueGrey,
+                      strokeWidth: 2,
+                      //dashArray: [4, 4],
+                    ),
+                    FlDotData(
+                      getDotPainter: (spot, percent, barData, index) {
+                        return FlDotCirclePainter(
+                          radius: 8,
+                          color:
+                              value > previousClose ? kGreenColor : kRedColor,
+                          strokeWidth: 2,
+                          strokeColor: Colors.blueGrey,
+                        );
+                      },
+                    ),
+                  );
+                }).toList();
+              },
               touchTooltipData: LineTouchTooltipData(
-                  tooltipBgColor: Colors.blueGrey.withOpacity(0.8),
+                  fitInsideHorizontally: true,
+                  fitInsideVertically: false,
+                  tooltipBgColor: Colors.blueGrey,
                   getTooltipItems: (items) {
                     int index = items[0].spotIndex;
                     dynamic data = chartDataPoints[index];
-
+                    String time = Utils.formatSideTitle(
+                        epoch: chartDataX[index],
+                        isTime: true,
+                        isJustPrefix: false);
                     //post data
                     //pageData is reference and will show after post update
                     closePriceData = widget.pageData.closePriceData;
                     highPriceData = widget.pageData.highPriceData;
                     lowPriceData = widget.pageData.lowPriceData;
+
                     // print("data: $data");
                     String openPrice = Utils.fixNumToFormat(
                       num: data['y'],
@@ -110,8 +219,8 @@ class _LineChartWidgetState extends State<LineChartWidget> {
                     );
                     List<LineTooltipItem> results = [
                       LineTooltipItem(
-                        "*Open:\t${openPrice}\nClose:\t${closePrice}\nHigh:\t${highPrice}\nLow:\t${lowPrice}",
-                        TextStyle(color: kBrightTextColor),
+                        "Time:\t${time}\n*Open:\t${openPrice}\nClose:\t${closePrice}\nHigh:\t${highPrice}\nLow:\t${lowPrice}",
+                        TextStyle(color: kBrightTextColor, fontSize: 13),
                         textAlign: TextAlign.start,
                       ),
                     ];
@@ -129,12 +238,32 @@ class _LineChartWidgetState extends State<LineChartWidget> {
             ),
             minX: minMaxX['min'],
             maxX: minMaxX['max'],
-            minY: minMaxY['min'],
-            maxY: minMaxY['max'],
-            titlesData: FlTitlesData(show: false),
+            minY:
+                previousClose < minMaxY['min'] ? previousClose : minMaxY['min'],
+            maxY:
+                previousClose > minMaxY['max'] ? previousClose : minMaxY['max'],
+            titlesData: FlTitlesData(
+                show: !widget.isPreview,
+                bottomTitles: AxisTitles(
+                  //axisNameSize: 6,
+                  drawBehindEverything: true,
+
+                  sideTitles: SideTitles(
+                      reservedSize: 40,
+                      showTitles: true,
+                      getTitlesWidget:
+                          widget.isPreview ? null : bottomTitleWidget),
+                ),
+                topTitles: AxisTitles(
+                    sideTitles: SideTitles(reservedSize: 0, showTitles: false)),
+                rightTitles: AxisTitles(
+                    sideTitles: SideTitles(reservedSize: 0, showTitles: false)),
+                leftTitles: AxisTitles(
+                    sideTitles:
+                        SideTitles(reservedSize: 0, showTitles: false))),
             gridData: FlGridData(
               show: !widget.isPreview,
-              drawHorizontalLine: true,
+              drawHorizontalLine: false,
               drawVerticalLine: false,
             ),
             borderData: FlBorderData(show: false),
@@ -142,20 +271,65 @@ class _LineChartWidgetState extends State<LineChartWidget> {
             extraLinesData:
                 ExtraLinesData(extraLinesOnTop: false, horizontalLines: [
               HorizontalLine(
-                y: openPrice,
-                color: kDisabledColor,
-                strokeWidth: 3,
-              )
+                  y: previousClose,
+                  dashArray: [3, 3],
+                  color: kDisabledColor,
+                  strokeWidth: 3,
+                  label: HorizontalLineLabel(
+                      show: !widget.isPreview,
+                      padding: EdgeInsets.fromLTRB(0, 2, 0, 2),
+                      alignment: (() {
+                        if (widget.isPreview) return Alignment.bottomLeft;
+                        switch (_optimalLabelSpot()) {
+                          case "topLeft":
+                            return Alignment.topLeft;
+                            break;
+                          case "bottomLeft":
+                            return Alignment.bottomLeft;
+                            break;
+                          case "topCenter":
+                            return Alignment.topCenter;
+                            break;
+                          case "bottomCenter":
+                            return Alignment.bottomCenter;
+                            break;
+                          case "topRight":
+                            return Alignment.topRight;
+                            break;
+                          case "bottomRight":
+                            return Alignment.bottomRight;
+                            break;
+                        }
+                      }()),
+                      labelResolver: (line) {
+                        print("line: ${line.y}");
+                        return Utils.fixNumToFormat(
+                            num: line.y,
+                            isPercentage: false,
+                            isConstrain: false);
+                      },
+                      style: TextStyle(
+                          color: kBrightTextColor,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w900)))
             ]),
             lineBarsData: [
               LineChartBarData(
                   isStepLineChart: false,
                   show: !widget.isPreview,
                   belowBarData: BarAreaData(
-                    show: !widget.isPreview,
-                    color: chartColor.withOpacity(0.4),
+                    applyCutOffY: true,
+                    cutOffY: previousClose,
+                    show: true,
+                    color: kGreenColor.withOpacity(0.75),
                   ),
-                  color: chartColor,
+                  aboveBarData: BarAreaData(
+                      show: true,
+                      applyCutOffY: true,
+                      cutOffY: previousClose,
+                      color: Utils.darken(kRedColor, 0.25)),
+                  //color: kDarkTextColor,
+                  color: Colors.blueGrey,
                   isCurved: false,
                   dotData: FlDotData(show: false),
                   spots: chartDataPoints

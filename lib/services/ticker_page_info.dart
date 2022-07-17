@@ -12,7 +12,8 @@ class TickerPageInfo {
     List initHighPriceData, highPriceData = [];
     List initLowPriceData, lowPriceData = [];
 
-    dynamic chartResult = await api.getChartData(symbol: preData.symbol);
+    dynamic chartResult =
+        await api.getChartData(symbol: preData.symbol, interval: "5m");
     //In case api just hit limit => look for valid api keys again
     if (chartResult == null) {
       for (var i = api.validApiIndex + 1; i < api.apiKeys.length; ++i) {
@@ -67,10 +68,12 @@ class TickerPageInfo {
       String symbol, bool isSaved) async {
     YahooApi api = YahooApi();
     print("setting init data");
-    TickerTileModel tileModel = await api.get(symbol: symbol);
+    TickerTileModel tileModel =
+        await api.get(symbol: symbol, chartInterval: "5m");
     tileModel.isSaved = isSaved;
     dynamic tickerResult = await api.getTickerData(symbol);
-    print("post: ${tileModel.isPostMarket}");
+
+    print("post: ${tileModel.previousClose}");
     Map<String, dynamic> compleData = {
       "postPrice": tileModel.isPostMarket
           ? tickerResult['price']['postMarketPrice']['fmt']
@@ -83,6 +86,8 @@ class TickerPageInfo {
     };
     TickerPageModel pageModel = TickerPageModel.fromTickerTileModel(
         data: tileModel, compleData: compleData);
+    print(tileModel.chartDataX.length);
+    print(tileModel.chartDataX);
     //dynamic news = await api.
     return pageModel;
     //load complement data

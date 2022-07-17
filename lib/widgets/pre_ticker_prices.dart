@@ -6,6 +6,7 @@ import 'package:enos/services/util.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:enos/constants.dart';
+import 'package:intl/intl.dart';
 
 class PreTickerInfo extends StatefulWidget {
   final TickerPageModel data;
@@ -62,7 +63,7 @@ class _PreTickerInfoState extends State<PreTickerInfo> {
               ),
             ),
             SizedBox(
-              height: 5,
+              height: 4,
             ),
             Text(
               "$preMarketPrefix${data.priceChange} (${data.percentChange}$preMarketPercentSuffix)",
@@ -74,7 +75,8 @@ class _PreTickerInfoState extends State<PreTickerInfo> {
             SizedBox(
               height: 4,
             ),
-            (Utils.isPostMarket() || Utils.isPastPostMarket())
+            ((Utils.isPostMarket() || Utils.isPastPostMarket()) &&
+                    !data.isCrypto)
                 ? Container(
                     height: 21,
                     //width: 240,
@@ -86,7 +88,7 @@ class _PreTickerInfoState extends State<PreTickerInfo> {
                           // width: 100,
                           child: Text(
                             "At Close: ${Utils.formatEpoch(data.closeTime, false)}",
-                            style: TextStyle(fontSize: 13),
+                            style: TextStyle(fontSize: 12.5),
                           ),
                         ),
                         CupertinoButton(
@@ -102,14 +104,18 @@ class _PreTickerInfoState extends State<PreTickerInfo> {
                     ),
                   )
                 : Container(
-                    width: 0,
+                    height: 21,
+                    child: Text(
+                      "Current:\t${DateFormat('E, MMM dd, yyyy, hh:mm aaa').format(DateTime.now())}",
+                      style: TextStyle(fontSize: 12),
+                    ),
                   ),
           ],
         ),
         Container(
           height: 145,
           child: Padding(
-            padding: const EdgeInsets.only(bottom: 8),
+            padding: EdgeInsets.only(bottom: Utils.isPastPostMarket() ? 15 : 8),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.end,
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -157,7 +163,9 @@ class _PreTickerInfoState extends State<PreTickerInfo> {
                           )),
                 (data.isPostMarket &&
                         !data.isCrypto &&
-                        (Utils.isPostMarket() || Utils.isPastPostMarket()))
+                        (Utils.isPostMarket() ||
+                            Utils.isPastPostMarket() ||
+                            Utils.isWeekend()))
                     ? postPriceWidget()
                     : Container(
                         width: 0,
@@ -215,7 +223,7 @@ class _PreTickerInfoState extends State<PreTickerInfo> {
           style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
         ),
         SizedBox(
-          height: 15,
+          height: 8,
         ),
         Text(
           "$postMarketPrefix${data.postPriceChange} (${data.postPercentChange}$postMarketPercentSuffix)",
@@ -230,10 +238,11 @@ class _PreTickerInfoState extends State<PreTickerInfo> {
         Utils.isPastPostMarket()
             ? Text(
                 "Post Close: ${Utils.formatEpoch(data.postCloseTime, true)}",
-                style: TextStyle(fontSize: 13),
+                style: TextStyle(fontSize: 12.5),
               )
             : Container(
                 width: 0,
+                height: 23,
               )
       ],
     );

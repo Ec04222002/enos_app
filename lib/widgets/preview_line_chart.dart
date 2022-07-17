@@ -8,10 +8,14 @@ class PreviewLineChart extends StatelessWidget {
   final List chartDataY;
   final List chartDataX;
   final Color color;
-  final double openPrice;
+  final double previousClose;
 
   PreviewLineChart(
-      {this.chartDataX, this.chartDataY, this.color, this.openPrice, Key key})
+      {this.chartDataX,
+      this.chartDataY,
+      this.color,
+      this.previousClose,
+      Key key})
       : super(key: key);
 
   @override
@@ -41,7 +45,7 @@ class PreviewLineChart extends StatelessWidget {
           LineChartWidget(
             chartDataX: chartDataX,
             chartDataY: chartDataY,
-            openPrice: openPrice,
+            previousClose: previousClose,
             color: color,
             isPreview: true,
           )

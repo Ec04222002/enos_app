@@ -100,11 +100,12 @@ class YahooApi {
           postPercentChange,
           postPriceChange;
 
-      double openPrice = response['regularMarketOpen'];
-      bool isPost = !(response["fullExchangeName"].contains("OTC") ||
+      double previousClose = response['regularMarketPreviousClose'];
+      bool isCrypto = (response['quoteType'] == "CRYPTOCURRENCY"),
+          isPost = !(response["fullExchangeName"].contains("OTC") ||
               response['quoteType'].contains("INDEX") ||
-              response['postMarketChange'] == null),
-          isCrypto = (response['quoteType'] == "CRYPTOCURRENCY");
+              response['postMarketChange'] == null);
+      ;
       //finding marketname
       String marketName = response['fullExchangeName'].toString().toUpperCase();
       if (isCrypto)
@@ -136,7 +137,7 @@ class YahooApi {
             percentChange: percentChange,
             postPercentChange: postPercentChange,
             postPriceChange: postPriceChange,
-            openPrice: openPrice,
+            previousClose: previousClose,
             isCrypto: isCrypto,
             isPostMarket: isPost,
             isSaved: true,
@@ -151,6 +152,8 @@ class YahooApi {
       {@required String symbol,
       TickerTileModel lastData,
       bool requestChartData = true,
+      String chartRange = "1d",
+      String chartInterval = "15m",
       bool requestTickerData = true}) async {
     lastData = lastData == null ? TickerTileModel() : lastData;
 
@@ -163,7 +166,7 @@ class YahooApi {
         postPercentChange = lastData.postPercentChange,
         postPriceChange = lastData.postPriceChange,
         marketName = lastData.marketName;
-    double openPrice = lastData.openPrice;
+    double previousClose = lastData.previousClose;
     bool isPost = lastData.isPostMarket,
         isCrypto = lastData.isCrypto,
         isSaved = lastData.isSaved;
@@ -191,12 +194,14 @@ class YahooApi {
 
       price = results['price']["regularMarketPrice"]["fmt"];
       percentChange = results['price']['regularMarketChangePercent']["fmt"];
-      openPrice = results['price']['regularMarketOpen']["raw"].toDouble();
+      previousClose =
+          results['price']['regularMarketPreviousClose']["raw"].toDouble();
       isPost = !(results['price']["exchangeName"].contains("OTC") ||
           results['quoteType']['quoteType'].contains("INDEX") ||
           results['price']['postMarketChange']['fmt'] == null);
       isCrypto = results['quoteType']['quoteType'] == "CRYPTOCURRENCY";
       priceChange = results['price']["regularMarketChange"]['fmt'];
+
       //finding marketname
       marketName = results['price']['exchangeName'].toString().toUpperCase();
       if (isCrypto)
@@ -224,12 +229,14 @@ class YahooApi {
     if (requestChartData) {
       print("getting chart data");
       // using last working header
-      chartResults = await getChartData(symbol: symbol);
+      chartResults = await getChartData(
+          symbol: symbol, range: chartRange, interval: chartInterval);
       //In case api just hit limit => look for valid api keys again
       if (chartResults == null) {
         for (var i = validApiIndex + 1; i < apiKeys.length; ++i) {
           resetApiKey(i);
-          chartResults = await getChartData(symbol: symbol);
+          chartResults = await getChartData(
+              symbol: symbol, range: chartRange, interval: chartInterval);
           if (chartResults != null) {
             validApiIndex = i;
             break;
@@ -255,8 +262,6 @@ class YahooApi {
           } else if (lastNonNullData != null) {
             print("adding last: ${lastNonNullData}");
             chartDataY.add(lastNonNullData);
-          } else {
-            chartDataY.add(openPrice);
           }
           chartDataX.add(initChartDataX[i].toDouble());
         }
@@ -273,7 +278,7 @@ class YahooApi {
       postPercentChange: postPercentChange,
       priceChange: priceChange,
       postPriceChange: postPriceChange,
-      openPrice: openPrice,
+      previousClose: previousClose,
       chartDataX: chartDataX,
       chartDataY: chartDataY,
       isCrypto: isCrypto,
@@ -287,6 +292,8 @@ class YahooApi {
     if (Utils.isPastPostMarket() && !isCrypto) {
       data.isLive = false;
     }
+    if (isCrypto) data.isLive = true;
+    print("data live: ${data.isLive}");
     return data;
   }
 }
