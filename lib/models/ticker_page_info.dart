@@ -16,9 +16,12 @@ class TickerPageModel {
   double previousClose;
   List chartDataY;
   List chartDataX;
-  List closePriceData;
-  List highPriceData;
-  List lowPriceData;
+
+  Map<String, Map<String, List>> priceData = {};
+  // List closePriceData;
+  // List highPriceData;
+  // List lowPriceData;
+
   bool isCrypto;
   bool isPostMarket;
   bool isSaved;
@@ -40,9 +43,6 @@ class TickerPageModel {
       this.previousClose,
       this.chartDataX,
       this.chartDataY,
-      this.closePriceData,
-      this.highPriceData,
-      this.lowPriceData,
       this.isCrypto = false,
       this.isLive = true,
       this.isSaved = false,

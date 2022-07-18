@@ -7,15 +7,17 @@ import 'package:fl_chart/fl_chart.dart';
 
 class LineChartWidget extends StatefulWidget {
   final TickerPageModel pageData;
+  final bool isPreview;
   Color color;
   double previousClose;
   List chartDataX, chartDataY;
-  final bool isPreview;
+  String range;
   LineChartWidget(
       {this.color,
       this.previousClose,
       this.chartDataX,
       this.chartDataY,
+      this.range = '1d',
       this.pageData,
       this.isPreview,
       Key key})
@@ -30,11 +32,15 @@ class _LineChartWidgetState extends State<LineChartWidget> {
   Map minMaxX;
   Map minMaxY;
   Color chartColor;
+  //open price
   List chartDataY;
   List chartDataX;
   List closePriceData;
   List highPriceData;
   List lowPriceData;
+  bool triggerNewChartData = false;
+  bool chartLoading = true;
+  String defaultRange = "1d";
 
   List modTimeDataX = [];
   double previousClose;
@@ -53,8 +59,15 @@ class _LineChartWidgetState extends State<LineChartWidget> {
       chartDataY = widget.chartDataY;
       chartColor = widget.color;
     }
+    setDataPoints();
+  }
+
+  void setDataPoints() {
+    modTimeDataX = [];
+    chartDataPoints = [];
     for (var i = 0; i < chartDataX.length; i++) {
       modTimeDataX.add(Utils.formatSideTitle(epoch: chartDataX[i]));
+      chartDataPoints.add({"x": chartDataX[i], "y": chartDataY[i]});
     }
   }
 
@@ -63,11 +76,13 @@ class _LineChartWidgetState extends State<LineChartWidget> {
     String time = Utils.formatSideTitle(epoch: value);
     int occur = modTimeDataX.where((value) => value == time).toList().length;
     if (occur <= 3 || time == lastTime) return Text("");
+
     lastTime = time;
+    Widget timeWidget =
+        Text("${time.replaceAll(" ", "")}", style: TextStyle(fontSize: 12));
     return Padding(
-      padding: EdgeInsets.fromLTRB(15, 23, 0, 0),
-      child:
-          Text("${time.replaceAll(" ", "")}", style: TextStyle(fontSize: 13)),
+      padding: EdgeInsets.fromLTRB(5, 23, 0, 0),
+      child: timeWidget,
     );
   }
 
@@ -130,22 +145,31 @@ class _LineChartWidgetState extends State<LineChartWidget> {
 
     if (mostConsData == leftData) leftCenterOrRight = "Left";
     if (mostConsData == centerData) leftCenterOrRight = "Center";
-    print("Result: ${topOrBottom + leftCenterOrRight}");
     return topOrBottom + leftCenterOrRight;
   }
 
   @override
   Widget build(BuildContext context) {
-    for (var i = 0; i < chartDataX.length; ++i) {
-      chartDataPoints.add({"x": chartDataX[i], "y": chartDataY[i]});
+    // in data not default
+    if (widget.range != defaultRange) {
+      triggerNewChartData = true;
+    }
+    if (triggerNewChartData) {
+      print("priceData: ${widget.pageData.priceData[widget.range]}");
+      chartDataX = widget.pageData.priceData[widget.range]['timeStamps'];
+      chartDataY = widget.pageData.priceData[widget.range]['openPrices'];
+      setDataPoints();
     }
 
+    print(chartDataX.length);
+    print(chartDataY.length);
     minMaxX = Utils.maxMin(chartDataX);
     minMaxY = Utils.maxMin(chartDataY);
     return AspectRatio(
       aspectRatio: widget.isPreview ? 3 : 1.75,
       child: LineChart(
         LineChartData(
+            baselineY: previousClose,
             lineTouchData: LineTouchData(
               enabled: !widget.isPreview,
               handleBuiltInTouches: true,
@@ -187,9 +211,20 @@ class _LineChartWidgetState extends State<LineChartWidget> {
                         isJustPrefix: false);
                     //post data
                     //pageData is reference and will show after post update
-                    closePriceData = widget.pageData.closePriceData;
-                    highPriceData = widget.pageData.highPriceData;
-                    lowPriceData = widget.pageData.lowPriceData;
+                    Map preData = widget.pageData.priceData[widget.range];
+                    if (preData == null) {
+                      List<LineTooltipItem> results = [
+                        LineTooltipItem(
+                          "Loading ...",
+                          TextStyle(color: kBrightTextColor, fontSize: 13),
+                          textAlign: TextAlign.start,
+                        ),
+                      ];
+                      return results;
+                    }
+                    closePriceData = preData['closePrices'];
+                    highPriceData = preData['highPrices'];
+                    lowPriceData = preData['lowPrices'];
 
                     // print("data: $data");
                     String openPrice = Utils.fixNumToFormat(
@@ -228,12 +263,12 @@ class _LineChartWidgetState extends State<LineChartWidget> {
                   }),
               touchCallback:
                   (FlTouchEvent event, LineTouchResponse touchResponse) {
-                if (event is FlTapUpEvent) {
-                  // handle tap here
-                  print("up...");
-                }
-                if (event is FlTapDownEvent) {}
-                if (event is FlTapCancelEvent) {}
+                // if (event is FlTapUpEvent) {
+                //   // handle tap here
+                //   print("up...");
+                // }
+                // if (event is FlTapDownEvent) {}
+                // if (event is FlTapCancelEvent) {}
               },
             ),
             minX: minMaxX['min'],
@@ -247,8 +282,8 @@ class _LineChartWidgetState extends State<LineChartWidget> {
                 bottomTitles: AxisTitles(
                   //axisNameSize: 6,
                   drawBehindEverything: true,
-
                   sideTitles: SideTitles(
+                      //interval: 5.0,
                       reservedSize: 40,
                       showTitles: true,
                       getTitlesWidget:
@@ -263,10 +298,21 @@ class _LineChartWidgetState extends State<LineChartWidget> {
                         SideTitles(reservedSize: 0, showTitles: false))),
             gridData: FlGridData(
               show: !widget.isPreview,
+              getDrawingHorizontalLine: (value) {
+                return FlLine(
+                    color: kDisabledColor.withOpacity(0.2), strokeWidth: 1);
+              },
+              getDrawingVerticalLine: (value) {
+                return FlLine(
+                    color: kDarkTextColor.withOpacity(0.2), strokeWidth: 1);
+              },
               drawHorizontalLine: true,
               drawVerticalLine: true,
             ),
-            borderData: FlBorderData(show: false),
+            borderData: FlBorderData(
+              show: true,
+              border: Border.all(color: Colors.transparent, width: 15),
+            ),
             //clipData: FlClipData.all(),
             extraLinesData:
                 ExtraLinesData(extraLinesOnTop: false, horizontalLines: [
@@ -274,7 +320,7 @@ class _LineChartWidgetState extends State<LineChartWidget> {
                   y: previousClose,
                   dashArray: [3, 3],
                   color: kDisabledColor,
-                  strokeWidth: widget.isPreview ? 2 : 5.5,
+                  strokeWidth: widget.isPreview ? 3 : 5.5,
                   label: HorizontalLineLabel(
                       show: !widget.isPreview,
                       padding: EdgeInsets.fromLTRB(0, 2, 0, 2),
@@ -302,7 +348,6 @@ class _LineChartWidgetState extends State<LineChartWidget> {
                         }
                       }()),
                       labelResolver: (line) {
-                        print("line: ${line.y}");
                         return Utils.fixNumToFormat(
                             num: line.y,
                             isPercentage: false,
@@ -316,20 +361,25 @@ class _LineChartWidgetState extends State<LineChartWidget> {
             lineBarsData: [
               LineChartBarData(
                   isStepLineChart: false,
-                  show: !widget.isPreview,
+                  show: true,
                   belowBarData: BarAreaData(
                     applyCutOffY: true,
                     cutOffY: previousClose,
                     show: true,
-                    color: kGreenColor.withOpacity(0.75),
+                    color: kGreenColor,
                   ),
                   aboveBarData: BarAreaData(
                       show: true,
                       applyCutOffY: true,
                       cutOffY: previousClose,
-                      color: Utils.darken(kRedColor, 0.25)),
+                      color: widget.isPreview
+                          ? kRedColor
+                          : Utils.darken(kRedColor, 0.25)),
                   //color: kDarkTextColor,
+                  //preventCurveOverShooting: true,
+                  barWidth: 1.5,
                   color: Colors.blueGrey,
+                  //color: Colors.transparent,
                   isCurved: false,
                   dotData: FlDotData(show: false),
                   spots: chartDataPoints

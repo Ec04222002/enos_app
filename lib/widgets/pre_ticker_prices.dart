@@ -29,6 +29,8 @@ class _PreTickerInfoState extends State<PreTickerInfo> {
   Widget build(BuildContext context) {
     data = widget.data;
     provider = widget.tickerProvider;
+    print("price change");
+    print(data.priceChange);
     preMarketColor = data.priceChange[0] != "-" ? kGreenColor : kRedColor;
     preMarketPrefix = preMarketColor == kGreenColor ? "+" : "";
     preMarketPercentSuffix =
@@ -75,7 +77,9 @@ class _PreTickerInfoState extends State<PreTickerInfo> {
             SizedBox(
               height: 4,
             ),
-            ((Utils.isPostMarket() || Utils.isPastPostMarket()) &&
+            ((Utils.isPostMarket() ||
+                        Utils.isPastPostMarket() ||
+                        Utils.isWeekend()) &&
                     !data.isCrypto)
                 ? Container(
                     height: 21,
@@ -115,7 +119,9 @@ class _PreTickerInfoState extends State<PreTickerInfo> {
         Container(
           height: 145,
           child: Padding(
-            padding: EdgeInsets.only(bottom: Utils.isPastPostMarket() ? 15 : 8),
+            padding: EdgeInsets.only(
+                bottom:
+                    (Utils.isPastPostMarket() || Utils.isWeekend()) ? 15 : 8),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.end,
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -209,6 +215,7 @@ class _PreTickerInfoState extends State<PreTickerInfo> {
   }
 
   Widget postPriceWidget() {
+    print("in post widget data = ${data.toString()}");
     postMarketColor = data.postPriceChange[0] != '-' ? kGreenColor : kRedColor;
     postMarketPrefix = postMarketColor == kGreenColor ? "+" : "";
     postMarketPercentSuffix =
@@ -235,7 +242,7 @@ class _PreTickerInfoState extends State<PreTickerInfo> {
         SizedBox(
           height: 4,
         ),
-        Utils.isPastPostMarket()
+        Utils.isPastPostMarket() || Utils.isWeekend()
             ? Text(
                 "Post Close: ${Utils.formatEpoch(data.postCloseTime, true)}",
                 style: TextStyle(fontSize: 12.5),

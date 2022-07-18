@@ -30,13 +30,17 @@ class _TickerInfoState extends State<TickerInfo> {
   bool isLoading = true;
   double btnOpacity = 0.2;
   TickerPageModel pageData;
-
+  double previousClose;
+  String range = "1d";
+  // bool chartLoading = true;
   Future<void> init() async {
     pageData = await TickerPageInfo.getModelData(widget.symbol, widget.isSaved);
+    previousClose = pageData.previousClose;
     setState(() {
       isLoading = false;
       WidgetsBinding.instance.addPostFrameCallback((_) async {
         await TickerPageInfo.addPostLoadData(pageData);
+        print("getting post data");
       });
     });
   }
@@ -50,6 +54,7 @@ class _TickerInfoState extends State<TickerInfo> {
 
   @override
   Widget build(BuildContext context) {
+    print("in build");
     return isLoading
         ? Loading(
             type: "dot",
@@ -134,16 +139,29 @@ class _TickerInfoState extends State<TickerInfo> {
                   ),
                 ),
                 Padding(
-                  padding: EdgeInsets.fromLTRB(15, 10, 15, 0),
+                  padding: EdgeInsets.fromLTRB(5, 10, 5, 0),
                   child: LineChartWidget(
                     pageData: pageData,
+                    range: range,
                     isPreview: false,
+                    previousClose: previousClose,
                   ),
                 ),
                 Padding(
                   padding: EdgeInsets.symmetric(vertical: 16),
                   child: DatesBar(onTap: (index) {
-                    print("index: $index");
+                    String localRange =
+                        TickerPageInfo.chartRangeAndInt[index][0];
+                    if (pageData.priceData[localRange] == null) {
+                      return null;
+                    }
+                    setState(() {
+                      range = localRange;
+                      previousClose = range != '1d'
+                          ? pageData.chartDataY.first
+                          : pageData.previousClose;
+                    });
+                    return 'Success';
                   }),
                 )
               ],

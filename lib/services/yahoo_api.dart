@@ -115,7 +115,7 @@ class YahooApi {
       else if (tickerSymbol.startsWith("^"))
         marketName = "INDEX";
       else if (marketName != "NYSE") marketName = "NASDAQ";
-      if (isPost && !isCrypto && !Utils.isMarketTime()) {
+      if (isPost && !isCrypto && (!Utils.isMarketTime() || Utils.isWeekend())) {
         if (response['postMarketChangePercent'] != null) {
           postPercentChange = Utils.fixNumToFormat(
               num: response['postMarketChangePercent'],
@@ -212,7 +212,7 @@ class YahooApi {
         marketName = "INDEX";
       else if (marketName != "NYSE") marketName = "NASDAQ";
 
-      if (isPost && !isCrypto && !Utils.isMarketTime()) {
+      if (isPost && !isCrypto && (!Utils.isMarketTime() || Utils.isWeekend())) {
         if (results['price']['postMarketChangePercent']['fmt'] != null) {
           postPercentChange =
               results['price']['postMarketChangePercent']['fmt'];

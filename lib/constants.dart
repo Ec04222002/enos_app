@@ -16,7 +16,7 @@ const kGreenColor = Color(0xFF34C85a);
 
 const List<String> defaultTickerTileModels = const [
   "^DJI",
-  "^SPX",
+  "^GSPC",
   "TSLA",
   // "AMZN",
   // "BTC-USD",

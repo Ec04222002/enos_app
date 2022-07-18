@@ -49,7 +49,6 @@ dependencies:
   fl_chart: ^0.55.0
   cool_dropdown: ^1.4.1
   intl: ^0.17.0
-  chart_sparkline: ^1.0.11
   
 dev_dependencies:
   flutter_test:
