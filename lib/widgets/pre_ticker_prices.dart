@@ -91,7 +91,7 @@ class _PreTickerInfoState extends State<PreTickerInfo> {
                         Container(
                           // width: 100,
                           child: Text(
-                            "At Close: ${Utils.formatEpoch(data.closeTime, false)}",
+                            "At Close: ${Utils.formatEpoch(epoch: data.closeTime, isJustTime: false)}",
                             style: TextStyle(fontSize: 12.5),
                           ),
                         ),
@@ -244,7 +244,7 @@ class _PreTickerInfoState extends State<PreTickerInfo> {
         ),
         Utils.isPastPostMarket() || Utils.isWeekend()
             ? Text(
-                "Post Close: ${Utils.formatEpoch(data.postCloseTime, true)}",
+                "Post Close: ${Utils.formatEpoch(epoch: data.postCloseTime, isJustTime: true)}",
                 style: TextStyle(fontSize: 12.5),
               )
             : Container(

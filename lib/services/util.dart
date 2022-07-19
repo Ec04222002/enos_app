@@ -89,30 +89,18 @@ class Utils {
     return ((value * mod).round().toDouble() / mod);
   }
 
-  //for chart side titles
-  static String formatSideTitle(
-      {double epoch, bool isTime = true, bool isJustPrefix = true}) {
-    DateTime time = DateTime.fromMillisecondsSinceEpoch((epoch * 1000).toInt());
-    String result;
-    if (isTime) {
-      result = DateFormat("hh aa").format(time);
-      if (!isJustPrefix) {
-        result = DateFormat("hh:mm aa").format(time);
-      }
-      if (result.startsWith("0")) result = result.replaceFirst("0", "");
-    }
-
-    //print('hour: $result');
-
-    return result;
-  }
-
   //for post widget
-  static String formatEpoch(int epoch, bool isJustTime) {
-    DateTime date = DateTime.fromMillisecondsSinceEpoch(epoch * 1000);
-    String result = isJustTime
-        ? DateFormat('hh:mm aaa').format(date)
-        : DateFormat('E, MMM dd, yyyy, hh:mm aaa').format(date);
+  static String formatEpoch(
+      {int epoch, bool isJustTime = true, bool isDateNumeric = false}) {
+    DateTime date = DateTime.fromMillisecondsSinceEpoch((epoch * 1000).toInt());
+    String result = DateFormat('E, MMM dd, yyyy, h:mm aaa').format(date);
+    if (isJustTime) {
+      result = DateFormat('hh:mm aaa').format(date);
+    }
+    if (isDateNumeric) {
+      //result = DateFormat.yMEd().add_jm().format(date);
+      result = DateFormat('E, M/d/yy, h:mm aaa').format(date);
+    }
     //print(result);
     return result;
   }

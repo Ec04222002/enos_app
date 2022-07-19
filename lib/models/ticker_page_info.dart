@@ -51,7 +51,6 @@ class TickerPageModel {
 
   static TickerPageModel fromTickerTileModel(
       {TickerTileModel data, dynamic compleData}) {
-    print("data previous close: ${data.previousClose}");
     TickerPageModel info = TickerPageModel(
       symbol: data.symbol,
       companyName: data.companyName,

@@ -6,8 +6,8 @@ class TickerPageInfo {
   //TickerPageInfo({this.tileData});
   static List chartRangeAndInt = const [
     ["1d", "5m"],
-    ["5d", "30m"],
-    ['1mo', '30m'],
+    ["5d", "15m"],
+    ['1mo', '60m'],
     ['6mo', '1d'],
     ['1y', '1d'],
     ['5y', '1wk'],
@@ -15,14 +15,17 @@ class TickerPageInfo {
   ];
   static Future<void> addPostLoadData(TickerPageModel preData) async {
     YahooApi api = YahooApi();
-
+    bool isLowData = false;
     for (var i = 0; i < chartRangeAndInt.length; ++i) {
+      if (isLowData) {
+        print("low data - not calling");
+        preData.priceData[chartRangeAndInt[i][0]] = {};
+        continue;
+      }
       List initClosePriceData, closePriceData = [];
       List initHighPriceData, highPriceData = [];
       List initLowPriceData, lowPriceData = [];
       List initOpenPriceData, openPriceData = [];
-      print("range: ${chartRangeAndInt[i][0]}");
-      print("interval: ${chartRangeAndInt[i][1]}");
       dynamic chartResult = await api.getChartData(
           symbol: preData.symbol,
           range: chartRangeAndInt[i][0],
@@ -49,11 +52,19 @@ class TickerPageInfo {
         timeData = chartResult['chart']['result'][0]["timestamp"]
             .map((i) => i.toDouble())
             .toList();
+        //preventing anymore calls if above data is insufficient
+        //must have 1 day price though
+        if (timeData.length < 3 && i != 0) {
+          isLowData = true;
+          preData.priceData[chartRangeAndInt[i][0]] = {};
+          continue;
+        }
         pre = chartResult['chart']['result'][0]["indicators"]['quote'][0];
         initClosePriceData = pre["close"];
         initLowPriceData = pre["low"];
         initHighPriceData = pre["high"];
         initOpenPriceData = pre['open'];
+        print("data for: ${chartRangeAndInt[i][0]}");
         datas = [
           {"data": closePriceData, "init": initClosePriceData},
           {"data": lowPriceData, "init": initLowPriceData},

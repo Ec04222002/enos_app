@@ -32,7 +32,8 @@ class _TickerInfoState extends State<TickerInfo> {
   TickerPageModel pageData;
   double previousClose;
   String range = "1d";
-  // bool chartLoading = true;
+  //bool lowData = false;
+  bool chartLoading = false;
   Future<void> init() async {
     pageData = await TickerPageInfo.getModelData(widget.symbol, widget.isSaved);
     previousClose = pageData.previousClose;
@@ -40,7 +41,15 @@ class _TickerInfoState extends State<TickerInfo> {
       isLoading = false;
       WidgetsBinding.instance.addPostFrameCallback((_) async {
         await TickerPageInfo.addPostLoadData(pageData);
-        print("getting post data");
+        setState(() {
+          // if (pageData.priceData[range]['openPrices'].length < 3) {
+          //   print("low data");
+          //   print(
+          //       "data count: ${pageData.priceData[range]['openPrices'].length}");
+          //   //lowData = true;
+          // }
+          chartLoading = false;
+        });
       });
     });
   }
@@ -139,12 +148,14 @@ class _TickerInfoState extends State<TickerInfo> {
                   ),
                 ),
                 Padding(
-                  padding: EdgeInsets.fromLTRB(5, 10, 5, 0),
+                  padding: EdgeInsets.fromLTRB(6, 8, 6, 0),
                   child: LineChartWidget(
                     pageData: pageData,
                     range: range,
                     isPreview: false,
                     previousClose: previousClose,
+                    chartLoading: chartLoading,
+                    //lowData: lowData,
                   ),
                 ),
                 Padding(
@@ -152,16 +163,25 @@ class _TickerInfoState extends State<TickerInfo> {
                   child: DatesBar(onTap: (index) {
                     String localRange =
                         TickerPageInfo.chartRangeAndInt[index][0];
-                    if (pageData.priceData[localRange] == null) {
-                      return null;
-                    }
+                    // chartLoading = false;
                     setState(() {
                       range = localRange;
-                      previousClose = range != '1d'
-                          ? pageData.chartDataY.first
-                          : pageData.previousClose;
+                      print("in set state");
+                      previousClose = pageData.previousClose;
+                      if (pageData.priceData[localRange] == null) {
+                        chartLoading = true;
+                        return;
+                      }
+                      if (range != '1d') {
+                        previousClose =
+                            pageData.priceData[localRange]['closePrices'].first;
+                      }
+                      // lowData = true;
+                      // if (pageData.priceData[range]['openPrices'].length >= 3) {
+                      //   lowData = false;
+                      // }
                     });
-                    return 'Success';
+                    //return 'Success';
                   }),
                 )
               ],

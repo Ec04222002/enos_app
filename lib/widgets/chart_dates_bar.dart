@@ -1,33 +1,26 @@
 import 'package:enos/constants.dart';
 import 'package:flutter/material.dart';
 
-class DatesBar extends StatefulWidget {
+class DatesBar extends StatelessWidget {
+  // int _tabIndex = 0;
+  // int _previousIndex = 0;
+  // var tab;
+  // @override
+  // void initState() {
+  //   // TODO: implement initState
+  //   super.initState();
+  //   tab = TabController(initialIndex: 0, length: 7, vsync: this);
+
+  //   tab.addListener(() => setState(() {
+  //         tab.index = _tabIndex;
+  //       }));
+  // }
   final Function onTap;
 
   const DatesBar({
     this.onTap,
     Key key,
   }) : super(key: key);
-
-  @override
-  State<DatesBar> createState() => _DatesBarState();
-}
-
-class _DatesBarState extends State<DatesBar> with TickerProviderStateMixin {
-  int _tabIndex = 0;
-  int _previousIndex = 0;
-  var tab;
-  @override
-  void initState() {
-    // TODO: implement initState
-    super.initState();
-    tab = TabController(initialIndex: 0, length: 7, vsync: this);
-
-    tab.addListener(() => setState(() {
-          tab.index = _tabIndex;
-        }));
-  }
-
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -47,16 +40,8 @@ class _DatesBarState extends State<DatesBar> with TickerProviderStateMixin {
             child: Align(
               alignment: Alignment.center,
               child: TabBar(
-                controller: tab,
-                onTap: (value) {
-                  var response = widget.onTap(value);
-                  if (response == null) {
-                    _tabIndex = _previousIndex;
-                  } else {
-                    _tabIndex = value;
-                    _previousIndex = _tabIndex;
-                  }
-                },
+                //controller: tab,
+                onTap: onTap,
                 isScrollable: true,
                 indicatorPadding: EdgeInsets.zero,
                 //labelPadding: EdgeInsets.symmetric(horizontal: 16.5),
