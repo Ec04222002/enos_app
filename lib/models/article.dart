@@ -52,16 +52,16 @@ class _ArticleViewerState extends State<ArticleViewer> {
         children: <Widget>[
           Expanded(
               child: ListView.builder(
-                itemCount: widget.tiles.length + 1,
-                scrollDirection: Axis.vertical,
+                  itemCount: widget.tiles.length + 1,
+                  scrollDirection: Axis.vertical,
                   itemBuilder: (context,index) {
                     if(index < widget.tiles.length)
-                        return widget.tiles[index];
+                      return widget.tiles[index];
                     else {
                       getNewArticles();
                       return CircularProgressIndicator();
                     }
-                }
+                  }
               )
           )
         ],
@@ -95,7 +95,7 @@ class NewsTile extends StatelessWidget {
   String desc;
 
   NewsTile({this.img, this.title, this.provider,this.content, this.datePublished, @required this.posturl}) {
-   time = DateTime.parse(datePublished).toLocal().toUtc();
+    time = DateTime.parse(datePublished).toLocal().toUtc();
     int month = time.month;
     int day = time.day;
     int year = time.year;
@@ -121,36 +121,36 @@ class NewsTile extends StatelessWidget {
           ));
         },
         child: Container(
-        margin: EdgeInsets.all(12.0),
-        padding: EdgeInsets.all(8.0),
-        decoration: BoxDecoration(
-            color: bg,
-            borderRadius: BorderRadius.circular(12.0),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black12,
-                blurRadius: 3.0,
+          margin: EdgeInsets.all(12.0),
+          padding: EdgeInsets.all(8.0),
+          decoration: BoxDecoration(
+              color: bg,
+              borderRadius: BorderRadius.circular(12.0),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black12,
+                  blurRadius: 3.0,
+                ),
+              ]),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Tile(),
+              SizedBox(width: 5,),
+              Container(
+                height: 100.0,
+                width: 100,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  image: DecorationImage(
+                      image: NetworkImage(img),fit: BoxFit.cover),
+                  borderRadius: BorderRadius.circular(12.0),
+                ),
               ),
-            ]),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.start,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Tile(),
-            SizedBox(width: 5,),
-            Container(
-              height: 100.0,
-              width: 100,
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                image: DecorationImage(
-                    image: NetworkImage(img),fit: BoxFit.cover),
-                borderRadius: BorderRadius.circular(12.0),
-              ),
-            ),
-          ],
-        ),
-      )
+            ],
+          ),
+        )
     );
   }
 
@@ -202,7 +202,7 @@ class NewsTile extends StatelessWidget {
 
 class ArticleView extends StatefulWidget {
 
-     final String postUrl;
+  final String postUrl;
   ArticleView({@required this.postUrl});
 
   @override
@@ -213,7 +213,7 @@ class _ArticleViewState extends State<ArticleView> {
 
   final Completer<WebViewController> _controller = Completer<
       WebViewController>();
-
+  bool isLoading = true;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -238,22 +238,21 @@ class _ArticleViewState extends State<ArticleView> {
               icon: Icon(Icons.search))
         ],
       ),
-      body: Container(
-        height: MediaQuery
-            .of(context)
-            .size
-            .height,
-        width: MediaQuery
-            .of(context)
-            .size
-            .width,
-        child: WebView(
-          initialUrl: widget.postUrl,
-          javascriptMode: JavascriptMode.unrestricted,
-          onWebViewCreated: (WebViewController webViewController) {
-            _controller.complete(webViewController);
-          },
-        ),
+      body: Stack(
+
+        children: <Widget>[
+          WebView(
+            initialUrl: widget.postUrl,
+            javascriptMode: JavascriptMode.unrestricted,
+            onPageFinished: (finish) {
+              setState(() {
+                isLoading = false;
+              });
+            },
+          ),
+          isLoading ? Center( child: CircularProgressIndicator(),)
+              : Stack(),
+        ],
       ),
     );
   }

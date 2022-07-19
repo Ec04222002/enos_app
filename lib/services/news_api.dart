@@ -21,7 +21,7 @@ class NewsAPI {
   ];
 
   static const String _default_thumbnail =
-      "https://www.bing.com/th?id=OVFT.1SmHnJcnDkQ22RL1_HeluS&pid=News";
+      "https://user-images.githubusercontent.com/101482/29592647-40da86ca-875a-11e7-8bc3-941700b0a323.png";
   // Base headers for Response url
   static Map<String, String> _headers = {
     "content-type": "application/json",
@@ -35,12 +35,13 @@ class NewsAPI {
     "stock": [],
     "all": [
       "crypto",
-      "tech",
       "stock",
-      "block chain",
+      "blockchain",
       "shareholder",
       "technology",
-      "cryptocurrency"
+      "cryptocurrency",
+      "car",
+      "phone"
     ]
   };
 
@@ -103,15 +104,24 @@ class NewsAPI {
       String category, int offset) async {
     var api = NewsAPI();
     Future<List<ArticleModel>> results;
-    if (category != "All")
-      results = api.get(
-          endpoint: "/news/search",
-          query: {"q": category, "offset": "$offset", "count": "20"});
-    else {
-      String query = "crypto OR tech OR stock";
+    print(category);
+    if (category == "All") {
+      String query = "intitle:tech";
+      for(String s in keywords['all']) {
+        query +=  " OR inititle:$s";
+      }
+      print(query);
       results = api.get(
           endpoint: "/news/search",
           query: {"q": query, "offset": "$offset", "count": "20"});
+    } else if(category == "Stocks") {
+        results = api.get(endpoint: "/news", query: {"offset":"$offset", "count": "20", "category":"Business"});
+    } else if(category == "Tech") {
+      results = api.get(endpoint: "/news", query: {"offset":"$offset", "count": "20", "category":"ScienceAndTechnology"});
+    } else {
+      results = api.get(
+          endpoint: "/news/search",
+          query: {"q": category, "offset": "$offset", "count": "20"});
     }
     return results;
   }
