@@ -176,14 +176,64 @@ class _TickerInfoState extends State<TickerInfo> {
                         previousClose =
                             pageData.priceData[localRange]['closePrices'].first;
                       }
-                      // lowData = true;
-                      // if (pageData.priceData[range]['openPrices'].length >= 3) {
-                      //   lowData = false;
-                      // }
                     });
                     //return 'Success';
                   }),
-                )
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.all(Radius.circular(8)),
+                    child: Container(
+                      height: 450,
+                      child: DefaultTabController(
+                        length: 3,
+                        child: Scaffold(
+                          appBar: AppBar(
+                            automaticallyImplyLeading: false,
+                            titleSpacing: 0,
+                            toolbarHeight: 32,
+                            backgroundColor: kLightBackgroundColor,
+                            leading: Container(height: 0),
+                            flexibleSpace: Column(
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              children: [
+                                TabBar(
+                                  labelPadding: EdgeInsets.zero,
+                                  padding: EdgeInsets.zero,
+                                  indicator: BoxDecoration(
+                                      // Creates border
+                                      color: kActiveColor),
+                                  tabs: [
+                                    Tab(
+                                      text: "Analyze",
+                                      height: 30,
+                                    ),
+                                    Tab(
+                                      text: "Comment",
+                                      height: 30,
+                                    ),
+                                    Tab(
+                                      text: "News",
+                                      height: 30,
+                                    ),
+                                  ],
+                                )
+                              ],
+                            ),
+                          ),
+                          body: const TabBarView(
+                            children: [
+                              Text("Analyze"),
+                              Text("Comment"),
+                              Text("News"),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
               ],
             )),
           );
