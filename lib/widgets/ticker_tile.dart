@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:enos/models/ticker_page_info.dart';
+import 'package:enos/services/ticker_page_info.dart';
 import 'package:enos/models/ticker_tile.dart';
 import 'package:enos/models/user.dart';
 import 'package:enos/models/watchlist.dart';
@@ -11,6 +11,7 @@ import 'package:enos/services/util.dart';
 import 'package:enos/services/yahoo_api.dart';
 import 'package:enos/widgets/line_chart.dart';
 import 'package:enos/widgets/loading.dart';
+import 'package:enos/widgets/preview_line_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:enos/constants.dart';
@@ -31,6 +32,7 @@ class _TickerState extends State<TickerTile> {
   TickerTileProvider tickerProvider;
   Widget trailingWidget;
   bool _toggle = false;
+
   @override
   Widget build(BuildContext context) {
     //print("building tickertile ${tickerTileData.price}");
@@ -64,7 +66,8 @@ class _TickerState extends State<TickerTile> {
 
   Widget buildTile(BuildContext context) {
     return GestureDetector(
-      onTap: () => showInfo(context, tickerTileData),
+      onTap: () =>
+          showInfo(context, tickerTileData.symbol, tickerTileData.isSaved),
       child: Container(
         margin: EdgeInsets.only(bottom: 10),
         color: kLightBackgroundColor,
@@ -102,10 +105,13 @@ class _TickerState extends State<TickerTile> {
                   ),
                 ]),
           ),
-          title: LineChartWidget(
+          title: PreviewLineChart(
             chartDataX: tickerTileData.chartDataX,
             chartDataY: tickerTileData.chartDataY,
-            openPrice: tickerTileData.openPrice,
+            color: tickerTileData.percentChange[0] == "-"
+                ? kRedColor
+                : kGreenColor,
+            previousClose: tickerTileData.previousClose,
           ),
           trailing: trailingWidget,
         ),
@@ -231,12 +237,14 @@ class _TickerState extends State<TickerTile> {
     tickerProvider.removeTicker(tickers.indexOf(tickerTileData.symbol));
   }
 
-  void showInfo(BuildContext context, TickerTileModel data) {
+  void showInfo(BuildContext buildContext, String symbol, bool isSaved) {
     Navigator.push(
-        context,
+        buildContext,
         MaterialPageRoute(
           builder: (context) => TickerInfo(
-            info: TickerInfoModel(tileData: data),
+            symbol: symbol,
+            isSaved: isSaved,
+            provider: Provider.of<TickerTileProvider>(buildContext),
           ),
         ));
   }

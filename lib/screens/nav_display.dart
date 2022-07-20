@@ -34,7 +34,7 @@ class _NavDisplayScreenState extends State<NavDisplayScreen> {
   TickerTileProvider tickerProvider = TickerTileProvider();
 
   Future<void> setAllData() async {
-    print("Set all Data ${widget.uid}");
+    //print("Set all Data ${widget.uid}");
     tickerProvider.setUid(widget.uid);
     await tickerProvider.setAllInitData();
     setState(() {
@@ -54,7 +54,7 @@ class _NavDisplayScreenState extends State<NavDisplayScreen> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext bContext) {
     if (!isLoading) {
       return Scaffold(
         body: ChangeNotifierProvider<TickerTileProvider>(

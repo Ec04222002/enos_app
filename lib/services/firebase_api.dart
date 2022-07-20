@@ -55,7 +55,8 @@ class FirebaseApi {
   }
 
   static Future<void> updateUserData(UserModel data) async {
-    final userDoc = await FirebaseFirestore.instance.collection('Users').doc();
+    final userDoc =
+        await FirebaseFirestore.instance.collection('Users').doc(data.userUid);
     await userDoc.set(data.toJson());
     print('finished setting user');
     return;
@@ -81,6 +82,24 @@ class FirebaseApi {
     } catch (error) {
       print("watchlist doesn't exist");
       return null;
+    }
+  }
+
+  static Future<bool> checkExist(String collection, String docID) async {
+    bool exist;
+    try {
+      await FirebaseFirestore.instance
+          .collection(collection)
+          .doc(docID)
+          .get()
+          .then((doc) {
+        exist = doc.exists;
+        print("Exist: $exist");
+      });
+      return exist;
+    } catch (e) {
+      // If any error
+      return false;
     }
   }
 }

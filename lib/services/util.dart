@@ -4,6 +4,7 @@ import 'package:enos/models/ticker_tile.dart';
 import 'package:flutter/material.dart';
 import 'package:enos/constants.dart';
 import 'dart:math';
+import 'package:intl/intl.dart';
 
 class Utils {
   static Color darken(Color color, [double amount = .1]) {
@@ -88,8 +89,48 @@ class Utils {
     return ((value * mod).round().toDouble() / mod);
   }
 
+  //for post widget
+  static String formatEpoch(
+      {int epoch, bool isJustTime = true, bool isDateNumeric = false}) {
+    DateTime date = DateTime.fromMillisecondsSinceEpoch((epoch * 1000).toInt());
+    String result = DateFormat('E, MMM dd, yyyy, h:mm aaa').format(date);
+    if (isJustTime) {
+      result = DateFormat('hh:mm aaa').format(date);
+    }
+    if (isDateNumeric) {
+      //result = DateFormat.yMEd().add_jm().format(date);
+      result = DateFormat('E, M/d/yy, h:mm aaa').format(date);
+    }
+    //print(result);
+    return result;
+  }
+
+  static List<DateTime> epochToDateTimeList(List<dynamic> epochs) {
+    List<DateTime> dateList = [];
+    epochs.forEach((element) {
+      dateList
+          .add(DateTime.fromMillisecondsSinceEpoch((element * 1000).toInt()));
+    });
+    return dateList;
+  }
+
+  static int getDecimalPlaces(var number) {
+    int decimals = 0;
+    List<String> substr = number.toString().split('.');
+    if (substr.length > 0) decimals = int.tryParse(substr[1]);
+    return decimals;
+  }
+
+  static int getPostDecimalZeros(double num) {
+    String decimalPlaceNum = getDecimalPlaces(num).toString();
+    return "0".allMatches(decimalPlaceNum).length;
+  }
+
   static String fixNumToFormat(
-      double num, bool isPercentage, bool isConstrain) {
+      {double num,
+      bool isPercentage,
+      bool isConstrain,
+      bool isMainData = false}) {
     // double num = exp(number);
     // print("num = $num");
     String numAsString = num.toString();
@@ -117,12 +158,15 @@ class Utils {
     bool startCount = false;
     for (var i = 0; i < postDecimal.length; ++i) {
       if (isConstrain && i == 2) {
-        index = i;
+        index = i + 1;
         break;
       }
       if (startCount) {
         pastConsZeroCount++;
-        if (pastConsZeroCount == 3) {
+        if (pastConsZeroCount == 3 && !isMainData) {
+          index = i;
+          break;
+        } else if (pastConsZeroCount == 5 && isMainData) {
           index = i;
           break;
         }
@@ -133,8 +177,7 @@ class Utils {
         pastConsZeroCount++;
       }
     }
-    print("index: $index");
-    return num.toStringAsFixed(index + 1);
+    return num.toStringAsFixed(index);
   }
 
   static String colorToHexString(Color color) {

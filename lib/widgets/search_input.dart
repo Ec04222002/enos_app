@@ -65,11 +65,12 @@ class _SearchInputState extends State<SearchInput> {
             borderRadius: BorderRadius.circular(6),
             color: kBrightTextColor,
           ),
-          padding: const EdgeInsets.symmetric(horizontal: 4),
+          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 0),
           child: TextField(
             autofocus: (isMainPage) ? false : true,
             controller: controller,
             decoration: InputDecoration(
+              contentPadding: EdgeInsets.symmetric(vertical: 4),
               icon: Icon(
                 Icons.search,
                 size: 27,
