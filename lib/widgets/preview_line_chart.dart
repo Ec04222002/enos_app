@@ -8,12 +8,13 @@ class PreviewLineChart extends StatelessWidget {
   final List chartDataX;
   final Color color;
   final double previousClose;
-
+  final String symbol;
   PreviewLineChart(
       {this.chartDataX,
       this.chartDataY,
       this.color,
       this.previousClose,
+      this.symbol,
       Key key})
       : super(key: key);
 
@@ -22,6 +23,7 @@ class PreviewLineChart extends StatelessWidget {
     return AspectRatio(
         aspectRatio: 3,
         child: LineChartWidget(
+          symbol: symbol,
           chartDataX: chartDataX,
           chartDataY: chartDataY,
           previousClose: previousClose,

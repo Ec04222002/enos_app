@@ -3,6 +3,10 @@
 import 'dart:math';
 
 import 'package:enos/models/ticker_page_info.dart';
+import 'package:enos/models/ticker_spec.dart';
+import 'package:enos/models/user.dart';
+import 'package:enos/services/auth.dart';
+import 'package:enos/services/firebase_api.dart';
 import 'package:enos/services/ticker_page_info.dart';
 import 'package:enos/models/ticker_tile.dart';
 import 'package:enos/services/ticker_provider.dart';
@@ -13,13 +17,16 @@ import 'package:enos/widgets/loading.dart';
 import 'package:enos/widgets/pre_ticker_prices.dart';
 import 'package:flutter/material.dart';
 import 'package:enos/constants.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:provider/provider.dart';
 
 class TickerInfo extends StatefulWidget {
   final String symbol;
   final bool isSaved;
+  final String uid;
   final TickerTileProvider provider;
-  const TickerInfo({this.symbol, this.isSaved, this.provider, Key key})
+  const TickerInfo(
+      {this.symbol, this.uid, this.isSaved, this.provider, Key key})
       : super(key: key);
 
   @override
@@ -29,29 +36,74 @@ class TickerInfo extends StatefulWidget {
 class _TickerInfoState extends State<TickerInfo> {
   bool isLoading = true;
   double btnOpacity = 0.2;
+
   TickerPageModel pageData;
   double previousClose;
   String range = "1d";
-  //bool lowData = false;
   bool chartLoading = false;
+
+  //specs section
+  List<String> specsAll = TickerSpecs.existSpecs;
+  List<String> specsDisplay = [];
+  List<bool> specsEdit = [];
+  List<String> specsUsing = [];
+  bool isEdit = false;
+  List<SlidableController> controllers;
+  Map specsData;
+  final double editButtonHeight = 50;
+  final double dataHeight = 47;
+  final double toolBarHeight = 33;
+
+  //comment page
+
   Future<void> init() async {
     pageData = await TickerPageInfo.getModelData(widget.symbol, widget.isSaved);
+
+    //specs data
+    specsData = pageData.specsData;
+    UserModel user = await FirebaseApi.getUser(widget.uid);
+    specsEdit = user.metrics;
+    controllers = List.filled(specsAll.length, null);
+    _specsDisplayUpdate();
+    specsUsing = specsDisplay;
     previousClose = pageData.previousClose;
     setState(() {
       isLoading = false;
       WidgetsBinding.instance.addPostFrameCallback((_) async {
         await TickerPageInfo.addPostLoadData(pageData);
         setState(() {
-          // if (pageData.priceData[range]['openPrices'].length < 3) {
-          //   print("low data");
-          //   print(
-          //       "data count: ${pageData.priceData[range]['openPrices'].length}");
-          //   //lowData = true;
-          // }
           chartLoading = false;
         });
       });
     });
+  }
+
+  //sync boolean list (edits) with string list on display
+  void _specsDisplayUpdate() {
+    this.specsDisplay = [];
+    for (int i = 0; i < specsEdit.length; i++) {
+      if (specsEdit[i]) {
+        this.specsDisplay.add(TickerSpecs.existSpecs[i]);
+      }
+    }
+  }
+
+  //toggle data secion hide <-> show
+  void _toggleData() {
+    controllers.forEach((element) {
+      isEdit ? element.openStartActionPane() : element.close();
+    });
+  }
+
+  @override
+  void dispose() {
+    // TODO: implement dispose
+    super.dispose();
+    if (controllers.first != null) {
+      controllers.forEach((element) {
+        element.dispose();
+      });
+    }
   }
 
   @override
@@ -62,8 +114,7 @@ class _TickerInfoState extends State<TickerInfo> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    print("in build");
+  Widget build(BuildContext bContext) {
     return isLoading
         ? Loading(
             type: "dot",
@@ -150,6 +201,7 @@ class _TickerInfoState extends State<TickerInfo> {
                 Padding(
                   padding: EdgeInsets.fromLTRB(6, 8, 6, 0),
                   child: LineChartWidget(
+                    symbol: pageData.symbol,
                     pageData: pageData,
                     range: range,
                     isPreview: false,
@@ -181,18 +233,20 @@ class _TickerInfoState extends State<TickerInfo> {
                   }),
                 ),
                 Padding(
-                  padding: const EdgeInsets.all(8.0),
+                  padding: EdgeInsets.zero,
                   child: ClipRRect(
                     borderRadius: BorderRadius.all(Radius.circular(8)),
                     child: Container(
-                      height: 450,
+                      height: editButtonHeight +
+                          dataHeight * specsUsing.length +
+                          toolBarHeight,
                       child: DefaultTabController(
                         length: 3,
                         child: Scaffold(
                           appBar: AppBar(
                             automaticallyImplyLeading: false,
                             titleSpacing: 0,
-                            toolbarHeight: 32,
+                            toolbarHeight: toolBarHeight,
                             backgroundColor: kLightBackgroundColor,
                             leading: Container(height: 0),
                             flexibleSpace: Column(
@@ -222,9 +276,192 @@ class _TickerInfoState extends State<TickerInfo> {
                               ],
                             ),
                           ),
-                          body: const TabBarView(
+                          body: TabBarView(
+                            physics: NeverScrollableScrollPhysics(),
                             children: [
-                              Text("Analyze"),
+                              Container(
+                                color: kLightBackgroundColor,
+                                child: ListView.builder(
+                                    padding: EdgeInsets.fromLTRB(5, 10, 10, 30),
+                                    itemExtent: dataHeight,
+                                    physics: NeverScrollableScrollPhysics(),
+                                    itemCount: specsUsing.length,
+                                    shrinkWrap: true,
+                                    itemBuilder: (context, index) {
+                                      if (index == 0) {
+                                        return Stack(
+                                            alignment: Alignment.topRight,
+                                            children: [
+                                              Padding(
+                                                padding:
+                                                    EdgeInsets.only(top: 13),
+                                                child: Slidable(
+                                                  enabled: false,
+                                                  closeOnScroll: false,
+                                                  startActionPane: ActionPane(
+                                                      dragDismissible: false,
+                                                      extentRatio: 0.2,
+                                                      motion:
+                                                          const ScrollMotion(),
+                                                      children: [
+                                                        SlidableAction(
+                                                          padding:
+                                                              EdgeInsets.only(
+                                                                  top: 15),
+                                                          autoClose: false,
+                                                          onPressed:
+                                                              ((context) {
+                                                            setState(() {
+                                                              int indx = specsAll
+                                                                  .indexOf(
+                                                                      specsUsing[
+                                                                          index]);
+                                                              specsEdit[indx] =
+                                                                  !specsEdit[
+                                                                      indx];
+                                                            });
+                                                          }),
+                                                          backgroundColor:
+                                                              kLightBackgroundColor,
+                                                          foregroundColor:
+                                                              kDarkTextColor,
+                                                          icon: specsEdit[index]
+                                                              ? Icons
+                                                                  .visibility_outlined
+                                                              : Icons
+                                                                  .visibility_off_outlined,
+                                                        )
+                                                      ]),
+                                                  key: Key(index.toString()),
+                                                  child: Builder(
+                                                      builder: (context) {
+                                                    //settting all controllers
+                                                    if (isEdit) {
+                                                      controllers[0] =
+                                                          Slidable.of(context);
+                                                    }
+
+                                                    return ListTile(
+                                                      textColor:
+                                                          kBrightTextColor,
+                                                      iconColor: kDisabledColor,
+                                                      title: Text(
+                                                        specsUsing[index],
+                                                        style: TextStyle(
+                                                            color: specsEdit[
+                                                                        0] ||
+                                                                    !isEdit
+                                                                ? kBrightTextColor
+                                                                : kDisabledColor),
+                                                      ),
+                                                    );
+                                                  }),
+                                                ),
+                                              ),
+                                              Container(
+                                                height: editButtonHeight,
+                                                margin:
+                                                    EdgeInsets.only(bottom: 12),
+                                                child: TextButton(
+                                                  onPressed: () {
+                                                    setState(() {
+                                                      isEdit = !isEdit;
+                                                      _specsDisplayUpdate();
+                                                      specsUsing = specsDisplay;
+                                                      if (isEdit)
+                                                        specsUsing = specsAll;
+                                                      if (!isEdit) {
+                                                        _toggleData();
+                                                      }
+                                                      //_toggleData();
+                                                    });
+                                                  },
+                                                  child: Text(
+                                                    isEdit ? "Done" : "Edit",
+                                                    style: TextStyle(
+                                                        color: kActiveColor,
+                                                        fontSize: 15),
+                                                  ),
+                                                ),
+                                              )
+                                            ]);
+                                      }
+                                      return Padding(
+                                        padding: EdgeInsets.only(top: 13),
+                                        child: Slidable(
+                                          enabled: false,
+                                          closeOnScroll: false,
+                                          startActionPane: ActionPane(
+                                              dragDismissible: false,
+                                              extentRatio: 0.2,
+                                              motion: const ScrollMotion(),
+                                              children: [
+                                                SlidableAction(
+                                                  padding:
+                                                      EdgeInsets.only(top: 15),
+                                                  autoClose: false,
+                                                  onPressed: ((context) {
+                                                    setState(() {
+                                                      int indx = specsAll
+                                                          .indexOf(specsUsing[
+                                                              index]);
+                                                      specsEdit[indx] =
+                                                          !specsEdit[indx];
+                                                    });
+                                                  }),
+                                                  backgroundColor:
+                                                      kLightBackgroundColor,
+                                                  foregroundColor:
+                                                      kDarkTextColor,
+                                                  icon: specsEdit[index]
+                                                      ? Icons
+                                                          .visibility_outlined
+                                                      : Icons
+                                                          .visibility_off_outlined,
+                                                )
+                                              ]),
+                                          key: Key(index.toString()),
+                                          child: Builder(builder: (context) {
+                                            //set new controller only during edit mode
+                                            // full specs && new context
+                                            if (isEdit) {
+                                              controllers[index] =
+                                                  Slidable.of(context);
+                                              if (index ==
+                                                  specsUsing.length - 1) {
+                                                print("in");
+                                                WidgetsBinding.instance
+                                                    .addPostFrameCallback((_) {
+                                                  print("post");
+                                                  _toggleData();
+                                                });
+                                              }
+                                            }
+
+                                            return ListTile(
+                                              enabled: false,
+                                              textColor: kBrightTextColor,
+                                              iconColor: kDisabledColor,
+                                              title: Text(
+                                                specsUsing[index],
+                                                style: TextStyle(
+                                                    color: specsEdit[index] ||
+                                                            !isEdit
+                                                        ? kBrightTextColor
+                                                        : kDisabledColor),
+                                              ),
+                                              trailing: Text(specsData[
+                                                          specsUsing[index]] ==
+                                                      null
+                                                  ? "__"
+                                                  : specsData[
+                                                      specsUsing[index]]),
+                                            );
+                                          }),
+                                        ),
+                                      );
+                                    }),
+                              ),
                               Text("Comment"),
                               Text("News"),
                             ],

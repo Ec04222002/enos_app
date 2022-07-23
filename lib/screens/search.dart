@@ -368,6 +368,7 @@ class _SearchPageState extends State<SearchPage> {
         MaterialPageRoute(
           builder: (context) => TickerInfo(
             symbol: symbol,
+            uid: Provider.of<UserField>(buildContext, listen: false).userUid,
             isSaved: isSaved,
             provider: Provider.of<TickerTileProvider>(buildContext),
           ),

@@ -18,6 +18,7 @@ class TickerPageModel {
   List chartDataX;
 
   Map<String, Map<String, List>> priceData = {};
+  Map<String, dynamic> specsData;
   // List closePriceData;
   // List highPriceData;
   // List lowPriceData;
@@ -43,6 +44,7 @@ class TickerPageModel {
       this.previousClose,
       this.chartDataX,
       this.chartDataY,
+      this.specsData,
       this.isCrypto = false,
       this.isLive = true,
       this.isSaved = false,
@@ -74,6 +76,7 @@ class TickerPageModel {
       info.shortName = compleData['shortName'];
       info.closeTime = compleData['marketCloseTime'];
       info.postCloseTime = compleData['postMarketCloseTime'];
+      info.specsData = compleData['specsData'];
     }
     return info;
   }

@@ -1,29 +1,35 @@
 import "package:enos/constants.dart";
 import 'package:enos/models/ticker_page_info.dart';
+import 'package:enos/models/user.dart';
+import 'package:enos/screens/ticker_info.dart';
 import 'package:enos/services/ticker_page_info.dart';
+import 'package:enos/services/ticker_provider.dart';
 import 'package:enos/services/util.dart';
 import 'package:enos/widgets/loading.dart';
 import "package:flutter/material.dart";
 import 'package:fl_chart/fl_chart.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 
 class LineChartWidget extends StatefulWidget {
   final TickerPageModel pageData;
   final bool isPreview;
   final chartLoading;
+  final symbol;
   //final lowData;
   Color color;
   double previousClose;
   List chartDataX, chartDataY;
   String range;
+
   LineChartWidget(
       {this.color,
       this.previousClose,
       this.chartLoading = false,
+      this.symbol,
       this.chartDataX,
       this.chartDataY,
       this.range = '1d',
-      //this.lowData = false,
       this.pageData,
       this.isPreview,
       Key key})
@@ -160,7 +166,7 @@ class _LineChartWidgetState extends State<LineChartWidget> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext bContext) {
     //no Data
 
     if (widget.chartLoading) {
@@ -299,10 +305,24 @@ class _LineChartWidgetState extends State<LineChartWidget> {
                   }),
               touchCallback:
                   (FlTouchEvent event, LineTouchResponse touchResponse) {
-                // if (event is FlTapUpEvent) {
-                //   // handle tap here
-                //   print("up...");
-                // }
+                if (event is FlTapUpEvent && widget.isPreview) {
+                  // handle tap here
+                  //bContext = the main page context
+                  //since this only occurs in preview page
+
+                  Navigator.push(
+                      bContext,
+                      MaterialPageRoute(
+                        builder: (context) => TickerInfo(
+                          uid: Provider.of<UserField>(bContext, listen: false)
+                              .userUid,
+                          symbol: widget.symbol,
+                          isSaved: true,
+                          provider: Provider.of<TickerTileProvider>(bContext),
+                        ),
+                      ));
+                  print("up...");
+                }
                 // if (event is FlTapDownEvent) {}
                 // if (event is FlTapCancelEvent) {}
               },

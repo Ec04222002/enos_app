@@ -72,7 +72,7 @@ class AuthService {
         createdTime: DateTime.now(),
         username: userName,
         userSaved: [],
-        metrics: List.filled(22, true),
+        metrics: List.filled(10, true) + List.filled(11, false),
         profileBgColor: ProfilePicture.getRandomColor(),
         profileBorderColor: ProfilePicture.getRandomColor(),
       );

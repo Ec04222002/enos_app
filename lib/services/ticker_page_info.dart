@@ -1,4 +1,5 @@
 import 'package:enos/models/ticker_page_info.dart';
+import 'package:enos/models/ticker_spec.dart';
 import 'package:enos/models/ticker_tile.dart';
 import 'package:enos/services/yahoo_api.dart';
 
@@ -16,6 +17,8 @@ class TickerPageInfo {
   static Future<void> addPostLoadData(TickerPageModel preData) async {
     YahooApi api = YahooApi();
     bool isLowData = false;
+
+    //retrieving chart range data
     for (var i = 0; i < chartRangeAndInt.length; ++i) {
       if (isLowData) {
         print("low data - not calling");
@@ -64,7 +67,6 @@ class TickerPageInfo {
         initLowPriceData = pre["low"];
         initHighPriceData = pre["high"];
         initOpenPriceData = pre['open'];
-        print("data for: ${chartRangeAndInt[i][0]}");
         datas = [
           {"data": closePriceData, "init": initClosePriceData},
           {"data": lowPriceData, "init": initLowPriceData},
@@ -93,10 +95,9 @@ class TickerPageInfo {
         'highPrices': highPriceData,
         'lowPrices': lowPriceData,
       };
-
-      print("openPrice: ${openPriceData.length}");
-      print("closePrices: ${closePriceData.length}");
     }
+
+    //add comment data
   }
 
   //yahoo api and fill necessary data
@@ -108,6 +109,7 @@ class TickerPageInfo {
         await api.get(symbol: symbol, chartInterval: "5m");
     tileModel.isSaved = isSaved;
     dynamic tickerResult = await api.getTickerData(symbol);
+    Map<String, dynamic> specsData = TickerSpecs.apiToMap(tickerResult);
     //print("post: ${tileModel.previousClose}");
     Map<String, dynamic> compleData = {
       "postPrice": tileModel.isPostMarket
@@ -118,6 +120,7 @@ class TickerPageInfo {
       'postMarketCloseTime': tileModel.isPostMarket
           ? tickerResult['price']['postMarketTime']
           : null,
+      'specsData': specsData
     };
     TickerPageModel pageModel = TickerPageModel.fromTickerTileModel(
         data: tileModel, compleData: compleData);

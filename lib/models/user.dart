@@ -29,7 +29,7 @@ class UserModel {
   static UserModel fromJson(Map<String, dynamic> json) {
     List<bool> metrics = [];
     json['metrics'].forEach((metric) {
-      metrics.add(metrics.toString() == "true");
+      metrics.add(metric.toString() == "true");
     });
     List<String> userSaved = [];
     json['user_saved'].forEach((user) {

@@ -106,6 +106,7 @@ class _TickerState extends State<TickerTile> {
                 ]),
           ),
           title: PreviewLineChart(
+            symbol: tickerTileData.symbol,
             chartDataX: tickerTileData.chartDataX,
             chartDataY: tickerTileData.chartDataY,
             color: tickerTileData.percentChange[0] == "-"
@@ -242,6 +243,7 @@ class _TickerState extends State<TickerTile> {
         buildContext,
         MaterialPageRoute(
           builder: (context) => TickerInfo(
+            uid: Provider.of<UserField>(buildContext, listen: false).userUid,
             symbol: symbol,
             isSaved: isSaved,
             provider: Provider.of<TickerTileProvider>(buildContext),
