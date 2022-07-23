@@ -12,6 +12,7 @@ class TickerPageModel {
   String postPriceChange;
   String shortName;
   String marketName;
+  String msgBoardID;
   double openPrice;
   double previousClose;
   List chartDataY;
@@ -48,6 +49,7 @@ class TickerPageModel {
       this.isCrypto = false,
       this.isLive = true,
       this.isSaved = false,
+      this.msgBoardID,
       this.closeTime,
       this.postCloseTime});
 
@@ -77,6 +79,7 @@ class TickerPageModel {
       info.closeTime = compleData['marketCloseTime'];
       info.postCloseTime = compleData['postMarketCloseTime'];
       info.specsData = compleData['specsData'];
+      info.msgBoardID = compleData['msgBoardID'];
     }
     return info;
   }

@@ -120,7 +120,8 @@ class TickerPageInfo {
       'postMarketCloseTime': tileModel.isPostMarket
           ? tickerResult['price']['postMarketTime']
           : null,
-      'specsData': specsData
+      'specsData': specsData,
+      'msgBoardID': tickerResult['quoteType']['messageBoardId']
     };
     TickerPageModel pageModel = TickerPageModel.fromTickerTileModel(
         data: tileModel, compleData: compleData);
