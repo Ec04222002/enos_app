@@ -109,7 +109,7 @@ class TickerPageInfo {
         await api.get(symbol: symbol, chartInterval: "5m");
     tileModel.isSaved = isSaved;
     dynamic tickerResult = await api.getTickerData(symbol);
-    Map<String, dynamic> specsData = TickerSpecs.apiToMap(tickerResult);
+    Map<String, dynamic> specsData = TickerSpecs.apiToMap(tickerResult, tileModel.isCrypto);
     //print("post: ${tileModel.previousClose}");
     Map<String, dynamic> compleData = {
       "postPrice": tileModel.isPostMarket

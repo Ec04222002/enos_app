@@ -267,8 +267,8 @@ class YahooApi {
         }
       }
     }
-
-    // print("isPost: $isPost");
+    print(tickerSymbol);
+    print("isPost: $isPost");
     // print("isCrypto: $isCrypto");
     TickerTileModel data = TickerTileModel(
       symbol: tickerSymbol,

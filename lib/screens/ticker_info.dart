@@ -15,6 +15,7 @@ import 'package:enos/widgets/chart_dates_bar.dart';
 import 'package:enos/widgets/line_chart.dart';
 import 'package:enos/widgets/loading.dart';
 import 'package:enos/widgets/pre_ticker_prices.dart';
+import 'package:enos/widgets/slider.dart';
 import 'package:flutter/material.dart';
 import 'package:enos/constants.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
@@ -36,12 +37,13 @@ class TickerInfo extends StatefulWidget {
 class _TickerInfoState extends State<TickerInfo> {
   bool isLoading = true;
   double btnOpacity = 0.2;
-
   TickerPageModel pageData;
   double previousClose;
   String range = "1d";
   bool chartLoading = false;
-
+  ScrollController scrollController = ScrollController();
+  bool showBtn = true;
+  bool isToggled = false;
   //specs section
   List<String> specsAll = TickerSpecs.existSpecs;
   List<String> specsDisplay = [];
@@ -49,19 +51,22 @@ class _TickerInfoState extends State<TickerInfo> {
   List<String> specsUsing = [];
   bool isEdit = false;
   List<SlidableController> controllers;
-  Map specsData;
-  final double editButtonHeight = 50;
+  Map specsData = {};
+  final double editButtonHeight = 45;
   final double dataHeight = 47;
   final double toolBarHeight = 33;
-
+  UserModel user;
   //comment page
 
   Future<void> init() async {
     pageData = await TickerPageInfo.getModelData(widget.symbol, widget.isSaved);
+    // scrollController.addListener(() {
+    //   print(scrollController.position);
+    // });
 
     //specs data
     specsData = pageData.specsData;
-    UserModel user = await FirebaseApi.getUser(widget.uid);
+    user = await FirebaseApi.getUser(widget.uid);
     specsEdit = user.metrics;
     controllers = List.filled(specsAll.length, null);
     _specsDisplayUpdate();
@@ -96,21 +101,16 @@ class _TickerInfoState extends State<TickerInfo> {
   }
 
   @override
-  void dispose() {
-    // TODO: implement dispose
-    super.dispose();
-    if (controllers.first != null) {
-      controllers.forEach((element) {
-        element.dispose();
-      });
-    }
-  }
-
-  @override
   void initState() {
     super.initState();
     //get all new updates
     init();
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    scrollController.dispose();
   }
 
   @override
@@ -140,339 +140,316 @@ class _TickerInfoState extends State<TickerInfo> {
                 maxLines: 2,
               ),
             ),
-            floatingActionButton: GestureDetector(
-              onLongPress: () {
-                Utils.showSnackBar(context, "Streaming Data ...");
-                //print("in long press");
-                setState(() {
-                  btnOpacity = 0;
-                });
-              },
-              onLongPressEnd: (_) {
-                //print("end press");
-                setState(() {
-                  btnOpacity = 0.2;
-                });
-              },
-              onLongPressCancel: () {
-                //print("cancel press");
-                setState(() {
-                  btnOpacity = 0.2;
-                });
-              },
-              onTap: () {
-                //print("tap");
-                setState(() {
-                  btnOpacity = 0.2;
-                });
-              },
-              onTapCancel: () {
-                //print("tap cancel");
-                setState(() {
-                  btnOpacity = 0.2;
-                });
-              },
-              onTapUp: (_) {
-                //print('tap up');
-                setState(() {
-                  btnOpacity = 0.2;
-                });
-              },
-              child: FloatingActionButton(
-                child: Icon(
-                  Icons.keyboard_double_arrow_up_outlined,
-                  size: 50,
-                  color: kDarkTextColor,
-                ),
-                backgroundColor: kActiveColor.withOpacity(btnOpacity),
-              ),
-            ),
-            body: SingleChildScrollView(
-                child: Column(
-              children: [
-                Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-                  child: PreTickerInfo(
-                    data: pageData,
-                    tickerProvider: widget.provider,
-                  ),
-                ),
-                Padding(
-                  padding: EdgeInsets.fromLTRB(6, 8, 6, 0),
-                  child: LineChartWidget(
-                    symbol: pageData.symbol,
-                    pageData: pageData,
-                    range: range,
-                    isPreview: false,
-                    previousClose: previousClose,
-                    chartLoading: chartLoading,
-                    //lowData: lowData,
-                  ),
-                ),
-                Padding(
-                  padding: EdgeInsets.symmetric(vertical: 16),
-                  child: DatesBar(onTap: (index) {
-                    String localRange =
-                        TickerPageInfo.chartRangeAndInt[index][0];
-                    // chartLoading = false;
+            floatingActionButton: showBtn
+                ? GestureDetector(
+                    onLongPress: () {
+                      Utils.showSnackBar(context, "Streaming Data ...");
+                      //print("in long press");
+                      setState(() {
+                        btnOpacity = 0;
+                      });
+                    },
+                    onLongPressEnd: (_) {
+                      //print("end press");
+                      setState(() {
+                        btnOpacity = 0.2;
+                      });
+                    },
+                    onLongPressCancel: () {
+                      //print("cancel press");
+                      setState(() {
+                        btnOpacity = 0.2;
+                      });
+                    },
+                    onTap: () {
+                      //print("tap");
+                      setState(() {
+                        btnOpacity = 0.2;
+                      });
+                    },
+                    onTapCancel: () {
+                      //print("tap cancel");
+                      setState(() {
+                        btnOpacity = 0.2;
+                      });
+                    },
+                    onTapUp: (_) {
+                      //print('tap up');
+                      setState(() {
+                        btnOpacity = 0.2;
+                      });
+                    },
+                    child: FloatingActionButton(
+                      child: Icon(
+                        Icons.keyboard_double_arrow_up_outlined,
+                        size: 50,
+                        color: kDarkTextColor,
+                      ),
+                      backgroundColor: kActiveColor.withOpacity(btnOpacity),
+                    ),
+                  )
+                : null,
+            body: NotificationListener(
+              onNotification: (scrollNotification) {
+                if (scrollNotification is ScrollUpdateNotification) {
+                  double before = scrollController.position.extentBefore;
+                  //reducing setstate calls
+                  if (before > 70 && before < 100) {
                     setState(() {
-                      range = localRange;
-                      print("in set state");
-                      previousClose = pageData.previousClose;
-                      if (pageData.priceData[localRange] == null) {
-                        chartLoading = true;
-                        return;
-                      }
-                      if (range != '1d') {
-                        previousClose =
-                            pageData.priceData[localRange]['closePrices'].first;
-                      }
+                      print('set state');
+                      showBtn = before < 85;
                     });
-                    //return 'Success';
-                  }),
-                ),
-                Padding(
-                  padding: EdgeInsets.zero,
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.all(Radius.circular(8)),
-                    child: Container(
-                      height: editButtonHeight +
-                          dataHeight * specsUsing.length +
-                          toolBarHeight,
-                      child: DefaultTabController(
-                        length: 3,
-                        child: Scaffold(
-                          appBar: AppBar(
-                            automaticallyImplyLeading: false,
-                            titleSpacing: 0,
-                            toolbarHeight: toolBarHeight,
-                            backgroundColor: kLightBackgroundColor,
-                            leading: Container(height: 0),
-                            flexibleSpace: Column(
-                              mainAxisAlignment: MainAxisAlignment.end,
-                              children: [
-                                TabBar(
-                                  labelPadding: EdgeInsets.zero,
-                                  padding: EdgeInsets.zero,
-                                  indicator: BoxDecoration(
-                                      // Creates border
-                                      color: kActiveColor),
-                                  tabs: [
-                                    Tab(
-                                      text: "Analyze",
-                                      height: 30,
-                                    ),
-                                    Tab(
-                                      text: "Comment",
-                                      height: 30,
-                                    ),
-                                    Tab(
-                                      text: "News",
-                                      height: 30,
-                                    ),
+                  }
+                }
+                //prevent not-toggling due to quick scroll
+                if (scrollNotification is ScrollEndNotification) {
+                  setState(() {
+                    showBtn = scrollController.position.extentBefore < 85;
+                  });
+                }
+                return true;
+              },
+              child: SingleChildScrollView(
+                  controller: scrollController,
+                  child: Column(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 16),
+                        child: PreTickerInfo(
+                          data: pageData,
+                          tickerProvider: widget.provider,
+                        ),
+                      ),
+                      Padding(
+                        padding: EdgeInsets.fromLTRB(6, 8, 6, 0),
+                        child: LineChartWidget(
+                          symbol: pageData.symbol,
+                          pageData: pageData,
+                          range: range,
+                          isPreview: false,
+                          previousClose: previousClose,
+                          chartLoading: chartLoading,
+                          //lowData: lowData,
+                        ),
+                      ),
+                      Padding(
+                        padding: EdgeInsets.symmetric(vertical: 16),
+                        child: DatesBar(onTap: (index) {
+                          String localRange =
+                              TickerPageInfo.chartRangeAndInt[index][0];
+                          // chartLoading = false;
+                          setState(() {
+                            range = localRange;
+                            print("in set state");
+                            previousClose = pageData.previousClose;
+                            if (pageData.priceData[localRange] == null) {
+                              chartLoading = true;
+                              return;
+                            }
+                            if (range != '1d') {
+                              previousClose = pageData
+                                  .priceData[localRange]['closePrices'].first;
+                            }
+                          });
+                          //return 'Success';
+                        }),
+                      ),
+                      Padding(
+                        padding: EdgeInsets.all(8),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.all(Radius.circular(8)),
+                          child: Container(
+                            height: editButtonHeight +
+                                dataHeight * specsUsing.length +
+                                toolBarHeight,
+                            child: DefaultTabController(
+                              length: 3,
+                              child: Scaffold(
+                                appBar: AppBar(
+                                  automaticallyImplyLeading: false,
+                                  titleSpacing: 0,
+                                  toolbarHeight: toolBarHeight,
+                                  backgroundColor: kLightBackgroundColor,
+                                  leading: Container(height: 0),
+                                  flexibleSpace: Column(
+                                    mainAxisAlignment: MainAxisAlignment.end,
+                                    children: [
+                                      TabBar(
+                                        labelPadding: EdgeInsets.zero,
+                                        padding: EdgeInsets.zero,
+                                        indicator: BoxDecoration(
+                                            // Creates border
+                                            color: kActiveColor),
+                                        tabs: [
+                                          Tab(
+                                            text: "Analyze",
+                                            height: 30,
+                                          ),
+                                          Tab(
+                                            text: "Comment",
+                                            height: 30,
+                                          ),
+                                          Tab(
+                                            text: "News",
+                                            height: 30,
+                                          ),
+                                        ],
+                                      )
+                                    ],
+                                  ),
+                                ),
+                                body: TabBarView(
+                                  physics: NeverScrollableScrollPhysics(),
+                                  children: [
+                                    specSection(),
+                                    Text("Comment"),
+                                    Text("News"),
                                   ],
-                                )
-                              ],
-                            ),
-                          ),
-                          body: TabBarView(
-                            physics: NeverScrollableScrollPhysics(),
-                            children: [
-                              Container(
-                                color: kLightBackgroundColor,
-                                child: ListView.builder(
-                                    padding: EdgeInsets.fromLTRB(5, 10, 10, 30),
-                                    itemExtent: dataHeight,
-                                    physics: NeverScrollableScrollPhysics(),
-                                    itemCount: specsUsing.length,
-                                    shrinkWrap: true,
-                                    itemBuilder: (context, index) {
-                                      if (index == 0) {
-                                        return Stack(
-                                            alignment: Alignment.topRight,
-                                            children: [
-                                              Padding(
-                                                padding:
-                                                    EdgeInsets.only(top: 13),
-                                                child: Slidable(
-                                                  enabled: false,
-                                                  closeOnScroll: false,
-                                                  startActionPane: ActionPane(
-                                                      dragDismissible: false,
-                                                      extentRatio: 0.2,
-                                                      motion:
-                                                          const ScrollMotion(),
-                                                      children: [
-                                                        SlidableAction(
-                                                          padding:
-                                                              EdgeInsets.only(
-                                                                  top: 15),
-                                                          autoClose: false,
-                                                          onPressed:
-                                                              ((context) {
-                                                            setState(() {
-                                                              int indx = specsAll
-                                                                  .indexOf(
-                                                                      specsUsing[
-                                                                          index]);
-                                                              specsEdit[indx] =
-                                                                  !specsEdit[
-                                                                      indx];
-                                                            });
-                                                          }),
-                                                          backgroundColor:
-                                                              kLightBackgroundColor,
-                                                          foregroundColor:
-                                                              kDarkTextColor,
-                                                          icon: specsEdit[index]
-                                                              ? Icons
-                                                                  .visibility_outlined
-                                                              : Icons
-                                                                  .visibility_off_outlined,
-                                                        )
-                                                      ]),
-                                                  key: Key(index.toString()),
-                                                  child: Builder(
-                                                      builder: (context) {
-                                                    //settting all controllers
-                                                    if (isEdit) {
-                                                      controllers[0] =
-                                                          Slidable.of(context);
-                                                    }
-
-                                                    return ListTile(
-                                                      textColor:
-                                                          kBrightTextColor,
-                                                      iconColor: kDisabledColor,
-                                                      title: Text(
-                                                        specsUsing[index],
-                                                        style: TextStyle(
-                                                            color: specsEdit[
-                                                                        0] ||
-                                                                    !isEdit
-                                                                ? kBrightTextColor
-                                                                : kDisabledColor),
-                                                      ),
-                                                    );
-                                                  }),
-                                                ),
-                                              ),
-                                              Container(
-                                                height: editButtonHeight,
-                                                margin:
-                                                    EdgeInsets.only(bottom: 12),
-                                                child: TextButton(
-                                                  onPressed: () {
-                                                    setState(() {
-                                                      isEdit = !isEdit;
-                                                      _specsDisplayUpdate();
-                                                      specsUsing = specsDisplay;
-                                                      if (isEdit)
-                                                        specsUsing = specsAll;
-                                                      if (!isEdit) {
-                                                        _toggleData();
-                                                      }
-                                                      //_toggleData();
-                                                    });
-                                                  },
-                                                  child: Text(
-                                                    isEdit ? "Done" : "Edit",
-                                                    style: TextStyle(
-                                                        color: kActiveColor,
-                                                        fontSize: 15),
-                                                  ),
-                                                ),
-                                              )
-                                            ]);
-                                      }
-                                      return Padding(
-                                        padding: EdgeInsets.only(top: 13),
-                                        child: Slidable(
-                                          enabled: false,
-                                          closeOnScroll: false,
-                                          startActionPane: ActionPane(
-                                              dragDismissible: false,
-                                              extentRatio: 0.2,
-                                              motion: const ScrollMotion(),
-                                              children: [
-                                                SlidableAction(
-                                                  padding:
-                                                      EdgeInsets.only(top: 15),
-                                                  autoClose: false,
-                                                  onPressed: ((context) {
-                                                    setState(() {
-                                                      int indx = specsAll
-                                                          .indexOf(specsUsing[
-                                                              index]);
-                                                      specsEdit[indx] =
-                                                          !specsEdit[indx];
-                                                    });
-                                                  }),
-                                                  backgroundColor:
-                                                      kLightBackgroundColor,
-                                                  foregroundColor:
-                                                      kDarkTextColor,
-                                                  icon: specsEdit[index]
-                                                      ? Icons
-                                                          .visibility_outlined
-                                                      : Icons
-                                                          .visibility_off_outlined,
-                                                )
-                                              ]),
-                                          key: Key(index.toString()),
-                                          child: Builder(builder: (context) {
-                                            //set new controller only during edit mode
-                                            // full specs && new context
-                                            if (isEdit) {
-                                              controllers[index] =
-                                                  Slidable.of(context);
-                                              if (index ==
-                                                  specsUsing.length - 1) {
-                                                print("in");
-                                                WidgetsBinding.instance
-                                                    .addPostFrameCallback((_) {
-                                                  print("post");
-                                                  _toggleData();
-                                                });
-                                              }
-                                            }
-
-                                            return ListTile(
-                                              enabled: false,
-                                              textColor: kBrightTextColor,
-                                              iconColor: kDisabledColor,
-                                              title: Text(
-                                                specsUsing[index],
-                                                style: TextStyle(
-                                                    color: specsEdit[index] ||
-                                                            !isEdit
-                                                        ? kBrightTextColor
-                                                        : kDisabledColor),
-                                              ),
-                                              trailing: Text(specsData[
-                                                          specsUsing[index]] ==
-                                                      null
-                                                  ? "__"
-                                                  : specsData[
-                                                      specsUsing[index]]),
-                                            );
-                                          }),
-                                        ),
-                                      );
-                                    }),
+                                ),
                               ),
-                              Text("Comment"),
-                              Text("News"),
-                            ],
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                  ),
-                ),
-              ],
-            )),
+                    ],
+                  )),
+            ),
           );
+  }
+
+  Widget editBtn() {
+    return Container(
+      height: editButtonHeight,
+      child: ListTile(
+        //visualDensity: VisualDensity(vertical: 0.1),
+        trailing: TextButton(
+          onPressed: () {
+            setState(() {
+              isEdit = !isEdit;
+              _specsDisplayUpdate();
+              specsUsing = specsDisplay;
+              if (isEdit) specsUsing = specsAll;
+              //done button clicked
+              if (!isEdit) {
+                _toggleData();
+                //save to firebase
+                user.metrics = specsEdit;
+                FirebaseApi.updateUserData(user);
+              }
+              //_toggleData();
+            });
+          },
+          child: Text(
+            isEdit ? "Done" : "Edit",
+            style: TextStyle(color: kActiveColor, fontSize: 15),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget specSection() {
+    Widget trailingWidget;
+    dynamic specCurrentData;
+    return Container(
+      color: kLightBackgroundColor,
+      child: SingleChildScrollView(
+        scrollDirection: Axis.vertical,
+        physics: NeverScrollableScrollPhysics(),
+        child: Column(
+          //mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            editBtn(),
+            ListView.builder(
+                padding: EdgeInsets.all(3),
+                itemExtent: dataHeight,
+                physics: NeverScrollableScrollPhysics(),
+                itemCount: specsUsing.length,
+                shrinkWrap: true,
+                itemBuilder: (context, index) {
+                  specCurrentData = specsData[specsUsing[index]];
+                  trailingWidget = specsUsing[index].contains("Range")
+                      ? SliderWidget(
+                          value: (pageData.isPostMarket &&
+                                  (Utils.isPastPostMarket() ||
+                                      Utils.isPostMarket() ||
+                                      Utils.isWeekend()) &&
+                                  !pageData.isCrypto)
+                              ? specsData["Post Market Price"].toDouble()
+                              : specsData['Market Price'].toDouble(),
+                          min: specCurrentData[0].toDouble(),
+                          max: specCurrentData[1].toDouble(),
+                        )
+                      : Text(
+                          (() {
+                            if (specCurrentData == null) {
+                              return "__";
+                            } else if (specsUsing[index] == "Market Price") {
+                              return pageData.marketPrice;
+                            } else if (specsUsing[index] ==
+                                "Post Market Price") {
+                              return pageData.postMarketPrice;
+                            }
+                            return specCurrentData;
+                          }()),
+                          style: TextStyle(color: kBrightTextColor),
+                        );
+                  return Slidable(
+                    enabled: false,
+                    closeOnScroll: false,
+                    startActionPane: ActionPane(
+                        dragDismissible: false,
+                        extentRatio: 0.2,
+                        motion: const ScrollMotion(),
+                        children: [
+                          SlidableAction(
+                            //padding: EdgeInsets.only(top: 0),
+                            autoClose: false,
+                            onPressed: ((context) {
+                              setState(() {
+                                int indx = specsAll.indexOf(specsUsing[index]);
+                                specsEdit[indx] = !specsEdit[indx];
+                              });
+                            }),
+                            backgroundColor: kLightBackgroundColor,
+                            foregroundColor: kDarkTextColor,
+                            icon: specsEdit[index]
+                                ? Icons.visibility_outlined
+                                : Icons.visibility_off_outlined,
+                          )
+                        ]),
+                    key: Key(pageData.symbol + index.toString()),
+                    child: Builder(builder: (context) {
+                      //set new controller only during edit mode
+                      // full specs && new context
+                      if (isEdit) {
+                        controllers[index] = Slidable.of(context);
+                        if (index == specsUsing.length - 1) {
+                          print("in");
+                          WidgetsBinding.instance.addPostFrameCallback((_) {
+                            print("post");
+                            _toggleData();
+                          });
+                        }
+                      }
+
+                      return ListTile(
+                        enabled: false,
+                        textColor: kDisabledColor,
+                        iconColor: kDisabledColor,
+                        title: Text(
+                          specsUsing[index],
+                          style: TextStyle(color: kDisabledColor),
+                        ),
+                        trailing: isEdit ? Text("") : trailingWidget,
+                      );
+                    }),
+                  );
+                }),
+          ],
+        ),
+      ),
+    );
   }
 }

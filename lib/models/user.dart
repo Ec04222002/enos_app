@@ -12,7 +12,7 @@ class UserModel {
   final String profilePic;
   final String username;
   final bool isEmailNotify;
-  final List<bool> metrics;
+  List<bool> metrics;
   List<String> userSaved;
   final String profileBgColor;
   final String profileBorderColor;
