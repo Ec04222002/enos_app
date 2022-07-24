@@ -36,7 +36,7 @@ class TickerInfo extends StatefulWidget {
 
 class _TickerInfoState extends State<TickerInfo> {
   bool isLoading = true;
-  double btnOpacity = 0.2;
+  double initBtnOpacity = 0.75, btnOpacity = 0.75;
   TickerPageModel pageData;
   double previousClose;
   String range = "1d";
@@ -146,37 +146,37 @@ class _TickerInfoState extends State<TickerInfo> {
                       Utils.showSnackBar(context, "Streaming Data ...");
                       //print("in long press");
                       setState(() {
-                        btnOpacity = 0;
+                        btnOpacity = 0.3;
                       });
                     },
                     onLongPressEnd: (_) {
                       //print("end press");
                       setState(() {
-                        btnOpacity = 0.2;
+                        btnOpacity = initBtnOpacity;
                       });
                     },
                     onLongPressCancel: () {
                       //print("cancel press");
                       setState(() {
-                        btnOpacity = 0.2;
+                        btnOpacity = initBtnOpacity;
                       });
                     },
                     onTap: () {
                       //print("tap");
                       setState(() {
-                        btnOpacity = 0.2;
+                        btnOpacity = initBtnOpacity;
                       });
                     },
                     onTapCancel: () {
                       //print("tap cancel");
                       setState(() {
-                        btnOpacity = 0.2;
+                        btnOpacity = initBtnOpacity;
                       });
                     },
                     onTapUp: (_) {
                       //print('tap up');
                       setState(() {
-                        btnOpacity = 0.2;
+                        btnOpacity = initBtnOpacity;
                       });
                     },
                     child: FloatingActionButton(
@@ -185,7 +185,8 @@ class _TickerInfoState extends State<TickerInfo> {
                         size: 50,
                         color: kDarkTextColor,
                       ),
-                      backgroundColor: kActiveColor.withOpacity(btnOpacity),
+                      backgroundColor: Utils.lighten(kLightBackgroundColor)
+                          .withOpacity(btnOpacity),
                     ),
                   )
                 : null,

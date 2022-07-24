@@ -139,6 +139,7 @@ class _LineChartWidgetState extends State<LineChartWidget> {
         epoch: chartDataX[i],
       ));
       chartDataPoints.add({"x": chartDataX[i], "y": chartDataY[i]});
+      print("time: ${modTimeDataX[i]}, data: ${chartDataY[i]}");
     }
   }
 
@@ -375,7 +376,7 @@ class _LineChartWidgetState extends State<LineChartWidget> {
                   y: previousClose,
                   dashArray: [4, 4],
                   color: kDisabledColor,
-                  strokeWidth: widget.isPreview ? 3 : 5.5,
+                  strokeWidth: 3,
                   label: HorizontalLineLabel(
                       show: !widget.isPreview,
                       padding: EdgeInsets.fromLTRB(0, 2, 0, 2),

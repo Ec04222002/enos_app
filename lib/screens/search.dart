@@ -21,8 +21,8 @@ import "package:enos/constants.dart";
 import 'package:provider/provider.dart';
 
 class SearchPage extends StatefulWidget {
-  BuildContext context;
   bool isMainPage;
+  BuildContext context;
   SearchPage({this.isMainPage = true, this.context, Key key}) : super(key: key);
 
   @override
@@ -34,12 +34,13 @@ class _SearchPageState extends State<SearchPage> {
   List trendingRecs = [];
   String query = '';
   Timer debouncer;
+  String uid;
   String market = "NASDAQ";
   String searchTitle = "Trending Stocks";
   List<String> savedSymbols = [];
   TickerTileProvider provider;
   UserModel user;
-
+  BuildContext mainContext;
   bool isInit = true;
   //BuildContext context;
   void setMarket(String marketName) {
@@ -82,20 +83,29 @@ class _SearchPageState extends State<SearchPage> {
     }
   }
 
+  Future<void> setUser() async {
+    print("setting user");
+    uid = mainContext.read<UserField>().userUid;
+    user = await FirebaseApi.getUser(uid);
+    print(user);
+  }
+
   @override
   void initState() {
+    print("init");
     super.initState();
-    if (!widget.isMainPage) {
-      provider = Provider.of<TickerTileProvider>(widget.context);
-      savedSymbols = provider.symbols;
-      user = widget.context.read<AuthService>().userModel;
-      if (user == null) {
-        user = context.read<GoogleSignInProvider>().user;
-      }
-      recommends = provider.recs;
-      //check if recommends is empty => put default if so
-      checkRecommends();
-    }
+    // if (!widget.isMainPage) {
+    //   provider = Provider.of<TickerTileProvider>(widget.context);
+    //   savedSymbols = provider.symbols;
+    //   // user = widget.context.read<AuthService>().userModel;
+    //   // print(user);
+    //   // if (user == null) {
+    //   //   user = context.read<GoogleSignInProvider>().user;
+    //   // }
+    //   recommends = provider.recs;
+    //   //check if recommends is empty => put default if so
+    //   checkRecommends();
+    // }
   }
 
   @override
@@ -121,13 +131,13 @@ class _SearchPageState extends State<SearchPage> {
 
   @override
   Widget build(BuildContext context) {
-    if (widget.isMainPage && isInit) {
-      widget.context = context;
-      provider = Provider.of<TickerTileProvider>(context);
-      user = context.read<AuthService>().userModel;
-      if (user == null) {
-        user = context.read<GoogleSignInProvider>().user;
+    if (isInit) {
+      mainContext = context;
+      if (!widget.isMainPage) {
+        mainContext = widget.context;
       }
+      provider = Provider.of<TickerTileProvider>(mainContext);
+      setUser();
       savedSymbols = provider.symbols;
       recommends = provider.recs;
       //check if recommends is empty => put default if so
@@ -295,8 +305,8 @@ class _SearchPageState extends State<SearchPage> {
   Widget buildTile(
           SearchTile stockTileModel, int index, BuildContext context) =>
       GestureDetector(
-        onTap: (() => showInfo(
-            widget.context, stockTileModel.symbol, stockTileModel.isSaved)),
+        onTap: (() =>
+            showInfo(context, stockTileModel.symbol, stockTileModel.isSaved)),
         child: ClipRRect(
           borderRadius: BorderRadius.circular(3),
           child: Container(

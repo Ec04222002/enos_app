@@ -27,7 +27,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   TickerTileProvider provider;
-  double btnOpacity = 0.2;
+  double initBtnOpacity = 0.75, btnOpacity = 0.75;
   @override
   Widget build(BuildContext context) {
     provider = Provider.of<TickerTileProvider>(context);
@@ -52,42 +52,42 @@ class _HomePageState extends State<HomePage> {
           Utils.showSnackBar(context, "Streaming Data ...");
           //print("in long press");
           setState(() {
-            btnOpacity = 0;
+            btnOpacity = 0.3;
             provider.isLive = true;
           });
         },
         onLongPressEnd: (_) {
           //print("end press");
           setState(() {
-            btnOpacity = 0.2;
+            btnOpacity = initBtnOpacity;
             provider.isLive = false;
           });
         },
         onLongPressCancel: () {
           //print("cancel press");
           setState(() {
-            btnOpacity = 0.2;
+            btnOpacity = initBtnOpacity;
             provider.isLive = false;
           });
         },
         onTap: () {
           //print("tap");
           setState(() {
-            btnOpacity = 0.2;
+            btnOpacity = initBtnOpacity;
             provider.isLive = false;
           });
         },
         onTapCancel: () {
           //print("tap cancel");
           setState(() {
-            btnOpacity = 0.2;
+            btnOpacity = initBtnOpacity;
             provider.isLive = false;
           });
         },
         onTapUp: (_) {
           //print('tap up');
           setState(() {
-            btnOpacity = 0.2;
+            btnOpacity = initBtnOpacity;
             provider.isLive = false;
           });
         },
@@ -98,7 +98,7 @@ class _HomePageState extends State<HomePage> {
         },
         onDoubleTapCancel: () {
           setState(() {
-            btnOpacity = 0.2;
+            btnOpacity = initBtnOpacity;
             provider.isLive = false;
           });
           //print("double tap end");
@@ -109,7 +109,11 @@ class _HomePageState extends State<HomePage> {
             size: 50,
             color: kDarkTextColor,
           ),
-          backgroundColor: kActiveColor.withOpacity(btnOpacity),
+          elevation: 5,
+          highlightElevation: 0,
+          disabledElevation: 0,
+          backgroundColor:
+              Utils.lighten(kLightBackgroundColor).withOpacity(btnOpacity),
         ),
       ),
       //
