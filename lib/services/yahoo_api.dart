@@ -68,7 +68,7 @@ class YahooApi {
       "symbol": symbol,
       "interval": interval,
       "range": range,
-      "region": "US"
+      "events": "",
     });
   }
 
@@ -76,7 +76,6 @@ class YahooApi {
     String searchQuery = symbols.join(",");
     dynamic datas = await getData(endpoint: "market/v2/get-quotes", query: {
       "symbols": searchQuery,
-      "region": "US",
     });
     List<TickerTileModel> listData = [];
     if (datas == null) {

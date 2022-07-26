@@ -372,13 +372,7 @@ class _TickerInfoState extends State<TickerInfo> {
                   specCurrentData = specsData[specsUsing[index]];
                   trailingWidget = specsUsing[index].contains("Range")
                       ? SliderWidget(
-                          value: (pageData.isPostMarket &&
-                                  (Utils.isPastPostMarket() ||
-                                      Utils.isPostMarket() ||
-                                      Utils.isWeekend()) &&
-                                  !pageData.isCrypto)
-                              ? specsData["Post Market Price"].toDouble()
-                              : specsData['Market Price'].toDouble(),
+                          value: specsData['Market Price'].toDouble(),
                           min: specCurrentData[0].toDouble(),
                           max: specCurrentData[1].toDouble(),
                         )

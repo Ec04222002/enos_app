@@ -47,6 +47,7 @@ class _LineChartWidgetState extends State<LineChartWidget> {
   //open price
   List chartDataY;
   List chartDataX;
+  List chartDataXMod;
   List closePriceData;
   List highPriceData;
   List lowPriceData;
@@ -134,11 +135,23 @@ class _LineChartWidgetState extends State<LineChartWidget> {
   void setDataPoints() {
     modTimeDataX = [];
     chartDataPoints = [];
+    chartDataXMod = [];
+    //List chartSection = [];
     for (var i = 0; i < chartDataX.length; i++) {
       modTimeDataX.add(getFormattedTime(
         epoch: chartDataX[i],
       ));
-      chartDataPoints.add({"x": chartDataX[i], "y": chartDataY[i]});
+      double dataX = chartDataX[i];
+      //set modified time stamp to remove market close gaps
+      if (widget.range == "5d") {
+        dataX = i * 900.0;
+        chartDataXMod.add(dataX);
+      }
+      if (widget.range == "1mo") {
+        dataX = i * 1800.0;
+        chartDataXMod.add(dataX);
+      }
+      chartDataPoints.add({"x": dataX, "y": chartDataY[i]});
       print("time: ${modTimeDataX[i]}, data: ${chartDataY[i]}");
     }
   }
@@ -204,7 +217,9 @@ class _LineChartWidgetState extends State<LineChartWidget> {
 
     print(chartDataX.length);
     print(chartDataY.length);
-    minMaxX = Utils.maxMin(chartDataX);
+    minMaxX = widget.range == "5d" || widget.range == "1mo"
+        ? Utils.maxMin(chartDataXMod)
+        : Utils.maxMin(chartDataX);
     minMaxY = Utils.maxMin(chartDataY);
     return AspectRatio(
       aspectRatio: widget.isPreview ? 3 : 1.5,
