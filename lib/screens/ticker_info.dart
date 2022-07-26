@@ -55,13 +55,23 @@ class _TickerInfoState extends State<TickerInfo> {
   final double editButtonHeight = 45;
   final double dataHeight = 47;
   final double toolBarHeight = 33;
+  double lastScrollOffset;
   UserModel user;
   //comment page
 
   Future<void> init() async {
     pageData = await TickerPageInfo.getModelData(widget.symbol, widget.isSaved);
     // scrollController.addListener(() {
+    //   double maxScroll = scrollController.position.maxScrollExtent;
+    //   double currentScroll = scrollController.position.pixels;
+    //   print("maxScroll: $maxScroll");
     //   print(scrollController.position);
+    //   print(scrollController.positions);
+    //   double delta = 200.0; // or something else..
+    //   if (maxScroll - currentScroll <= delta) {
+    //     // whatever you determine here
+    //     //.. load more
+    //   }
     // });
 
     //specs data
@@ -192,6 +202,12 @@ class _TickerInfoState extends State<TickerInfo> {
                 : null,
             body: NotificationListener(
               onNotification: (scrollNotification) {
+                //scrollController.offset -> only for vertical;
+                //print(scrollController.offset);
+                if (lastScrollOffset == null)
+                  lastScrollOffset = scrollController.offset;
+                if (scrollController.offset == lastScrollOffset) return false;
+                print("scrolling");
                 if (scrollNotification is ScrollUpdateNotification) {
                   double before = scrollController.position.extentBefore;
                   //reducing setstate calls
@@ -204,10 +220,12 @@ class _TickerInfoState extends State<TickerInfo> {
                 }
                 //prevent not-toggling due to quick scroll
                 if (scrollNotification is ScrollEndNotification) {
+                  print("scroll end");
                   setState(() {
                     showBtn = scrollController.position.extentBefore < 85;
                   });
                 }
+                lastScrollOffset = scrollController.offset;
                 return true;
               },
               child: SingleChildScrollView(
@@ -242,10 +260,10 @@ class _TickerInfoState extends State<TickerInfo> {
                           // chartLoading = false;
                           setState(() {
                             range = localRange;
-                            print("in set state");
                             previousClose = pageData.previousClose;
                             if (pageData.priceData[localRange] == null) {
                               chartLoading = true;
+                              print("loading charts");
                               return;
                             }
                             if (range != '1d') {
@@ -373,8 +391,18 @@ class _TickerInfoState extends State<TickerInfo> {
                   trailingWidget = specsUsing[index].contains("Range")
                       ? SliderWidget(
                           value: specsData['Market Price'].toDouble(),
-                          min: specCurrentData[0].toDouble(),
-                          max: specCurrentData[1].toDouble(),
+                          min: double.tryParse(
+                                      specCurrentData[2].replaceAll(",", "")) ==
+                                  null
+                              ? specCurrentData[0]
+                              : double.tryParse(
+                                  specCurrentData[2].replaceAll(",", "")),
+                          max: double.parse(
+                                      specCurrentData[3].replaceAll(",", "")) ==
+                                  null
+                              ? specCurrentData[1]
+                              : double.parse(
+                                  specCurrentData[3].replaceAll(",", "")),
                         )
                       : Text(
                           (() {

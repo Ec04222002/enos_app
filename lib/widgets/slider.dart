@@ -8,7 +8,6 @@ class SliderWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    print("in slider widgte");
     return Container(
         padding: EdgeInsets.zero,
         width: 130,

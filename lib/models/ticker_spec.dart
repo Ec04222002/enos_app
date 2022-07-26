@@ -103,7 +103,12 @@ class TickerSpecs {
               case "Daily Range":
                 existSpecsMap[specs] = parent2['dayLow'] == null
                     ? null
-                    : [parent2['dayLow']['raw'], parent2['dayHigh']['raw']];
+                    : [
+                        parent2['dayLow']['raw'],
+                        parent2['dayHigh']['raw'],
+                        parent2['dayLow']['fmt'],
+                        parent2['dayHigh']['fmt']
+                      ];
 
                 break;
 
@@ -112,7 +117,9 @@ class TickerSpecs {
                     ? null
                     : [
                         parent2['fiftyTwoWeekLow']['raw'],
-                        parent2['fiftyTwoWeekHigh']['raw']
+                        parent2['fiftyTwoWeekHigh']['raw'],
+                        parent2['fiftyTwoWeekLow']['fmt'],
+                        parent2['fiftyTwoWeekHigh']['fmt'],
                       ];
                 break;
               case "Trailing PE":

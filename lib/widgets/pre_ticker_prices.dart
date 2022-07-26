@@ -29,8 +29,7 @@ class _PreTickerInfoState extends State<PreTickerInfo> {
   Widget build(BuildContext context) {
     data = widget.data;
     provider = widget.tickerProvider;
-    print("price change");
-    print(data.priceChange);
+    print("in pre ticker widget");
     preMarketColor = data.priceChange[0] != "-" ? kGreenColor : kRedColor;
     preMarketPrefix = preMarketColor == kGreenColor ? "+" : "";
     preMarketPercentSuffix =

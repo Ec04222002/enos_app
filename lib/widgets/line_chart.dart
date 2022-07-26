@@ -94,7 +94,7 @@ class _LineChartWidgetState extends State<LineChartWidget> {
     } else if (isDay) {
       result = DateFormat("E").format(time);
     } else if (isDate) {
-      result = DateFormat('MMMd').format(time);
+      result = DateFormat('M/d').format(time);
     } else if (isMonth) {
       result = DateFormat('MMM').format(time);
     } else {
@@ -152,7 +152,6 @@ class _LineChartWidgetState extends State<LineChartWidget> {
         chartDataXMod.add(dataX);
       }
       chartDataPoints.add({"x": dataX, "y": chartDataY[i]});
-      print("time: ${modTimeDataX[i]}, data: ${chartDataY[i]}");
     }
   }
 
@@ -165,16 +164,63 @@ class _LineChartWidgetState extends State<LineChartWidget> {
     return upData.length <= (0.5 * firstSpace).round();
   }
 
+  double findClosest(double target, List arr) {
+    int n = arr.length;
+
+    //corner
+    if (target <= arr.first) return arr.first;
+    if (target >= arr.last) return arr.last;
+
+    //binary
+    //i -> front index, j -> end index, mid -> mid index
+    int i = 0, j = n, mid = 0;
+    while (i < j) {
+      print("searching");
+      mid = ((i + j) / 2).floor();
+      if (arr[mid] == target) return arr[mid];
+
+      if (target < arr[mid]) {
+        if (mid > 0 && target > arr[mid - 1])
+          return findCloserOfTwo(arr[mid], arr[mid - 1], target);
+
+        j = mid;
+      } else {
+        if (mid < n - 1 && target < arr[mid + 1])
+          return findCloserOfTwo(arr[mid], arr[mid + 1], target);
+        i = mid + 1;
+      }
+    }
+    return arr[mid];
+  }
+
+  double findCloserOfTwo(double val1, double val2, double target) {
+    if (target - val1 >= val2 - target) return val2;
+    return val1;
+  }
+
   String lastTime;
-  Widget bottomTitleWidget(double value, TitleMeta _) {
-    String time = getFormattedTime(epoch: value);
+  Widget bottomTitleWidget(double value, TitleMeta meta) {
+    double xData = value;
+    if (widget.range == "5d" || widget.range == "1mo") {
+      //find num, closest to value, in chartDataXMod
+      double closestTime = findClosest(value, chartDataXMod);
+      //find index of num in chartDataXMod
+      int indx = chartDataXMod.indexOf(closestTime);
+      //find respective time stamp from chart dataX w/ indx
+      xData = chartDataX[indx];
+      //print("xData: $xData");
+    }
+    String time = getFormattedTime(epoch: xData);
+    // print(time);
     int occur = modTimeDataX.where((value) => value == time).toList().length;
+    //if (lastTime == null) lastTime = time;
     if (occur <= 3 || time == lastTime) return Text("");
     lastTime = time;
     Widget timeWidget =
         Text(time.replaceAll(" ", ""), style: TextStyle(fontSize: 12));
+
     return Padding(
-      padding: EdgeInsets.fromLTRB(7, 23, 7, 0),
+      padding: EdgeInsets.fromLTRB(0, 23, 0, 0),
       child: timeWidget,
     );
   }
@@ -182,7 +228,6 @@ class _LineChartWidgetState extends State<LineChartWidget> {
   @override
   Widget build(BuildContext bContext) {
     //no Data
-
     if (widget.chartLoading) {
       print("chart is loading");
       return AspectRatio(
@@ -208,15 +253,14 @@ class _LineChartWidgetState extends State<LineChartWidget> {
               style: TextStyle(fontSize: 22),
             )));
       }
-      print("showing new chart");
       chartDataX = widget.pageData.priceData[widget.range]['timeStamps'];
       chartDataY = widget.pageData.priceData[widget.range]['openPrices'];
       previousClose = widget.previousClose;
       setDataPoints();
     }
 
-    print(chartDataX.length);
-    print(chartDataY.length);
+    // print(chartDataX.length);
+    // print(chartDataY.length);
     minMaxX = widget.range == "5d" || widget.range == "1mo"
         ? Utils.maxMin(chartDataXMod)
         : Utils.maxMin(chartDataX);
@@ -261,10 +305,10 @@ class _LineChartWidgetState extends State<LineChartWidget> {
                   fitInsideVertically: false,
                   tooltipBgColor: Colors.blueGrey,
                   getTooltipItems: (items) {
-                    int index = items[0].spotIndex;
-                    dynamic data = chartDataPoints[index];
+                    int spotIndex = items[0].spotIndex;
+                    dynamic data = chartDataPoints[spotIndex];
                     String time = Utils.formatEpoch(
-                        epoch: chartDataX[index].toInt(),
+                        epoch: chartDataX[spotIndex].toInt(),
                         isJustTime: false,
                         isDateNumeric: true);
                     //post data
@@ -292,20 +336,20 @@ class _LineChartWidgetState extends State<LineChartWidget> {
                       isMainData: true,
                     );
                     String closePrice = Utils.fixNumToFormat(
-                      num: closePriceData[index],
+                      num: closePriceData[spotIndex],
                       isPercentage: false,
                       isConstrain: false,
                       isMainData: true,
                     );
 
                     String highPrice = Utils.fixNumToFormat(
-                      num: highPriceData[index],
+                      num: highPriceData[spotIndex],
                       isPercentage: false,
                       isConstrain: false,
                       isMainData: true,
                     );
                     String lowPrice = Utils.fixNumToFormat(
-                      num: lowPriceData[index],
+                      num: lowPriceData[spotIndex],
                       isPercentage: false,
                       isConstrain: false,
                       isMainData: true,
@@ -352,14 +396,18 @@ class _LineChartWidgetState extends State<LineChartWidget> {
             titlesData: FlTitlesData(
                 show: !widget.isPreview,
                 bottomTitles: AxisTitles(
-                  //axisNameSize: 6,
-                  drawBehindEverything: true,
-                  sideTitles: SideTitles(
-                      reservedSize: 40,
-                      showTitles: true,
-                      getTitlesWidget:
-                          (widget.isPreview ? null : bottomTitleWidget)),
-                ),
+                    //axisNameSize: 6,
+                    //drawBehindEverything: true,
+                    sideTitles: SideTitles(
+                  reservedSize: 60,
+                  showTitles: true,
+                  getTitlesWidget: (value, meta) {
+                    if (widget.isPreview) return null;
+                    //lastTime = null;
+                    return bottomTitleWidget(value, meta);
+                    // return Text("value");
+                  },
+                )),
                 topTitles: AxisTitles(
                     sideTitles: SideTitles(reservedSize: 0, showTitles: false)),
                 rightTitles: AxisTitles(
