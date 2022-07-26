@@ -117,11 +117,11 @@ class _TickerInfoState extends State<TickerInfo> {
     init();
   }
 
-  @override
-  void dispose() {
-    super.dispose();
-    scrollController.dispose();
-  }
+  // @override
+  // void dispose() {
+  //   super.dispose();
+  //   scrollController.dispose();
+  // }
 
   @override
   Widget build(BuildContext bContext) {
