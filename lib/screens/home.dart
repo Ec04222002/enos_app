@@ -28,6 +28,7 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   TickerTileProvider provider;
   double initBtnOpacity = 0.75, btnOpacity = 0.75;
+  Utils util = Utils();
   @override
   Widget build(BuildContext context) {
     provider = Provider.of<TickerTileProvider>(context);
@@ -49,7 +50,7 @@ class _HomePageState extends State<HomePage> {
       ),
       floatingActionButton: GestureDetector(
         onLongPress: () {
-          Utils.showSnackBar(context, "Streaming Data ...");
+          util.showSnackBar(context, "Streaming Data ", true);
           //print("in long press");
           setState(() {
             btnOpacity = 0.3;
@@ -57,6 +58,7 @@ class _HomePageState extends State<HomePage> {
           });
         },
         onLongPressEnd: (_) {
+          util.removeSnackBar();
           //print("end press");
           setState(() {
             btnOpacity = initBtnOpacity;

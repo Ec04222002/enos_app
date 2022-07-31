@@ -59,6 +59,7 @@ class _TickerInfoState extends State<TickerInfo> {
   double lastScrollOffset;
   UserModel user;
   bool triggerNewChart = false;
+  Utils util = Utils();
   //comment page
 
   Future<void> init() async {
@@ -175,16 +176,26 @@ class _TickerInfoState extends State<TickerInfo> {
             floatingActionButton: showBtn
                 ? GestureDetector(
                     onLongPress: () {
-                      print("longPressing");
                       if (!pageData.isCrypto) {
-                        if (Utils.isWeekend()) return;
-                        if (Utils.isPastPostMarket()) return;
-                        if (!pageData.isPostMarket && (Utils.isPostMarket()))
+                        if (Utils.isWeekend()) {
+                          util.showSnackBar(
+                              context, "Market Closed - Weekend", false);
                           return;
+                        }
+                        if (Utils.isPastPostMarket()) {
+                          util.showSnackBar(
+                              context, "Market Closed - Past Time", false);
+                          return;
+                        }
+                        if (!pageData.isPostMarket && (Utils.isPostMarket())) {
+                          util.showSnackBar(
+                              context, "Stock is not post", false);
+                          return;
+                        }
                       }
                       print("calling for data");
                       triggerNewChart = true;
-                      Utils.showSnackBar(context, "Streaming Data ...");
+                      util.showSnackBar(context, "Streaming Data ", true);
                       //print("in long press");
                       setState(() {
                         isStream = true;
@@ -193,6 +204,7 @@ class _TickerInfoState extends State<TickerInfo> {
                     },
                     onLongPressEnd: (_) {
                       print("end press");
+                      util.removeSnackBar();
                       setState(() {
                         isStream = false;
                         btnOpacity = initBtnOpacity;

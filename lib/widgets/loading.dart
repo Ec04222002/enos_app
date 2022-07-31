@@ -7,7 +7,10 @@ import 'package:enos/constants.dart';
 class Loading extends StatefulWidget {
   String loadText;
   String type = "";
-  Loading({this.loadText = "", this.type = "circle", Key key})
+  double size;
+  Color bgColor;
+  Loading(
+      {this.loadText = "", this.type = "circle", this.size, this.bgColor, key})
       : super(key: key);
 
   @override
@@ -18,7 +21,7 @@ class _LoadingState extends State<Loading> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: kDarkBackgroundColor,
+      color: widget.bgColor == null ? kDarkBackgroundColor : widget.bgColor,
       child: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -26,15 +29,19 @@ class _LoadingState extends State<Loading> {
             widget.type == "circle"
                 ? SpinKitCircle(
                     color: kBrightTextColor,
-                    size: 65.0,
+                    size: widget.size == null ? 65.0 : widget.size,
                   )
                 : SpinKitThreeBounce(
                     color: kBrightTextColor,
-                    size: 50.0,
+                    size: widget.size == null ? 50 : widget.size,
                   ),
-            SizedBox(
-              height: 10,
-            ),
+            widget.loadText.isEmpty
+                ? Container(
+                    height: 0,
+                  )
+                : SizedBox(
+                    height: 10,
+                  ),
             DefaultTextStyle(
               style: TextStyle(color: kDarkTextColor),
               child: Text(

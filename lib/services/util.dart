@@ -1,10 +1,16 @@
 import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:enos/models/ticker_tile.dart';
+import 'package:enos/widgets/loading.dart';
 import 'package:flutter/material.dart';
 import 'package:enos/constants.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'dart:math';
 import 'package:intl/intl.dart';
+import 'package:top_snackbar_flutter/custom_snack_bar.dart';
+import 'package:top_snackbar_flutter/safe_area_values.dart';
+import 'package:top_snackbar_flutter/tap_bounce_container.dart';
+import 'package:top_snackbar_flutter/top_snack_bar.dart';
 
 class Utils {
   static Color darken(Color color, [double amount = .1]) {
@@ -62,15 +68,65 @@ class Utils {
     );
   }
 
-  static void showSnackBar(BuildContext context, String text) =>
-      ScaffoldMessenger.of(context)
-        ..removeCurrentSnackBar()
-        ..showSnackBar(SnackBar(
-          backgroundColor: kLightBackgroundColor,
-          behavior: SnackBarBehavior.floating,
-          content: Text(text),
-          width: 145,
-        ));
+  AnimationController localAnimationController;
+  void showSnackBar(BuildContext context, String text, bool showLoader) {
+    showTopSnackBar(
+      context,
+      ClipRRect(
+        borderRadius: BorderRadius.circular(5.0), //or 15.0
+        child: Container(
+          height: 55.0,
+          width: MediaQuery.of(context).size.width * 0.8,
+          color: kLightBackgroundColor,
+          padding: EdgeInsets.zero,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Padding(
+                padding: EdgeInsets.only(bottom: 0),
+                child: Text(
+                  text,
+                  style: TextStyle(
+                      decoration: TextDecoration.none,
+                      color: kBrightTextColor,
+                      fontSize: 16,
+                      fontFamily: GoogleFonts.openSans().fontFamily,
+                      fontWeight: FontWeight.w600),
+                ),
+              ),
+              showLoader
+                  ? Padding(
+                      padding: EdgeInsets.only(top: 24),
+                      child: Loading(
+                        type: 'dot',
+                        bgColor: Colors.transparent,
+                        size: 12,
+                      ),
+                    )
+                  : Container(height: 0),
+              // child: Text(
+              //   text,
+              //   style: TextStyle(
+              //       decoration: TextDecoration.none,
+              //       color: kBrightTextColor,
+              //       fontSize: 16,
+              //       fontFamily: GoogleFonts.openSans().fontFamily,
+              //       fontWeight: FontWeight.w700),
+              // ),
+            ],
+          ),
+        ),
+      ),
+      animationDuration: Duration(milliseconds: 350),
+      //displayDuration: Duration(milliseconds: 100),
+      curve: Curves.decelerate,
+      persistent: true,
+      onAnimationControllerInit: (controller) =>
+          localAnimationController = controller,
+    );
+  }
+
+  void removeSnackBar() => localAnimationController.reverse();
 
   static DateTime toDateTime(Timestamp value) {
     if (value == null) return null;
