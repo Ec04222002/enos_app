@@ -123,6 +123,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   void showSearch(BuildContext buildContext) {
+    print('buildContext: $buildContext');
     Navigator.push(
         context,
         MaterialPageRoute(

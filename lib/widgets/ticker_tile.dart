@@ -35,7 +35,7 @@ class _TickerState extends State<TickerTile> {
 
   @override
   Widget build(BuildContext context) {
-    //print("building tickertile ${tickerTileData.price}");
+    print("building tickertile");
     tickerProvider = Provider.of<TickerTileProvider>(widget.context);
     tickerTileData = tickerProvider.tickerAt(widget.index);
     trailingWidget =
@@ -238,7 +238,7 @@ class _TickerState extends State<TickerTile> {
     tickerProvider.removeTicker(tickers.indexOf(tickerTileData.symbol));
   }
 
-  void showInfo(BuildContext buildContext, String symbol, bool isSaved) {
+  void showInfo(BuildContext buildContext, String symbol, bool isSaved) async {
     Navigator.push(
         buildContext,
         MaterialPageRoute(

@@ -35,15 +35,16 @@ class TickerInfo extends StatefulWidget {
 }
 
 class _TickerInfoState extends State<TickerInfo> {
+  TickerPageInfo dataBase = TickerPageInfo();
   bool isLoading = true;
   double initBtnOpacity = 0.75, btnOpacity = 0.75;
   TickerPageModel pageData;
   double previousClose;
   String range = "1d";
   bool chartLoading = false;
-  ScrollController scrollController = ScrollController();
+  ScrollController scrollController;
   bool showBtn = true;
-  bool isToggled = false;
+  bool isStream = false;
   //specs section
   List<String> specsAll = TickerSpecs.existSpecs;
   List<String> specsDisplay = [];
@@ -57,10 +58,14 @@ class _TickerInfoState extends State<TickerInfo> {
   final double toolBarHeight = 33;
   double lastScrollOffset;
   UserModel user;
+  bool triggerNewChart = false;
   //comment page
 
   Future<void> init() async {
-    pageData = await TickerPageInfo.getModelData(widget.symbol, widget.isSaved);
+    print("in init");
+    if (!mounted) return;
+    pageData =
+        await dataBase.getModelData(widget.symbol, widget.isSaved, false, null);
     // scrollController.addListener(() {
     //   double maxScroll = scrollController.position.maxScrollExtent;
     //   double currentScroll = scrollController.position.pixels;
@@ -73,7 +78,7 @@ class _TickerInfoState extends State<TickerInfo> {
     //     //.. load more
     //   }
     // });
-
+    // lastData = pageData;
     //specs data
     specsData = pageData.specsData;
     user = await FirebaseApi.getUser(widget.uid);
@@ -85,10 +90,14 @@ class _TickerInfoState extends State<TickerInfo> {
     setState(() {
       isLoading = false;
       WidgetsBinding.instance.addPostFrameCallback((_) async {
-        await TickerPageInfo.addPostLoadData(pageData);
-        setState(() {
-          chartLoading = false;
-        });
+        print("in post data loadi");
+        await dataBase.addPostLoadData(pageData);
+        // lastData = pageData;
+        if (mounted) {
+          setState(() {
+            chartLoading = false;
+          });
+        }
       });
     });
   }
@@ -117,14 +126,9 @@ class _TickerInfoState extends State<TickerInfo> {
     init();
   }
 
-  // @override
-  // void dispose() {
-  //   super.dispose();
-  //   scrollController.dispose();
-  // }
-
   @override
   Widget build(BuildContext bContext) {
+    scrollController = ScrollController();
     return isLoading
         ? Loading(
             type: "dot",
@@ -133,7 +137,25 @@ class _TickerInfoState extends State<TickerInfo> {
         : Scaffold(
             appBar: AppBar(
               leading: IconButton(
-                onPressed: () => Navigator.pop(context),
+                onPressed: () async {
+                  print("returning");
+
+                  // int index = widget.provider.symbols.indexOf(widget.symbol);
+                  // TickerTileModel ticker = widget.provider.tickerAt(index);
+                  // ticker.percentChange = pageData.percentChange;
+                  // ticker.priceChange = pageData.priceChange;
+                  // ticker.price = pageData.marketPrice;
+                  // ticker.postPercentChange = pageData.postPercentChange;
+                  // ticker.postPriceChange = pageData.postPriceChange;
+                  Navigator.pop(context, {
+                    // "percentChange": pageData.percentChange,
+                    // "priceChange": pageData.priceChange,
+                    // 'price': pageData.marketPrice,
+                    // 'postPercentChange': pageData.postPercentChange,
+                    // 'postPriceChange': pageData.postPriceChange,
+                    'isSaved': pageData.isSaved,
+                  });
+                },
                 color: kDarkTextColor,
                 icon: Icon(Icons.arrow_back_ios),
               ),
@@ -153,39 +175,54 @@ class _TickerInfoState extends State<TickerInfo> {
             floatingActionButton: showBtn
                 ? GestureDetector(
                     onLongPress: () {
+                      print("longPressing");
+                      if (!pageData.isCrypto) {
+                        if (Utils.isWeekend()) return;
+                        if (Utils.isPastPostMarket()) return;
+                        if (!pageData.isPostMarket && (Utils.isPostMarket()))
+                          return;
+                      }
+                      print("calling for data");
+                      triggerNewChart = true;
                       Utils.showSnackBar(context, "Streaming Data ...");
                       //print("in long press");
                       setState(() {
+                        isStream = true;
                         btnOpacity = 0.3;
                       });
                     },
                     onLongPressEnd: (_) {
-                      //print("end press");
+                      print("end press");
                       setState(() {
+                        isStream = false;
                         btnOpacity = initBtnOpacity;
                       });
                     },
                     onLongPressCancel: () {
-                      //print("cancel press");
+                      print("cancel press");
                       setState(() {
+                        isStream = false;
                         btnOpacity = initBtnOpacity;
                       });
                     },
                     onTap: () {
-                      //print("tap");
+                      print("tap");
                       setState(() {
+                        isStream = false;
                         btnOpacity = initBtnOpacity;
                       });
                     },
-                    onTapCancel: () {
-                      //print("tap cancel");
-                      setState(() {
-                        btnOpacity = initBtnOpacity;
-                      });
-                    },
+                    // onTapCancel: () {
+                    //   print("tap cancel");
+                    //   setState(() {
+                    //     isStream = false;
+                    //     btnOpacity = initBtnOpacity;
+                    //   });
+                    // },
                     onTapUp: (_) {
-                      //print('tap up');
+                      print('tap up');
                       setState(() {
+                        isStream = false;
                         btnOpacity = initBtnOpacity;
                       });
                     },
@@ -228,113 +265,133 @@ class _TickerInfoState extends State<TickerInfo> {
                 lastScrollOffset = scrollController.offset;
                 return true;
               },
-              child: SingleChildScrollView(
-                  controller: scrollController,
-                  child: Column(
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 16),
-                        child: PreTickerInfo(
-                          data: pageData,
-                          tickerProvider: widget.provider,
-                        ),
-                      ),
-                      Padding(
-                        padding: EdgeInsets.fromLTRB(6, 8, 6, 0),
-                        child: LineChartWidget(
-                          symbol: pageData.symbol,
-                          pageData: pageData,
-                          range: range,
-                          isPreview: false,
-                          previousClose: previousClose,
-                          chartLoading: chartLoading,
-                          //lowData: lowData,
-                        ),
-                      ),
-                      Padding(
-                        padding: EdgeInsets.symmetric(vertical: 16),
-                        child: DatesBar(onTap: (index) {
-                          String localRange =
-                              TickerPageInfo.chartRangeAndInt[index][0];
-                          // chartLoading = false;
-                          setState(() {
-                            range = localRange;
-                            previousClose = pageData.previousClose;
-                            if (pageData.priceData[localRange] == null) {
-                              chartLoading = true;
-                              print("loading charts");
-                              return;
-                            }
-                            if (range != '1d') {
-                              previousClose = pageData
-                                  .priceData[localRange]['closePrices'].first;
-                            }
-                          });
-                          //return 'Success';
-                        }),
-                      ),
-                      Padding(
-                        padding: EdgeInsets.all(8),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.all(Radius.circular(8)),
-                          child: Container(
-                            height: editButtonHeight +
-                                dataHeight * specsUsing.length +
-                                toolBarHeight,
-                            child: DefaultTabController(
-                              length: 3,
-                              child: Scaffold(
-                                appBar: AppBar(
-                                  automaticallyImplyLeading: false,
-                                  titleSpacing: 0,
-                                  toolbarHeight: toolBarHeight,
-                                  backgroundColor: kLightBackgroundColor,
-                                  leading: Container(height: 0),
-                                  flexibleSpace: Column(
-                                    mainAxisAlignment: MainAxisAlignment.end,
-                                    children: [
-                                      TabBar(
-                                        labelPadding: EdgeInsets.zero,
-                                        padding: EdgeInsets.zero,
-                                        indicator: BoxDecoration(
-                                            // Creates border
-                                            color: kActiveColor),
-                                        tabs: [
-                                          Tab(
-                                            text: "Analyze",
-                                            height: 30,
-                                          ),
-                                          Tab(
-                                            text: "Comment",
-                                            height: 30,
-                                          ),
-                                          Tab(
-                                            text: "News",
-                                            height: 30,
-                                          ),
-                                        ],
-                                      )
-                                    ],
-                                  ),
-                                ),
-                                body: TabBarView(
-                                  physics: NeverScrollableScrollPhysics(),
-                                  children: [
-                                    specSection(),
-                                    Text("Comment"),
-                                    Text("News"),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  )),
+              child: isStream
+                  ? StreamBuilder<TickerPageModel>(
+                      initialData: pageData,
+                      stream: dataBase.getPageStream(
+                          pageData.symbol, pageData.isSaved, pageData),
+                      builder: (context, snapshot) {
+                        if (snapshot.hasError) {
+                          print("error: ${snapshot.error}");
+                          return Center(
+                              child:
+                                  Text("Sorry, there seems to be an error 😔"));
+                        }
+                        pageData = snapshot.data;
+                        return TickerPage();
+                      },
+                    )
+                  : TickerPage(),
             ),
           );
+  }
+
+  Widget TickerPage() {
+    return SingleChildScrollView(
+        controller: scrollController,
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+              child: PreTickerInfo(
+                data: pageData,
+                tickerProvider: widget.provider,
+                isStream: isStream,
+              ),
+            ),
+            Padding(
+              padding: EdgeInsets.fromLTRB(6, 8, 6, 0),
+              child: LineChartWidget(
+                symbol: pageData.symbol,
+                pageData: pageData,
+                range: range,
+                isPreview: false,
+                previousClose: previousClose,
+                chartLoading: chartLoading,
+                triggerNewChart: triggerNewChart,
+              ),
+            ),
+            Padding(
+              padding: EdgeInsets.symmetric(vertical: 16),
+              child: DatesBar(onTap: (index) {
+                String localRange = TickerPageInfo.chartRangeAndInt[index][0];
+                // chartLoading = false;
+                setState(() {
+                  triggerNewChart = true;
+                  range = localRange;
+                  previousClose = pageData.previousClose;
+                  if (pageData.priceData[localRange] == null) {
+                    chartLoading = true;
+                    print("loading charts");
+                    return;
+                  }
+                  if (range != '1d') {
+                    previousClose =
+                        pageData.priceData[localRange]['closePrices'].first;
+                  }
+                });
+                //return 'Success';
+              }),
+            ),
+            Padding(
+              padding: EdgeInsets.all(8),
+              child: ClipRRect(
+                borderRadius: BorderRadius.all(Radius.circular(8)),
+                child: Container(
+                  height: editButtonHeight +
+                      dataHeight * specsUsing.length +
+                      toolBarHeight,
+                  child: DefaultTabController(
+                    length: 3,
+                    child: Scaffold(
+                      appBar: AppBar(
+                        automaticallyImplyLeading: false,
+                        titleSpacing: 0,
+                        toolbarHeight: toolBarHeight,
+                        backgroundColor: kLightBackgroundColor,
+                        leading: Container(height: 0),
+                        flexibleSpace: Column(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            TabBar(
+                              labelPadding: EdgeInsets.zero,
+                              padding: EdgeInsets.zero,
+                              indicator: BoxDecoration(
+                                  // Creates border
+                                  color: kActiveColor),
+                              tabs: [
+                                Tab(
+                                  text: "Analyze",
+                                  height: 30,
+                                ),
+                                Tab(
+                                  text: "Comment",
+                                  height: 30,
+                                ),
+                                Tab(
+                                  text: "News",
+                                  height: 30,
+                                ),
+                              ],
+                            )
+                          ],
+                        ),
+                      ),
+                      body: TabBarView(
+                        physics: NeverScrollableScrollPhysics(),
+                        children: [
+                          specSection(),
+                          Text("Comment"),
+                          Text("News"),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ));
   }
 
   Widget editBtn() {
@@ -388,35 +445,49 @@ class _TickerInfoState extends State<TickerInfo> {
                 shrinkWrap: true,
                 itemBuilder: (context, index) {
                   specCurrentData = specsData[specsUsing[index]];
-                  trailingWidget = specsUsing[index].contains("Range")
-                      ? SliderWidget(
-                          value: specsData['Market Price'].toDouble(),
-                          min: double.tryParse(
-                                      specCurrentData[2].replaceAll(",", "")) ==
-                                  null
-                              ? specCurrentData[0]
-                              : double.tryParse(
-                                  specCurrentData[2].replaceAll(",", "")),
-                          max: double.parse(
-                                      specCurrentData[3].replaceAll(",", "")) ==
-                                  null
-                              ? specCurrentData[1]
-                              : double.parse(
-                                  specCurrentData[3].replaceAll(",", "")),
-                        )
-                      : Text(
-                          (() {
-                            if (specCurrentData == null) {
-                              return "__";
-                            } else if (specsUsing[index] == "Market Price") {
-                              return pageData.marketPrice;
-                            } else if (specsUsing[index] ==
-                                "Post Market Price") {
-                              return pageData.postMarketPrice;
-                            }
-                            return specCurrentData;
-                          }()),
+                  trailingWidget = specsUsing[index].contains("Range") &&
+                          specCurrentData != null
+                      ? (() {
+                          try {
+                            Widget slider = SliderWidget(
+                              value: specsData['Market Price'].toDouble(),
+                              min: double.tryParse(specCurrentData[2]
+                                          .replaceAll(",", "")) ==
+                                      null
+                                  ? specCurrentData[0]
+                                  : double.tryParse(
+                                      specCurrentData[2].replaceAll(",", "")),
+                              max: double.parse(specCurrentData[3]
+                                          .replaceAll(",", "")) ==
+                                      null
+                                  ? specCurrentData[1]
+                                  : double.parse(
+                                      specCurrentData[3].replaceAll(",", "")),
+                            );
+                            return slider;
+                          } catch (e) {
+                            return Text(
+                              "__",
+                              style: TextStyle(color: kBrightTextColor),
+                            );
+                          }
+                        })()
+                      : DefaultTextStyle(
                           style: TextStyle(color: kBrightTextColor),
+                          child: Text(
+                            (() {
+                              if (specCurrentData == null) {
+                                return "__";
+                              } else if (specsUsing[index] == "Market Price") {
+                                return pageData.marketPrice;
+                              } else if (specsUsing[index] ==
+                                  "Post Market Price") {
+                                return pageData.postMarketPrice;
+                              }
+                              return specCurrentData;
+                            }()),
+                            style: TextStyle(color: kBrightTextColor),
+                          ),
                         );
                   return Slidable(
                     enabled: false,
@@ -442,7 +513,7 @@ class _TickerInfoState extends State<TickerInfo> {
                                 : Icons.visibility_off_outlined,
                           )
                         ]),
-                    key: Key(pageData.symbol + index.toString()),
+                    key: UniqueKey(),
                     child: Builder(builder: (context) {
                       //set new controller only during edit mode
                       // full specs && new context

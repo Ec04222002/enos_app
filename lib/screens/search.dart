@@ -306,7 +306,7 @@ class _SearchPageState extends State<SearchPage> {
           SearchTile stockTileModel, int index, BuildContext context) =>
       GestureDetector(
         onTap: (() =>
-            showInfo(context, stockTileModel.symbol, stockTileModel.isSaved)),
+            showInfo(index, stockTileModel.symbol, stockTileModel.isSaved)),
         child: ClipRRect(
           borderRadius: BorderRadius.circular(3),
           child: Container(
@@ -372,16 +372,22 @@ class _SearchPageState extends State<SearchPage> {
           ),
         ),
       );
-  void showInfo(BuildContext buildContext, String symbol, bool isSaved) {
-    Navigator.push(
-        buildContext,
+  void showInfo(int index, String symbol, bool isSaved) async {
+    Map<String, dynamic> response = await Navigator.push(
+        mainContext,
         MaterialPageRoute(
           builder: (context) => TickerInfo(
             symbol: symbol,
-            uid: Provider.of<UserField>(buildContext, listen: false).userUid,
+            uid: Provider.of<UserField>(mainContext, listen: false).userUid,
             isSaved: isSaved,
-            provider: Provider.of<TickerTileProvider>(buildContext),
+            provider: Provider.of<TickerTileProvider>(mainContext),
           ),
         ));
+    if (!mounted) return;
+
+    setState(() {
+      print("resetting");
+      provider.tickerAt(index).isSaved = response['isSaved'];
+    });
   }
 }

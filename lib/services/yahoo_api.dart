@@ -72,7 +72,8 @@ class YahooApi {
     });
   }
 
-  Future<List<TickerTileModel>> getInitTickers(List<String> symbols) async {
+  Future<List<TickerTileModel>> getWatchlistUpdates(
+      List<String> symbols, bool requestChart) async {
     String searchQuery = symbols.join(",");
     dynamic datas = await getData(endpoint: "market/v2/get-quotes", query: {
       "symbols": searchQuery,
@@ -142,9 +143,14 @@ class YahooApi {
             isSaved: true,
             marketName: marketName,
           ),
-          requestTickerData: false));
+          requestTickerData: false,
+          requestChartData: requestChart));
     }
     return listData;
+  }
+
+  Future<List<TickerTileModel>> getInitTickers(List<String> symbols) async {
+    return getWatchlistUpdates(symbols, true);
   }
 
   Future<TickerTileModel> get(

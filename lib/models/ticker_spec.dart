@@ -46,18 +46,42 @@ class TickerSpecs {
     "Last Dividend",
     "YTD Return",
   ];
-  static Map<String, dynamic> apiToMap(dynamic response, bool isCrypto) {
+  static Map<String, dynamic> apiToMap(dynamic response) {
     Map<String, dynamic> existSpecsMap = {};
     dynamic parent = response['defaultKeyStatistics'];
     dynamic parent2 = response['summaryDetail'];
     dynamic parent3 = response['price'];
     dynamic parent4 = response['calendarEvents'];
     for (String specs in existSpecs) {
-      print(specs);
       existSpecsMap[specs] = null;
 
       //all tickers have these cases
       switch (specs) {
+        case "Daily Range":
+          existSpecsMap[specs] = parent2['dayLow'] == null
+              ? null
+              : [
+                  parent2['dayLow']['raw'],
+                  parent2['dayHigh']['raw'],
+                  parent2['dayLow']['fmt'],
+                  parent2['dayHigh']['fmt']
+                ];
+
+          break;
+
+        case "52 Week Range":
+          existSpecsMap[specs] = parent2['fiftyTwoWeekLow'] == null
+              ? null
+              : [
+                  parent2['fiftyTwoWeekLow']['raw'],
+                  parent2['fiftyTwoWeekHigh']['raw'],
+                  parent2['fiftyTwoWeekLow']['fmt'],
+                  parent2['fiftyTwoWeekHigh']['fmt'],
+                ];
+          break;
+        case "Market Cap":
+          existSpecsMap[specs] = parent2['marketCap']['fmt'];
+          break;
         case "Open":
           existSpecsMap[specs] = parent3['regularMarketOpen']['fmt'];
           break;
@@ -98,30 +122,8 @@ class TickerSpecs {
 
         default:
           //case is not crypto
-          if (!isCrypto) {
+          if (response['quoteType']['quoteType'] != "CRYPTOCURRENCY") {
             switch (specs) {
-              case "Daily Range":
-                existSpecsMap[specs] = parent2['dayLow'] == null
-                    ? null
-                    : [
-                        parent2['dayLow']['raw'],
-                        parent2['dayHigh']['raw'],
-                        parent2['dayLow']['fmt'],
-                        parent2['dayHigh']['fmt']
-                      ];
-
-                break;
-
-              case "52 Week Range":
-                existSpecsMap[specs] = parent2['fiftyTwoWeekLow'] == null
-                    ? null
-                    : [
-                        parent2['fiftyTwoWeekLow']['raw'],
-                        parent2['fiftyTwoWeekHigh']['raw'],
-                        parent2['fiftyTwoWeekLow']['fmt'],
-                        parent2['fiftyTwoWeekHigh']['fmt'],
-                      ];
-                break;
               case "Trailing PE":
                 //invalid for crypto and index
                 existSpecsMap[specs] = parent2['trailingPE'] == null
@@ -133,9 +135,6 @@ class TickerSpecs {
                 existSpecsMap[specs] = parent2['forwardPE'] == null
                     ? null
                     : parent2['forwardPE']['fmt'];
-                break;
-              case "Market Cap":
-                existSpecsMap[specs] = parent2['marketCap']['fmt'];
                 break;
 
               case "Earning Date":

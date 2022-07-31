@@ -11,7 +11,8 @@ import 'package:intl/intl.dart';
 class PreTickerInfo extends StatefulWidget {
   final TickerPageModel data;
   final TickerTileProvider tickerProvider;
-  const PreTickerInfo({this.data, this.tickerProvider, Key key})
+  final bool isStream;
+  const PreTickerInfo({this.data, this.tickerProvider, this.isStream, Key key})
       : super(key: key);
 
   @override
@@ -20,15 +21,13 @@ class PreTickerInfo extends StatefulWidget {
 
 class _PreTickerInfoState extends State<PreTickerInfo> {
   TickerTileProvider provider;
+  TickerPageInfo dataBase = TickerPageInfo();
   TickerPageModel data;
   Color preMarketColor, postMarketColor;
   String preMarketPrefix, preMarketSuffix, preMarketPercentSuffix;
   String postMarketPrefix, postMarketSuffix, postMarketPercentSuffix;
 
-  @override
-  Widget build(BuildContext context) {
-    data = widget.data;
-    provider = widget.tickerProvider;
+  Widget preTickerInfoWidget() {
     print("in pre ticker widget");
     preMarketColor = data.priceChange[0] != "-" ? kGreenColor : kRedColor;
     preMarketPrefix = preMarketColor == kGreenColor ? "+" : "";
@@ -37,83 +36,88 @@ class _PreTickerInfoState extends State<PreTickerInfo> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            RichText(
-              maxLines: 2,
-              text: TextSpan(
-                text: data.shortName,
-                style: TextStyle(fontSize: 21, fontWeight: FontWeight.w500),
+        Container(
+          width: 220,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              RichText(
+                maxLines: 2,
+                text: TextSpan(
+                  text: data.shortName,
+                  style: TextStyle(
+                      fontSize: data.shortName.length > 15 ? 16 : 21,
+                      fontWeight: FontWeight.w500),
+                ),
               ),
-            ),
-            SizedBox(
-              height: 5,
-            ),
-            RichText(
-              maxLines: 1,
-              text: TextSpan(
-                children: <TextSpan>[
-                  TextSpan(
-                      text: "\t\tUSD",
-                      style:
-                          TextStyle(fontSize: 18, fontWeight: FontWeight.w600))
-                ],
-                text: data.marketPrice,
-                style: TextStyle(fontSize: 35, fontWeight: FontWeight.w600),
+              SizedBox(
+                height: 5,
               ),
-            ),
-            SizedBox(
-              height: 4,
-            ),
-            Text(
-              "$preMarketPrefix${data.priceChange} (${data.percentChange}$preMarketPercentSuffix)",
-              style: TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w600,
-                  color: preMarketColor),
-            ),
-            SizedBox(
-              height: 4,
-            ),
-            ((Utils.isPostMarket() ||
-                        Utils.isPastPostMarket() ||
-                        Utils.isWeekend()) &&
-                    !data.isCrypto)
-                ? Container(
-                    height: 21,
-                    //width: 240,
-                    child: Row(
-                      // crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Container(
-                          // width: 100,
-                          child: Text(
-                            "At Close: ${Utils.formatEpoch(epoch: data.closeTime, isJustTime: false)}",
-                            style: TextStyle(fontSize: 12.5),
+              RichText(
+                maxLines: 1,
+                text: TextSpan(
+                  children: <TextSpan>[
+                    TextSpan(
+                        text: "\t\tUSD",
+                        style: TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.w600))
+                  ],
+                  text: data.marketPrice,
+                  style: TextStyle(fontSize: 35, fontWeight: FontWeight.w600),
+                ),
+              ),
+              SizedBox(
+                height: 4,
+              ),
+              Text(
+                "$preMarketPrefix${data.priceChange} (${data.percentChange}$preMarketPercentSuffix)",
+                style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                    color: preMarketColor),
+              ),
+              SizedBox(
+                height: 4,
+              ),
+              ((Utils.isPostMarket() ||
+                          Utils.isPastPostMarket() ||
+                          Utils.isWeekend()) &&
+                      !data.isCrypto)
+                  ? Container(
+                      height: 21,
+                      //width: 240,
+                      child: Row(
+                        // crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Container(
+                            // width: 100,
+                            child: Text(
+                              "At Close: ${Utils.formatEpoch(epoch: data.closeTime, isJustTime: false)}",
+                              style: TextStyle(fontSize: 12.5),
+                            ),
                           ),
-                        ),
-                        CupertinoButton(
-                            minSize: double.minPositive,
-                            padding: EdgeInsets.only(left: 4),
-                            onPressed: _showBottomModal,
-                            child: Icon(
-                              Icons.info_outline,
-                              size: 20,
-                              color: kActiveColor,
-                            )),
-                      ],
+                          CupertinoButton(
+                              minSize: double.minPositive,
+                              padding: EdgeInsets.only(left: 4),
+                              onPressed: _showBottomModal,
+                              child: Icon(
+                                Icons.info_outline,
+                                size: 20,
+                                color: kActiveColor,
+                              )),
+                        ],
+                      ),
+                    )
+                  : Container(
+                      height: 21,
+                      child: Text(
+                        "Current:\t${DateFormat('E, MMM dd, yyyy, hh:mm aaa').format(DateTime.now())}",
+                        style: TextStyle(fontSize: 12),
+                      ),
                     ),
-                  )
-                : Container(
-                    height: 21,
-                    child: Text(
-                      "Current:\t${DateFormat('E, MMM dd, yyyy, hh:mm aaa').format(DateTime.now())}",
-                      style: TextStyle(fontSize: 12),
-                    ),
-                  ),
-          ],
+            ],
+          ),
         ),
         Container(
           height: 145,
@@ -183,6 +187,13 @@ class _PreTickerInfoState extends State<PreTickerInfo> {
     );
   }
 
+  @override
+  Widget build(BuildContext context) {
+    data = widget.data;
+    provider = widget.tickerProvider;
+    return preTickerInfoWidget();
+  }
+
   void _showBottomModal() {
     showModalBottomSheet(
         context: context,
@@ -214,7 +225,6 @@ class _PreTickerInfoState extends State<PreTickerInfo> {
   }
 
   Widget postPriceWidget() {
-    print("in post widget data = ${data.toString()}");
     postMarketColor = data.postPriceChange[0] != '-' ? kGreenColor : kRedColor;
     postMarketPrefix = postMarketColor == kGreenColor ? "+" : "";
     postMarketPercentSuffix =

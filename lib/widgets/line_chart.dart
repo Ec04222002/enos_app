@@ -16,6 +16,7 @@ class LineChartWidget extends StatefulWidget {
   final bool isPreview;
   final chartLoading;
   final symbol;
+  final bool triggerNewChart;
   //final lowData;
   Color color;
   double previousClose;
@@ -24,6 +25,7 @@ class LineChartWidget extends StatefulWidget {
 
   LineChartWidget(
       {this.color,
+      this.triggerNewChart = false,
       this.previousClose,
       this.chartLoading = false,
       this.symbol,
@@ -51,7 +53,6 @@ class _LineChartWidgetState extends State<LineChartWidget> {
   List closePriceData;
   List highPriceData;
   List lowPriceData;
-  bool triggerNewChartData = false;
   String defaultRange = "1d";
   List modTimeDataX = [];
   double previousClose;
@@ -86,7 +87,10 @@ class _LineChartWidgetState extends State<LineChartWidget> {
     DateTime time = DateTime.fromMillisecondsSinceEpoch((epoch * 1000).toInt());
     String result;
     if (isTime) {
-      result = DateFormat("hh aa").format(time);
+      result = DateFormat("hh a").format(time);
+      if (!widget.isPreview && widget.pageData.isCrypto) {
+        result = result.replaceAll("M", "");
+      }
       if (!isJustPrefix) {
         result = DateFormat("hh:mm aa").format(time);
       }
@@ -213,8 +217,11 @@ class _LineChartWidgetState extends State<LineChartWidget> {
     String time = getFormattedTime(epoch: xData);
     // print(time);
     int occur = modTimeDataX.where((value) => value == time).toList().length;
+    // print(modTimeDataX);
+    // print('occur: $occur');
     //if (lastTime == null) lastTime = time;
     if (occur <= 3 || time == lastTime) return Text("");
+    print("return");
     lastTime = time;
     Widget timeWidget =
         Text(time.replaceAll(" ", ""), style: TextStyle(fontSize: 12));
@@ -227,6 +234,7 @@ class _LineChartWidgetState extends State<LineChartWidget> {
 
   @override
   Widget build(BuildContext bContext) {
+    print("in chart");
     //no Data
     if (widget.chartLoading) {
       print("chart is loading");
@@ -239,11 +247,12 @@ class _LineChartWidgetState extends State<LineChartWidget> {
     }
 
     // in data not default => init switch dates in chart page
-    if (widget.range != defaultRange) {
-      triggerNewChartData = true;
-    }
+    // if (widget.range != null && widget.range != defaultRange) {
+    //   print("trigger new chart");
+    //   triggerNewChartData = true;
+    // }
     //occurs only in chart page
-    if (triggerNewChartData) {
+    if (widget.triggerNewChart) {
       if (widget.pageData.priceData[widget.range].isEmpty) {
         return AspectRatio(
             aspectRatio: widget.isPreview ? 3 : 1.5,
@@ -253,14 +262,15 @@ class _LineChartWidgetState extends State<LineChartWidget> {
               style: TextStyle(fontSize: 22),
             )));
       }
+      print("triggered");
       chartDataX = widget.pageData.priceData[widget.range]['timeStamps'];
       chartDataY = widget.pageData.priceData[widget.range]['openPrices'];
       previousClose = widget.previousClose;
       setDataPoints();
     }
-
     // print(chartDataX.length);
     // print(chartDataY.length);
+    print("building chart");
     minMaxX = widget.range == "5d" || widget.range == "1mo"
         ? Utils.maxMin(chartDataXMod)
         : Utils.maxMin(chartDataX);

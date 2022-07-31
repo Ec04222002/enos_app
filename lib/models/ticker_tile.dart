@@ -1,11 +1,11 @@
 class TickerTileModel {
   final String symbol;
   final String companyName;
-  final String price;
-  final String percentChange;
-  final String postPercentChange;
-  final String priceChange;
-  final String postPriceChange;
+  String price;
+  String percentChange;
+  String postPercentChange;
+  String priceChange;
+  String postPriceChange;
   final double previousClose;
   final List chartDataY;
   final List chartDataX;

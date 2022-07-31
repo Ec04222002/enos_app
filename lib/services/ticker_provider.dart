@@ -78,12 +78,16 @@ class TickerTileProvider extends ChangeNotifier {
       return;
     }
     print("Adding symbol $symbol");
+    if (!tickers.contains(symbol)) {
+      _symbols.add(symbol);
+    }
+
     TickerTileModel data = await yahooApi.get(
         symbol: symbol.toString(),
         lastData: TickerTileModel(isSaved: true),
         requestChartData: true);
     _tickers.add(data);
-    _symbols.add(symbol);
+
     await FirebaseApi.updateWatchList(Watchlist(
         watchlistUid: watchListUid,
         items: _symbols,
