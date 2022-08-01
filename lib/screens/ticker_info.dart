@@ -439,8 +439,8 @@ class _TickerInfoState extends State<TickerInfo> {
                         physics: NeverScrollableScrollPhysics(),
                         children: [
                           specSection(),
+                          Text("comment"),
                           newSection(),
-                          Text("News"),
                         ],
                       ),
                     ),
@@ -514,21 +514,23 @@ class _TickerInfoState extends State<TickerInfo> {
                           specCurrentData != null
                       ? (() {
                           try {
-                            Widget slider = SliderWidget(
-                              value: specsData['Market Price'].toDouble(),
-                              min: double.tryParse(specCurrentData[2]
-                                          .replaceAll(",", "")) ==
-                                      null
-                                  ? specCurrentData[0]
-                                  : double.tryParse(
-                                      specCurrentData[2].replaceAll(",", "")),
-                              max: double.parse(specCurrentData[3]
-                                          .replaceAll(",", "")) ==
-                                      null
-                                  ? specCurrentData[1]
-                                  : double.parse(
-                                      specCurrentData[3].replaceAll(",", "")),
-                            );
+                            double min = double.tryParse(
+                                specCurrentData[2].replaceAll(",", ""));
+                            double max = double.tryParse(
+                                specCurrentData[3].replaceAll(",", ""));
+                            double value = specsData['Market Price'].toDouble();
+                            if (min == null) {
+                              min = specCurrentData[0];
+                            }
+                            if (max == null) {
+                              max = specCurrentData[1];
+                            }
+                            if (value > max || value < min) {
+                              max = specCurrentData[1];
+                              min = specCurrentData[0];
+                            }
+                            Widget slider =
+                                SliderWidget(value: value, min: min, max: max);
                             return slider;
                           } catch (e) {
                             return Text(
