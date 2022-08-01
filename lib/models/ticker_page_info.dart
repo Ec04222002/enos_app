@@ -5,6 +5,8 @@ class TickerPageModel {
   String companyName;
   String postPrice;
   String marketPrice;
+  double marketPriceNum;
+  double postMarketPriceNum;
   String postMarketPrice;
   String percentChange;
   String postPercentChange;
@@ -80,6 +82,8 @@ class TickerPageModel {
       info.postCloseTime = compleData['postMarketCloseTime'];
       info.specsData = compleData['specsData'];
       info.msgBoardID = compleData['msgBoardID'];
+      info.marketPriceNum = compleData['marketPriceNum'];
+      info.postMarketPriceNum = compleData['postMarketPriceNum'];
     }
     return info;
   }

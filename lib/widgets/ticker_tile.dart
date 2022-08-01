@@ -20,6 +20,7 @@ import 'package:provider/provider.dart';
 class TickerTile extends StatefulWidget {
   final int index;
   final BuildContext context;
+
   TickerTile({this.index, this.context, Key key}) : super(key: key);
 
   @override
@@ -32,12 +33,24 @@ class _TickerState extends State<TickerTile> {
   TickerTileProvider tickerProvider;
   Widget trailingWidget;
   bool _toggle = false;
+  bool isGreenAnime;
+  int indexOfChange;
+  String lastPriceStr;
+  double lastPrice;
+  @override
+  void initState() {
+    // TODO: implement initState
+    tickerProvider = Provider.of<TickerTileProvider>(widget.context);
+    tickerTileData = tickerProvider.tickerAt(widget.index);
+    super.initState();
+    lastPrice = tickerTileData.priceNum;
+    lastPriceStr = tickerTileData.price;
+  }
 
   @override
   Widget build(BuildContext context) {
     print("building tickertile");
-    tickerProvider = Provider.of<TickerTileProvider>(widget.context);
-    tickerTileData = tickerProvider.tickerAt(widget.index);
+
     trailingWidget =
         tickerProvider.isLive ? getStreamWidget(widget.context) : priceWidget();
     return tickerTileData == null
@@ -135,9 +148,15 @@ class _TickerState extends State<TickerTile> {
                     style: TextStyle(color: kRedColor));
               } else {
                 TickerTileModel data = snapshot.data;
+                isGreenAnime = null;
+                if (lastPrice != data.priceNum && tickerProvider.isLive)
+                  isGreenAnime = lastPrice < data.priceNum;
+                indexOfChange = Utils.findFirstChange(lastPriceStr, data.price);
                 Provider.of<TickerTileProvider>(context)
                     .replaceTickerAt(widget.index, data);
                 tickerTileData = data;
+                lastPrice = data.priceNum;
+                lastPriceStr = data.price;
                 return priceWidget();
               }
           }
@@ -177,13 +196,31 @@ class _TickerState extends State<TickerTile> {
           crossAxisAlignment: CrossAxisAlignment.end,
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            Text(
-              "${tickerTileData.price}",
-              style: TextStyle(
-                  color: kBrightTextColor,
-                  fontSize: priceSize,
-                  fontWeight: FontWeight.w600),
-            ),
+            (indexOfChange != -1 && indexOfChange != null)
+                ? Text.rich(TextSpan(
+                    text: tickerTileData.price.substring(0, indexOfChange),
+                    children: [
+                      TextSpan(
+                          text: tickerTileData.price.substring(indexOfChange),
+                          style: TextStyle(
+                              color: isGreenAnime == null
+                                  ? kBrightTextColor
+                                  : (isGreenAnime ? kGreenColor : kRedColor),
+                              fontSize: priceSize,
+                              fontWeight: FontWeight.w600))
+                    ],
+                    style: TextStyle(
+                        color: kBrightTextColor,
+                        fontSize: priceSize,
+                        fontWeight: FontWeight.w600),
+                  ))
+                : Text(
+                    tickerTileData.price,
+                    style: TextStyle(
+                        color: kBrightTextColor,
+                        fontSize: priceSize,
+                        fontWeight: FontWeight.w600),
+                  ),
             SizedBox(height: 2),
             GestureDetector(
               onTap: () => setState(() {

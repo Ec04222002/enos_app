@@ -45,6 +45,8 @@ class _TickerInfoState extends State<TickerInfo> {
   ScrollController scrollController;
   bool showBtn = true;
   bool isStream = false;
+  UserModel user;
+
   //specs section
   List<String> specsAll = TickerSpecs.existSpecs;
   List<String> specsDisplay = [];
@@ -57,9 +59,15 @@ class _TickerInfoState extends State<TickerInfo> {
   final double dataHeight = 47;
   final double toolBarHeight = 33;
   double lastScrollOffset;
-  UserModel user;
+
+  //animation
   bool triggerNewChart = false;
+  bool isGreenAnime;
+  bool isChangePost;
   Utils util = Utils();
+  double lastPrice;
+  String lastPriceStr;
+  int indexOfChange;
   //comment page
 
   Future<void> init() async {
@@ -81,6 +89,14 @@ class _TickerInfoState extends State<TickerInfo> {
     // });
     // lastData = pageData;
     //specs data
+    lastPrice = pageData.marketPriceNum;
+    lastPriceStr = pageData.marketPrice;
+    isChangePost = false;
+    if (pageData.isPostMarket && Utils.isPostMarket()) {
+      lastPrice = pageData.postMarketPriceNum;
+      lastPriceStr = pageData.postMarketPrice;
+      isChangePost = true;
+    }
     specsData = pageData.specsData;
     user = await FirebaseApi.getUser(widget.uid);
     specsEdit = user.metrics;
@@ -256,13 +272,11 @@ class _TickerInfoState extends State<TickerInfo> {
                 if (lastScrollOffset == null)
                   lastScrollOffset = scrollController.offset;
                 if (scrollController.offset == lastScrollOffset) return false;
-                print("scrolling");
                 if (scrollNotification is ScrollUpdateNotification) {
                   double before = scrollController.position.extentBefore;
                   //reducing setstate calls
                   if (before > 70 && before < 100) {
                     setState(() {
-                      print('set state');
                       showBtn = before < 85;
                     });
                   }
@@ -289,6 +303,36 @@ class _TickerInfoState extends State<TickerInfo> {
                               child:
                                   Text("Sorry, there seems to be an error 😔"));
                         }
+                        isGreenAnime = null;
+                        //check for animation
+                        // print("last ${lastPrice}");
+                        // print("current: ${snapshot.data.marketPriceNum}");
+                        indexOfChange = Utils.findFirstChange(
+                            lastPriceStr, snapshot.data.marketPrice);
+                        if (lastPrice < snapshot.data.marketPriceNum) {
+                          isGreenAnime = true;
+                        }
+                        if (lastPrice > snapshot.data.marketPriceNum) {
+                          isGreenAnime = false;
+                        }
+                        if (pageData.isPostMarket) {
+                          indexOfChange = Utils.findFirstChange(
+                              lastPriceStr, snapshot.data.postPrice);
+                          if (lastPrice < snapshot.data.postMarketPriceNum) {
+                            isGreenAnime = true;
+                          }
+                          if (lastPrice > snapshot.data.postMarketPriceNum) {
+                            isGreenAnime = false;
+                          }
+                        }
+                        lastPrice = snapshot.data.marketPriceNum;
+                        lastPriceStr = snapshot.data.marketPrice;
+                        isChangePost = false;
+                        if (pageData.isPostMarket && Utils.isPostMarket()) {
+                          lastPrice = snapshot.data.postMarketPriceNum;
+                          lastPriceStr = snapshot.data.postMarketPrice;
+                          isChangePost = true;
+                        }
                         pageData = snapshot.data;
                         return TickerPage();
                       },
@@ -306,10 +350,12 @@ class _TickerInfoState extends State<TickerInfo> {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
               child: PreTickerInfo(
-                data: pageData,
-                tickerProvider: widget.provider,
-                isStream: isStream,
-              ),
+                  data: pageData,
+                  tickerProvider: widget.provider,
+                  isStream: isStream,
+                  isGreenAnime: isGreenAnime,
+                  isChangePost: isChangePost,
+                  indexOfChange: indexOfChange),
             ),
             Padding(
               padding: EdgeInsets.fromLTRB(6, 8, 6, 0),

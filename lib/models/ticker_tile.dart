@@ -1,6 +1,7 @@
 class TickerTileModel {
   final String symbol;
   final String companyName;
+  double priceNum;
   String price;
   String percentChange;
   String postPercentChange;
@@ -29,6 +30,7 @@ class TickerTileModel {
       this.chartDataX,
       this.chartDataY,
       this.marketName,
+      this.priceNum,
       this.isCrypto = false,
       this.isLive = true,
       this.isSaved = false});

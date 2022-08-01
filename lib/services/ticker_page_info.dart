@@ -155,7 +155,13 @@ class TickerPageInfo {
       lastData.postMarketPrice = lastData.isPostMarket
           ? tickerResult['price']['postMarketPrice']['fmt']
           : null;
+      lastData.postMarketPriceNum = lastData.isPostMarket
+          ? tickerResult['price']['postMarketPrice']['raw']
+          : null;
       lastData.closeTime = tickerResult['price']['regularMarketTime'];
+      //new var
+      lastData.marketPriceNum =
+          tickerResult['price']['regularMarketPrice']['raw'];
       setStreamChart(lastData);
       print("Streaming..");
       return lastData;
@@ -174,6 +180,8 @@ class TickerPageInfo {
       'postMarketCloseTime': tileModel.isPostMarket
           ? tickerResult['price']['postMarketTime']
           : null,
+      'postMarketPriceNum': tickerResult['price']['postMarketPrice']['raw'],
+      'marketPriceNum': tickerResult['price']['regularMarketPrice']['raw'],
       'specsData': specsData,
       'msgBoardID': tickerResult['quoteType']['messageBoardId']
     };

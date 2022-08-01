@@ -12,23 +12,91 @@ class PreTickerInfo extends StatefulWidget {
   final TickerPageModel data;
   final TickerTileProvider tickerProvider;
   final bool isStream;
-  const PreTickerInfo({this.data, this.tickerProvider, this.isStream, Key key})
+  final bool isGreenAnime;
+  final bool isChangePost;
+  final int indexOfChange;
+  const PreTickerInfo(
+      {this.isGreenAnime,
+      this.data,
+      this.tickerProvider,
+      this.isStream,
+      this.isChangePost,
+      this.indexOfChange,
+      Key key})
       : super(key: key);
 
   @override
   State<PreTickerInfo> createState() => _PreTickerInfoState();
 }
 
-class _PreTickerInfoState extends State<PreTickerInfo> {
+class _PreTickerInfoState extends State<PreTickerInfo>
+    with TickerProviderStateMixin {
   TickerTileProvider provider;
   TickerPageInfo dataBase = TickerPageInfo();
   TickerPageModel data;
   Color preMarketColor, postMarketColor;
   String preMarketPrefix, preMarketSuffix, preMarketPercentSuffix;
   String postMarketPrefix, postMarketSuffix, postMarketPercentSuffix;
+  Animation _textColorAnime;
+  AnimationController _textColorAnimatonController;
+  Color textColor = kBrightTextColor;
+
+  @override
+  void dispose() {
+    // TODO: implement dispose
+    // _textColorAnimatonController.dispose();
+    super.dispose();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    // _textColorAnimatonController = AnimationController(
+    //     vsync: this, duration: Duration(milliseconds: 1000));
+  }
+
+  void _setAnimation() {
+    Color begin = kBrightTextColor;
+    Color end = kBrightTextColor;
+    print("setting : isGree: ${widget.isGreenAnime}");
+    if (widget.isGreenAnime) {
+      end = kGreenColor;
+    }
+    if (!widget.isGreenAnime) {
+      end = kRedColor;
+    }
+    _textColorAnime = ColorTween(
+      begin: begin,
+      end: end,
+    ).animate(_textColorAnimatonController);
+    // ..addListener(() {
+    //   setState(() {});
+    // });
+  }
+
+  void runAnimation() {
+    print("** running naimation");
+    _textColorAnimatonController.forward();
+    print(_textColorAnime.value);
+    // .then((value) => _textColorAnimatonController.reverse());
+  }
 
   Widget preTickerInfoWidget() {
-    print("in pre ticker widget");
+    //print("is Green animation: ${widget.isGreenAnime}");
+    // print("change index ${widget.indexOfChange}");
+    // if (widget.isGreenAnime != null) {
+    //   _setAnimation();
+    //   WidgetsBinding.instance.addPostFrameCallback((_) {
+    //     runAnimation();
+    //   });
+    // }
+    if (widget.isGreenAnime == null || !widget.isStream) {
+      textColor = kBrightTextColor;
+    } else if (widget.isGreenAnime) {
+      textColor = kGreenColor;
+    } else {
+      textColor = kRedColor;
+    }
     preMarketColor = data.priceChange[0] != "-" ? kGreenColor : kRedColor;
     preMarketPrefix = preMarketColor == kGreenColor ? "+" : "";
     preMarketPercentSuffix =
@@ -57,12 +125,27 @@ class _PreTickerInfoState extends State<PreTickerInfo> {
                 maxLines: 1,
                 text: TextSpan(
                   children: <TextSpan>[
+                    !widget.isChangePost &&
+                            widget.indexOfChange != -1 &&
+                            widget.indexOfChange != null
+                        ? TextSpan(
+                            text: data.marketPrice
+                                .substring(widget.indexOfChange),
+                            style: TextStyle(
+                                fontSize: 35,
+                                fontWeight: FontWeight.w600,
+                                color: textColor))
+                        : TextSpan(text: ""),
                     TextSpan(
                         text: "\t\tUSD",
                         style: TextStyle(
                             fontSize: 18, fontWeight: FontWeight.w600))
                   ],
-                  text: data.marketPrice,
+                  text: !widget.isChangePost &&
+                          widget.indexOfChange != -1 &&
+                          widget.indexOfChange != null
+                      ? data.marketPrice.substring(0, widget.indexOfChange)
+                      : data.marketPrice,
                   style: TextStyle(fontSize: 35, fontWeight: FontWeight.w600),
                 ),
               ),
@@ -234,9 +317,19 @@ class _PreTickerInfoState extends State<PreTickerInfo> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.end,
       children: [
-        Text(
-          data.postMarketPrice,
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+        RichText(
+          text: TextSpan(
+            text: data.postMarketPrice.substring(0, widget.indexOfChange),
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            children: <TextSpan>[
+              TextSpan(
+                  text: data.postMarketPrice.substring(widget.indexOfChange),
+                  style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: textColor))
+            ],
+          ),
         ),
         SizedBox(
           height: 8,

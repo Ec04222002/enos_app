@@ -32,6 +32,17 @@ class Utils {
     return hslLight.toColor();
   }
 
+  static int findFirstChange(String last, String current) {
+    print("last: $last");
+    print("current: $current");
+    if (last.length != current.length) return 0;
+
+    for (int i = 0; i < current.length; ++i) {
+      if (last[i] != current[i]) return i;
+    }
+    return -1;
+  }
+
   static void showAlertDialog(BuildContext context, String content,
       Function cancelCallBack, Function confirmCallBack) {
     // set up the buttons

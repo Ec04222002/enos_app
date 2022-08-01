@@ -100,7 +100,8 @@ class YahooApi {
           postPercentChange,
           postPriceChange;
 
-      double previousClose = response['regularMarketPreviousClose'];
+      double previousClose = response['regularMarketPreviousClose'],
+          priceNum = response['regularMarketPrice'];
       bool isCrypto = (response['quoteType'] == "CRYPTOCURRENCY"),
           isPost = !(response["fullExchangeName"].contains("OTC") ||
               response['quoteType'].contains("INDEX") ||
@@ -130,6 +131,7 @@ class YahooApi {
       listData.add(await get(
           symbol: tickerSymbol,
           lastData: TickerTileModel(
+            priceNum: priceNum,
             symbol: tickerSymbol,
             companyName: companyName,
             price: price,
@@ -171,7 +173,7 @@ class YahooApi {
         postPercentChange = lastData.postPercentChange,
         postPriceChange = lastData.postPriceChange,
         marketName = lastData.marketName;
-    double previousClose = lastData.previousClose;
+    double previousClose = lastData.previousClose, priceNum = lastData.priceNum;
     bool isPost = lastData.isPostMarket,
         isCrypto = lastData.isCrypto,
         isSaved = lastData.isSaved;
@@ -194,6 +196,7 @@ class YahooApi {
           throw Exception("Surpassed Api Limit");
         }
       }
+      priceNum = results['price']['regularMarketPrice']['raw'];
       tickerSymbol = results['quoteType']['symbol'];
       companyName = results['quoteType']['shortName'];
 
@@ -276,6 +279,7 @@ class YahooApi {
     print("isPost: $isPost");
     // print("isCrypto: $isCrypto");
     TickerTileModel data = TickerTileModel(
+      priceNum: priceNum,
       symbol: tickerSymbol,
       companyName: companyName,
       price: price,
@@ -298,7 +302,6 @@ class YahooApi {
       data.isLive = false;
     }
     if (isCrypto) data.isLive = true;
-    print("data live: ${data.isLive}");
     return data;
   }
 }
