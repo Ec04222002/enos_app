@@ -317,20 +317,26 @@ class _PreTickerInfoState extends State<PreTickerInfo>
     return Column(
       crossAxisAlignment: CrossAxisAlignment.end,
       children: [
-        RichText(
-          text: TextSpan(
-            text: data.postMarketPrice.substring(0, widget.indexOfChange),
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            children: <TextSpan>[
-              TextSpan(
-                  text: data.postMarketPrice.substring(widget.indexOfChange),
-                  style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: textColor))
-            ],
-          ),
-        ),
+        (widget.indexOfChange != -1 && widget.indexOfChange != null)
+            ? RichText(
+                text: TextSpan(
+                  text: data.postMarketPrice.substring(0, widget.indexOfChange),
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
+                  children: <TextSpan>[
+                    TextSpan(
+                        text: data.postMarketPrice
+                            .substring(widget.indexOfChange),
+                        style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.w600,
+                            color: textColor))
+                  ],
+                ),
+              )
+            : Text(
+                data.postMarketPrice,
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
+              ),
         SizedBox(
           height: 8,
         ),

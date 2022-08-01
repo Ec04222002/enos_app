@@ -439,7 +439,7 @@ class _TickerInfoState extends State<TickerInfo> {
                         physics: NeverScrollableScrollPhysics(),
                         children: [
                           specSection(),
-                          Text("Comment"),
+                          newSection(),
                           Text("News"),
                         ],
                       ),
@@ -450,6 +450,13 @@ class _TickerInfoState extends State<TickerInfo> {
             ),
           ],
         ));
+  }
+
+  Widget newSection() {
+    return Container(
+      color: kLightBackgroundColor,
+      child: SingleChildScrollView(),
+    );
   }
 
   Widget editBtn() {
