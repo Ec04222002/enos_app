@@ -99,7 +99,7 @@ class TickerPageInfo {
   }
 
   Future<void> getNewsInfo(TickerPageModel preData) async {
-    dynamic newsResult = await api.getNewsData(preData.symbol, 15);
+    dynamic newsResult = await api.getNewsData(preData.symbol, 12);
     if (newsResult == null) {
       for (var i = api.validApiIndex + 1; i < api.apiKeys.length; ++i) {
         api.resetApiKey(i);

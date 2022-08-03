@@ -115,15 +115,6 @@ class Utils {
                       ),
                     )
                   : Container(height: 0),
-              // child: Text(
-              //   text,
-              //   style: TextStyle(
-              //       decoration: TextDecoration.none,
-              //       color: kBrightTextColor,
-              //       fontSize: 16,
-              //       fontFamily: GoogleFonts.openSans().fontFamily,
-              //       fontWeight: FontWeight.w700),
-              // ),
             ],
           ),
         ),
@@ -206,13 +197,15 @@ class Utils {
     String preDecimal = numAsString.substring(0, decIndex);
     String postDecimal = numAsString.substring(decIndex + 1);
 
-    // print("preDecimal: $preDecimal");
-    // print("postDecimal: $postDecimal");
+    print("preDecimal: $preDecimal");
+    print("postDecimal: $postDecimal");
     // print(preDecimal.replaceAll("0", "").replaceAll("-", ""));
     //if number contains e- => number really small
     if (numAsString.contains("e-")) {
       return "-0.000";
     }
+
+    // majority format with two place past decimal
     if (isPercentage ||
         preDecimal.replaceAll("0", "").replaceAll("-", "").length > 0) {
       return num.toStringAsFixed(2).replaceAllMapped(
@@ -242,6 +235,7 @@ class Utils {
       if (postDecimal[i] != "0") {
         startCount = true;
         pastConsZeroCount++;
+        index = i + 1;
       }
     }
     return num.toStringAsFixed(index);

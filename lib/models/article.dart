@@ -99,23 +99,21 @@ class _ArticleViewerState extends State<ArticleViewer> {
           }
           return false;
         },
-        child: Container(
-          child: Column(
-            children: <Widget>[
-              Expanded(
-                child: ListView.builder(
-                    controller: _controller,
-                    shrinkWrap: true,
-                    itemCount: widget.tiles.length,
-                    physics: widget.isSelfScroll
-                        ? ClampingScrollPhysics()
-                        : NeverScrollableScrollPhysics(),
-                    itemBuilder: (context, index) {
-                      return widget.tiles[index];
-                    }),
-              )
-            ],
-          ),
+        child: Column(
+          children: <Widget>[
+            Expanded(
+              child: ListView.builder(
+                  controller: _controller,
+                  shrinkWrap: true,
+                  itemCount: widget.tiles.length,
+                  physics: widget.isSelfScroll
+                      ? ClampingScrollPhysics()
+                      : NeverScrollableScrollPhysics(),
+                  itemBuilder: (context, index) {
+                    return widget.tiles[index];
+                  }),
+            )
+          ],
         ),
       );
     }

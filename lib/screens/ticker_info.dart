@@ -113,6 +113,7 @@ class _TickerInfoState extends State<TickerInfo> {
               print("add post post");
               await dataBase.addPostPostLoadData(pageData);
               print("added post post");
+              if (!mounted) return;
               setState(() {
                 newsLoaded = true;
               });
@@ -547,10 +548,10 @@ class _TickerInfoState extends State<TickerInfo> {
                                 specCurrentData[3].replaceAll(",", ""));
                             double value = specsData['Market Price'].toDouble();
                             if (min == null) {
-                              min = specCurrentData[0].round(6);
+                              min = specCurrentData[0];
                             }
                             if (max == null) {
-                              max = specCurrentData[1].round(6);
+                              max = specCurrentData[1];
                             }
                             if (value > max || value < min) {
                               max = Utils.roundDouble(specCurrentData[1], 7);
