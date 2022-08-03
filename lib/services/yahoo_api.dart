@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:enos/models/search_tile.dart';
 import 'package:enos/models/ticker_tile.dart';
 import 'package:enos/services/ticker_provider.dart';
@@ -44,6 +46,21 @@ class YahooApi {
     return null;
   }
 
+  dynamic postData(
+      {String body = "",
+      @required String endPoint,
+      @required Map<String, String> query}) async {
+    Uri uri = Uri.https(_baseUrl, endPoint, query);
+
+    http.Response response = await http.post(uri,
+        headers: _headers, body: body, encoding: Encoding.getByName('utf-8'));
+
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    }
+    return null;
+  }
+
   Future<dynamic> getRecommendedStockList({int count = 6}) async {
     final response = await getData(
         endpoint: "market/get-trending-tickers", query: {"region": "US"});
@@ -56,10 +73,22 @@ class YahooApi {
     return quotesFirstSix.map((json) => SearchTile.fromJson(json)).toList();
   }
 
+  Future<dynamic> getArticleLink(String uuid) async {
+    return await getData(endpoint: "news/v2/get-details", query: {
+      'uuid': uuid,
+    });
+  }
+
   Future<dynamic> getTickerData(String symbol) async {
     return await getData(
         endpoint: "stock/v2/get-summary",
         query: {"symbol": symbol, "region": "US"});
+  }
+
+  Future<dynamic> getNewsData(String symbol, int count) async {
+    return await postData(
+        endPoint: 'news/v2/list',
+        query: {'s': symbol, 'snippetCount': count.toString(), 'region': "US"});
   }
 
   Future<dynamic> getChartData(

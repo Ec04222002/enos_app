@@ -1,4 +1,5 @@
 import 'package:enos/constants.dart';
+import 'package:enos/services/util.dart';
 import 'package:flutter/material.dart';
 
 class SliderWidget extends StatelessWidget {
@@ -10,7 +11,7 @@ class SliderWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
         padding: EdgeInsets.zero,
-        width: 130,
+        width: 135,
         child: Stack(children: [
           Row(children: [
             Expanded(
@@ -36,6 +37,17 @@ class SliderWidget extends StatelessWidget {
                 overlayColor: Colors.transparent,
                 thumbShape: RoundSliderThumbShape(enabledThumbRadius: 5)),
             child: Slider(
+                // semanticFormatterCallback: (double value) {
+                //   print("in");
+                //   int decimalIndex = value.toString().indexOf(".");
+                //   print(decimalIndex);
+                //   print(value.toString().length - decimalIndex);
+                //   if (value.toString().length - decimalIndex > 8) {
+                //     print("returning rounded value");
+                //     return "a";
+                //   }
+                //   return value.toString();
+                // },
                 thumbColor: kBrightTextColor,
                 value: value,
                 min: min,

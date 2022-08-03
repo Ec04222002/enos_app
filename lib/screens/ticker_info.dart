@@ -1,10 +1,13 @@
 // ticker/chart page
 
 import 'dart:math';
+import 'dart:ui';
 
+import 'package:enos/models/article.dart';
 import 'package:enos/models/ticker_page_info.dart';
 import 'package:enos/models/ticker_spec.dart';
 import 'package:enos/models/user.dart';
+import 'package:enos/screens/news.dart';
 import 'package:enos/services/auth.dart';
 import 'package:enos/services/firebase_api.dart';
 import 'package:enos/services/ticker_page_info.dart';
@@ -42,7 +45,10 @@ class _TickerInfoState extends State<TickerInfo> {
   double previousClose;
   String range = "1d";
   bool chartLoading = false;
+  bool previewLoaded = false;
+  bool newsLoaded = false;
   ScrollController scrollController;
+  bool isSelfScroll = false;
   bool showBtn = true;
   bool isStream = false;
   UserModel user;
@@ -65,7 +71,7 @@ class _TickerInfoState extends State<TickerInfo> {
   bool isGreenAnime;
   bool isChangePost;
   Utils util = Utils();
-  double lastPrice;
+  dynamic lastPrice;
   String lastPriceStr;
   int indexOfChange;
   //comment page
@@ -75,20 +81,6 @@ class _TickerInfoState extends State<TickerInfo> {
     if (!mounted) return;
     pageData =
         await dataBase.getModelData(widget.symbol, widget.isSaved, false, null);
-    // scrollController.addListener(() {
-    //   double maxScroll = scrollController.position.maxScrollExtent;
-    //   double currentScroll = scrollController.position.pixels;
-    //   print("maxScroll: $maxScroll");
-    //   print(scrollController.position);
-    //   print(scrollController.positions);
-    //   double delta = 200.0; // or something else..
-    //   if (maxScroll - currentScroll <= delta) {
-    //     // whatever you determine here
-    //     //.. load more
-    //   }
-    // });
-    // lastData = pageData;
-    //specs data
     lastPrice = pageData.marketPriceNum;
     lastPriceStr = pageData.marketPrice;
     isChangePost = false;
@@ -104,15 +96,27 @@ class _TickerInfoState extends State<TickerInfo> {
     _specsDisplayUpdate();
     specsUsing = specsDisplay;
     previousClose = pageData.previousClose;
+    if (!mounted) return;
     setState(() {
       isLoading = false;
       WidgetsBinding.instance.addPostFrameCallback((_) async {
-        print("in post data loadi");
+        if (!mounted) return;
+        print("adding post");
         await dataBase.addPostLoadData(pageData);
+        print("added post");
         // lastData = pageData;
         if (mounted) {
           setState(() {
+            previewLoaded = true;
             chartLoading = false;
+            WidgetsBinding.instance.addPostFrameCallback((_) async {
+              print("add post post");
+              await dataBase.addPostPostLoadData(pageData);
+              print("added post post");
+              setState(() {
+                newsLoaded = true;
+              });
+            });
           });
         }
       });
@@ -155,21 +159,7 @@ class _TickerInfoState extends State<TickerInfo> {
             appBar: AppBar(
               leading: IconButton(
                 onPressed: () async {
-                  print("returning");
-
-                  // int index = widget.provider.symbols.indexOf(widget.symbol);
-                  // TickerTileModel ticker = widget.provider.tickerAt(index);
-                  // ticker.percentChange = pageData.percentChange;
-                  // ticker.priceChange = pageData.priceChange;
-                  // ticker.price = pageData.marketPrice;
-                  // ticker.postPercentChange = pageData.postPercentChange;
-                  // ticker.postPriceChange = pageData.postPriceChange;
                   Navigator.pop(context, {
-                    // "percentChange": pageData.percentChange,
-                    // "priceChange": pageData.priceChange,
-                    // 'price': pageData.marketPrice,
-                    // 'postPercentChange': pageData.postPercentChange,
-                    // 'postPriceChange': pageData.postPriceChange,
                     'isSaved': pageData.isSaved,
                   });
                 },
@@ -209,7 +199,7 @@ class _TickerInfoState extends State<TickerInfo> {
                           return;
                         }
                       }
-                      print("calling for data");
+                      //print("calling for data");
                       triggerNewChart = true;
                       util.showSnackBar(context, "Streaming Data ", true);
                       //print("in long press");
@@ -240,13 +230,6 @@ class _TickerInfoState extends State<TickerInfo> {
                         btnOpacity = initBtnOpacity;
                       });
                     },
-                    // onTapCancel: () {
-                    //   print("tap cancel");
-                    //   setState(() {
-                    //     isStream = false;
-                    //     btnOpacity = initBtnOpacity;
-                    //   });
-                    // },
                     onTapUp: (_) {
                       print('tap up');
                       setState(() {
@@ -267,18 +250,43 @@ class _TickerInfoState extends State<TickerInfo> {
                 : null,
             body: NotificationListener(
               onNotification: (scrollNotification) {
-                //scrollController.offset -> only for vertical;
-                //print(scrollController.offset);
                 if (lastScrollOffset == null)
                   lastScrollOffset = scrollController.offset;
                 if (scrollController.offset == lastScrollOffset) return false;
                 if (scrollNotification is ScrollUpdateNotification) {
                   double before = scrollController.position.extentBefore;
+                  double after = scrollController.position.extentAfter;
+
+                  if (after == 0) {
+                    if (!isSelfScroll) {
+                      setState(() {
+                        isSelfScroll = true;
+                      });
+                    }
+                    // print(
+                    //     "page scrolled to top sect end -> self scrolling starts");
+                  } else {
+                    if (isSelfScroll) {
+                      setState(() {
+                        isSelfScroll = false;
+                      });
+                    }
+                    // print(
+                    //     "page not scrolled to top sect end -> no self scrolling");
+                  }
                   //reducing setstate calls
-                  if (before > 70 && before < 100) {
-                    setState(() {
-                      showBtn = before < 85;
-                    });
+                  if (before < 85) {
+                    if (!showBtn) {
+                      setState(() {
+                        showBtn = true;
+                      });
+                    }
+                  } else {
+                    if (showBtn) {
+                      setState(() {
+                        showBtn = false;
+                      });
+                    }
                   }
                 }
                 //prevent not-toggling due to quick scroll
@@ -297,46 +305,42 @@ class _TickerInfoState extends State<TickerInfo> {
                       stream: dataBase.getPageStream(
                           pageData.symbol, pageData.isSaved, pageData),
                       builder: (context, snapshot) {
-                        if (snapshot.hasError) {
-                          print("error: ${snapshot.error}");
-                          return Center(
-                              child:
-                                  Text("Sorry, there seems to be an error 😔"));
+                        switch (snapshot.connectionState) {
+                          case ConnectionState.waiting:
+                            return TickerPage();
+                          default:
+                            if (snapshot.hasError) {
+                              print("error: ${snapshot.error}");
+                              return Center(
+                                  child: Text(
+                                      "Sorry, there seems to be an error 😔"));
+                            }
+                            isGreenAnime = null;
+                            isChangePost = false;
+                            double priceToCheck;
+                            String priceToCheckStr;
+                            if (pageData.isPostMarket && Utils.isPostMarket()) {
+                              isChangePost = true;
+                              indexOfChange = Utils.findFirstChange(
+                                  lastPriceStr, snapshot.data.postMarketPrice);
+                              priceToCheck = snapshot.data.postMarketPriceNum;
+                              priceToCheckStr = snapshot.data.postMarketPrice;
+                            } else {
+                              indexOfChange = Utils.findFirstChange(
+                                  lastPriceStr, snapshot.data.marketPrice);
+                              priceToCheck = snapshot.data.postMarketPriceNum;
+                              priceToCheckStr = snapshot.data.marketPrice;
+                            }
+
+                            if (priceToCheck != lastPrice)
+                              isGreenAnime = priceToCheck > lastPrice;
+
+                            lastPrice = priceToCheck;
+                            lastPriceStr = priceToCheckStr;
+                            pageData = snapshot.data;
+                            return TickerPage();
                         }
-                        isGreenAnime = null;
-                        //check for animation
-                        // print("last ${lastPrice}");
-                        // print("current: ${snapshot.data.marketPriceNum}");
-                        indexOfChange = Utils.findFirstChange(
-                            lastPriceStr, snapshot.data.marketPrice);
-                        if (lastPrice < snapshot.data.marketPriceNum) {
-                          isGreenAnime = true;
-                        }
-                        if (lastPrice > snapshot.data.marketPriceNum) {
-                          isGreenAnime = false;
-                        }
-                        if (pageData.isPostMarket) {
-                          indexOfChange = Utils.findFirstChange(
-                              lastPriceStr, snapshot.data.postPrice);
-                          if (lastPrice < snapshot.data.postMarketPriceNum) {
-                            isGreenAnime = true;
-                          }
-                          if (lastPrice > snapshot.data.postMarketPriceNum) {
-                            isGreenAnime = false;
-                          }
-                        }
-                        lastPrice = snapshot.data.marketPriceNum;
-                        lastPriceStr = snapshot.data.marketPrice;
-                        isChangePost = false;
-                        if (pageData.isPostMarket && Utils.isPostMarket()) {
-                          lastPrice = snapshot.data.postMarketPriceNum;
-                          lastPriceStr = snapshot.data.postMarketPrice;
-                          isChangePost = true;
-                        }
-                        pageData = snapshot.data;
-                        return TickerPage();
-                      },
-                    )
+                      })
                   : TickerPage(),
             ),
           );
@@ -453,9 +457,32 @@ class _TickerInfoState extends State<TickerInfo> {
   }
 
   Widget newSection() {
-    return Container(
-      color: kLightBackgroundColor,
-      child: SingleChildScrollView(),
+    if (newsLoaded) {
+      return ArticleViewer(
+        pageData.articles,
+        "",
+        false,
+        isSelfScroll: isSelfScroll,
+      );
+    } else if (previewLoaded) {
+      return Stack(children: [
+        Opacity(
+          opacity: 0.6,
+          child: IgnorePointer(
+            child: ArticleViewer(
+              pageData.articles,
+              "",
+              false,
+              isSelfScroll: isSelfScroll,
+            ),
+          ),
+        ),
+        Loading(size: 50, bgColor: Colors.transparent),
+      ]);
+    }
+    return Loading(
+      size: 50,
+      bgColor: kLightBackgroundColor,
     );
   }
 
@@ -520,14 +547,14 @@ class _TickerInfoState extends State<TickerInfo> {
                                 specCurrentData[3].replaceAll(",", ""));
                             double value = specsData['Market Price'].toDouble();
                             if (min == null) {
-                              min = specCurrentData[0];
+                              min = specCurrentData[0].round(6);
                             }
                             if (max == null) {
-                              max = specCurrentData[1];
+                              max = specCurrentData[1].round(6);
                             }
                             if (value > max || value < min) {
-                              max = specCurrentData[1];
-                              min = specCurrentData[0];
+                              max = Utils.roundDouble(specCurrentData[1], 7);
+                              min = Utils.roundDouble(specCurrentData[0], 7);
                             }
                             Widget slider =
                                 SliderWidget(value: value, min: min, max: max);

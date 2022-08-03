@@ -37,59 +37,9 @@ class _PreTickerInfoState extends State<PreTickerInfo>
   Color preMarketColor, postMarketColor;
   String preMarketPrefix, preMarketSuffix, preMarketPercentSuffix;
   String postMarketPrefix, postMarketSuffix, postMarketPercentSuffix;
-  Animation _textColorAnime;
-  AnimationController _textColorAnimatonController;
   Color textColor = kBrightTextColor;
 
-  @override
-  void dispose() {
-    // TODO: implement dispose
-    // _textColorAnimatonController.dispose();
-    super.dispose();
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    // _textColorAnimatonController = AnimationController(
-    //     vsync: this, duration: Duration(milliseconds: 1000));
-  }
-
-  void _setAnimation() {
-    Color begin = kBrightTextColor;
-    Color end = kBrightTextColor;
-    print("setting : isGree: ${widget.isGreenAnime}");
-    if (widget.isGreenAnime) {
-      end = kGreenColor;
-    }
-    if (!widget.isGreenAnime) {
-      end = kRedColor;
-    }
-    _textColorAnime = ColorTween(
-      begin: begin,
-      end: end,
-    ).animate(_textColorAnimatonController);
-    // ..addListener(() {
-    //   setState(() {});
-    // });
-  }
-
-  void runAnimation() {
-    print("** running naimation");
-    _textColorAnimatonController.forward();
-    print(_textColorAnime.value);
-    // .then((value) => _textColorAnimatonController.reverse());
-  }
-
   Widget preTickerInfoWidget() {
-    //print("is Green animation: ${widget.isGreenAnime}");
-    // print("change index ${widget.indexOfChange}");
-    // if (widget.isGreenAnime != null) {
-    //   _setAnimation();
-    //   WidgetsBinding.instance.addPostFrameCallback((_) {
-    //     runAnimation();
-    //   });
-    // }
     if (widget.isGreenAnime == null || !widget.isStream) {
       textColor = kBrightTextColor;
     } else if (widget.isGreenAnime) {
@@ -105,7 +55,7 @@ class _PreTickerInfoState extends State<PreTickerInfo>
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Container(
-          width: 220,
+          width: 235,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -195,7 +145,7 @@ class _PreTickerInfoState extends State<PreTickerInfo>
                   : Container(
                       height: 21,
                       child: Text(
-                        "Current:\t${DateFormat('E, MMM dd, yyyy, hh:mm aaa').format(DateTime.now())}",
+                        "Current:\t${DateFormat('E, MMM d, yyyy, hh:mm aaa').format(DateTime.now())}",
                         style: TextStyle(fontSize: 12),
                       ),
                     ),

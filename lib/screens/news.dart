@@ -24,17 +24,17 @@ class NewsPage extends StatefulWidget {
     int i = 0;
     for (String s in categories) {
       List<ArticleModel> lis = await NewsAPI.getArticles(s, 0);
-      articles[i] = ArticleViewer(lis, s);
+      articles[i] = ArticleViewer(lis, s, true);
       i++;
     }
   }
 }
 
 List<ArticleViewer> articles = [
-  ArticleViewer([], ""),
-  ArticleViewer([], ""),
-  ArticleViewer([], ""),
-  ArticleViewer([], "")
+  ArticleViewer([], "", true),
+  ArticleViewer([], "", true),
+  ArticleViewer([], "", true),
+  ArticleViewer([], "", true)
 ];
 List<String> categories = ["All", "Crypto", "Stocks", "Tech"];
 

@@ -20,8 +20,8 @@ class NewsAPI {
     "402d2f8e5amsh4d113d00393064ep173f23jsn6c05b23ecc6d",
   ];
 
-  static const String _default_thumbnail =
-      "https://www.bing.com/th?id=OVFT.1SmHnJcnDkQ22RL1_HeluS&pid=News";
+  static String defaultThumbnail =
+      "https://www.freeiconspng.com/thumbs/no-image-icon/no-image-icon-6.png";
   // Base headers for Response url
   static Map<String, String> _headers = {
     "content-type": "application/json",
@@ -84,7 +84,7 @@ class NewsAPI {
         provider = element1['name'];
       });
       if (element['image'] == null || element['image']['thumbnail'] == null) {
-        imageUrl = _default_thumbnail;
+        imageUrl = defaultThumbnail;
       } else {
         imageUrl = element['image']['thumbnail']['contentUrl'];
       }

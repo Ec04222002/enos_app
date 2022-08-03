@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:ui';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:intl/intl.dart';
 
@@ -10,9 +11,23 @@ import '../screens/search.dart';
 import '../services/news_api.dart';
 
 class ArticleModel {
-  String name, url, description, datePublished, provider, image;
-
-  ArticleModel({this.name, this.description,this.url, this.image, this.provider,this.datePublished});
+  String name,
+      url,
+      description,
+      datePublished,
+      provider,
+      image,
+      shortName,
+      uuid;
+  ArticleModel(
+      {this.uuid,
+      this.name,
+      this.shortName = "",
+      this.description,
+      this.url,
+      this.image,
+      this.provider,
+      this.datePublished});
 
   @override
   String toString() {
@@ -20,23 +35,26 @@ class ArticleModel {
   }
 }
 
-
 class ArticleViewer extends StatefulWidget {
+  bool isMain;
   String category;
   List<ArticleModel> articles;
   List<NewsTile> tiles = [];
-  ArticleViewer(List<ArticleModel> articles, String category) {
+
+  bool isSelfScroll;
+  ArticleViewer(List<ArticleModel> articles, String category, bool isMainPage,
+      {this.isSelfScroll = false}) {
+    isMain = isMainPage;
     this.articles = articles;
     articles.forEach((m) {
-      tiles.add(
-          NewsTile(
-            posturl: m.url,
-            img: m.image,
-            title: m.name,
-            provider: m.provider,
-            datePublished: m.datePublished,
-          )
-      );
+      tiles.add(NewsTile(
+        shortName: m.shortName,
+        posturl: m.url,
+        img: m.image,
+        title: m.name,
+        provider: m.provider,
+        datePublished: m.datePublished,
+      ));
     });
   }
   @override
@@ -44,116 +62,177 @@ class ArticleViewer extends StatefulWidget {
 }
 
 class _ArticleViewerState extends State<ArticleViewer> {
+  final _controller = ScrollController();
+  bool isScrollUp = true;
   @override
+  void initState() {
+    super.initState();
+    // Setup the listener.
+    _controller.addListener(() {
+      if (_controller.position.userScrollDirection == ScrollDirection.reverse) {
+        isScrollUp = true;
+        print("scrolling up");
+        return;
+      }
+      print("scrolling down");
+      isScrollUp = false;
+      // print("not at top end");
+      // setState(() {
+      //   widget.atTop = false;
+      // });
+    });
+  }
+
   Widget build(BuildContext context) {
+    if (!widget.isMain) {
+      return NotificationListener<ScrollNotification>(
+        onNotification: (notification) {
+          if (notification is ScrollUpdateNotification) {
+            if (notification.metrics.extentBefore == 0 && !isScrollUp) {
+              if (widget.isSelfScroll) {
+                setState(() {
+                  widget.isSelfScroll = false;
+                });
+              }
+              print("scrolling articles down -> hit top edge, moving page ");
+            }
+          }
+          return false;
+        },
+        child: Container(
+          child: Column(
+            children: <Widget>[
+              Expanded(
+                child: ListView.builder(
+                    controller: _controller,
+                    shrinkWrap: true,
+                    itemCount: widget.tiles.length,
+                    physics: widget.isSelfScroll
+                        ? ClampingScrollPhysics()
+                        : NeverScrollableScrollPhysics(),
+                    itemBuilder: (context, index) {
+                      return widget.tiles[index];
+                    }),
+              )
+            ],
+          ),
+        ),
+      );
+    }
     return Container(
       color: kDarkBackgroundColor,
       child: Column(
         children: <Widget>[
           Expanded(
               child: ListView.builder(
-                itemCount: widget.tiles.length + 1,
-                scrollDirection: Axis.vertical,
-                  itemBuilder: (context,index) {
-                    if(index < widget.tiles.length)
-                        return widget.tiles[index];
+                  itemCount: widget.tiles.length + 1,
+                  scrollDirection: Axis.vertical,
+                  itemBuilder: (context, index) {
+                    if (index < widget.tiles.length)
+                      return widget.tiles[index];
                     else {
                       getNewArticles();
                       return CircularProgressIndicator();
                     }
-                }
-              )
-          )
+                  }))
         ],
       ),
-
     );
   }
 
   Future<void> getNewArticles() async {
-    List<ArticleModel> l = await NewsAPI.getArticles(widget.category, widget.tiles.length);
+    List<ArticleModel> l =
+        await NewsAPI.getArticles(widget.category, widget.tiles.length);
     l.forEach((m) {
-      widget.tiles.add(
-          NewsTile(
-            posturl: m.url,
-            img: m.image,
-            title: m.name,
-            provider: m.provider,
-            datePublished: m.datePublished == null?"":m.datePublished,
-          )
-      );
+      widget.tiles.add(NewsTile(
+        posturl: m.url,
+        img: m.image,
+        title: m.name,
+        provider: m.provider,
+        datePublished: m.datePublished == null ? "" : m.datePublished,
+        shortName: m.shortName,
+      ));
     });
-    setState((){});
+    setState(() {});
   }
 }
 
 class NewsTile extends StatelessWidget {
-  final String title, provider, content, posturl, datePublished;
+  final String title, provider, content, posturl, datePublished, shortName;
   final String img;
   final Color bg = kLightBackgroundColor;
   DateTime time;
   String desc;
 
-  NewsTile({this.img, this.title, this.provider,this.content, this.datePublished, @required this.posturl}) {
-   time = DateTime.parse(datePublished).toLocal().toUtc();
+  NewsTile(
+      {this.img,
+      this.title,
+      this.provider,
+      this.content,
+      this.datePublished,
+      this.shortName,
+      this.posturl}) {
+    DateTime today = DateTime.now();
+    time = DateTime.parse(datePublished).toLocal().toUtc();
     int month = time.month;
     int day = time.day;
     int year = time.year;
     int hour = time.hour;
     int minute = time.minute;
-    desc = DateFormat('hh:mm a').format(time);
-    if(desc.substring(0,1) == "0") {
-      desc = desc.substring(1);
+    desc = DateFormat('E, MMM d, h:mm aaa').format(time);
+    if (today.month == month && today.day == day && today.year == year) {
+      desc = "Today " + DateFormat('h:mm aaa').format(time);
     }
     desc = desc + " - " + provider;
   }
 
-
-
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-        onTap: (){
-          Navigator.push(context, MaterialPageRoute(
-              builder: (context) => ArticleView(
-                postUrl: posturl,
-              )
-          ));
+        onTap: () {
+          print(posturl);
+          Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (context) => ArticleView(
+                        postUrl: posturl,
+                        shortName: shortName != null ? shortName : "",
+                      )));
         },
         child: Container(
-        margin: EdgeInsets.all(12.0),
-        padding: EdgeInsets.all(8.0),
-        decoration: BoxDecoration(
-            color: bg,
-            borderRadius: BorderRadius.circular(12.0),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black12,
-                blurRadius: 3.0,
+          margin: EdgeInsets.all(5.0),
+          padding: EdgeInsets.all(8.0),
+          decoration: BoxDecoration(
+              color: bg,
+              borderRadius: BorderRadius.circular(8.0),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black12,
+                  blurRadius: 3.0,
+                ),
+              ]),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Tile(),
+              SizedBox(
+                width: 5,
               ),
-            ]),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.start,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Tile(),
-            SizedBox(width: 5,),
-            Container(
-              height: 100.0,
-              width: 100,
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                image: DecorationImage(
-                    image: NetworkImage(img),fit: BoxFit.cover),
-                borderRadius: BorderRadius.circular(12.0),
+              Container(
+                height: 100.0,
+                width: 100,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  image: DecorationImage(
+                      image: NetworkImage(img), fit: BoxFit.cover),
+                  borderRadius: BorderRadius.circular(12.0),
+                ),
               ),
-            ),
-          ],
-        ),
-      )
-    );
+            ],
+          ),
+        ));
   }
-
 
   Widget Tile() {
     return Column(
@@ -174,14 +253,13 @@ class NewsTile extends StatelessWidget {
         SizedBox(height: 8.0),
         Container(
           width: 250,
-          child:Text(
+          child: Text(
             title,
             maxLines: 3,
             style: TextStyle(
                 fontWeight: FontWeight.bold,
                 fontSize: 16.0,
-                color: Colors.white
-            ),
+                color: Colors.white),
           ),
         ),
         SizedBox(height: 8.0),
@@ -193,60 +271,53 @@ class NewsTile extends StatelessWidget {
             style: TextStyle(color: Colors.grey.shade400, fontSize: 13),
           ),
         )
-
       ],
     );
   }
-
 }
 
 class ArticleView extends StatefulWidget {
-
-     final String postUrl;
-  ArticleView({@required this.postUrl});
+  final String postUrl;
+  String shortName;
+  ArticleView({@required this.postUrl, this.shortName = ""});
 
   @override
   _ArticleViewState createState() => _ArticleViewState();
 }
 
 class _ArticleViewState extends State<ArticleView> {
-
-  final Completer<WebViewController> _controller = Completer<
-      WebViewController>();
+  final Completer<WebViewController> _controller =
+      Completer<WebViewController>();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: kLightBackgroundColor,
-        title: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              Text(
-                'News', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),)
-            ]
-        ),
+        title:
+            Row(mainAxisAlignment: MainAxisAlignment.center, children: <Widget>[
+          Text(
+            widget.shortName.isNotEmpty ? widget.shortName : "News",
+            style: TextStyle(
+                color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+          )
+        ]),
         actions: [
           IconButton(
               iconSize: 30,
               color: kDarkTextColor.withOpacity(0.9),
               onPressed: () {
                 //  NewsAPI.getArticles("crypto");
-                Navigator.push(context, MaterialPageRoute(builder: (context)=> SearchPage()));
+                Navigator.push(context,
+                    MaterialPageRoute(builder: (context) => SearchPage()));
               },
               tooltip: "Search",
               icon: Icon(Icons.search))
         ],
       ),
       body: Container(
-        height: MediaQuery
-            .of(context)
-            .size
-            .height,
-        width: MediaQuery
-            .of(context)
-            .size
-            .width,
+        height: MediaQuery.of(context).size.height,
+        width: MediaQuery.of(context).size.width,
         child: WebView(
           initialUrl: widget.postUrl,
           javascriptMode: JavascriptMode.unrestricted,

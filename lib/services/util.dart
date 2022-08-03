@@ -160,7 +160,7 @@ class Utils {
   static String formatEpoch(
       {int epoch, bool isJustTime = true, bool isDateNumeric = false}) {
     DateTime date = DateTime.fromMillisecondsSinceEpoch((epoch * 1000).toInt());
-    String result = DateFormat('E, MMM dd, yyyy, h:mm aaa').format(date);
+    String result = DateFormat('E, MMM d, yyyy, h:mm aaa').format(date);
     if (isJustTime) {
       result = DateFormat('hh:mm aaa').format(date);
     }

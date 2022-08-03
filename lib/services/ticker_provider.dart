@@ -77,11 +77,7 @@ class TickerTileProvider extends ChangeNotifier {
     if (_symbols.length >= 10) {
       return;
     }
-    print("Adding symbol $symbol");
-    if (!tickers.contains(symbol)) {
-      _symbols.add(symbol);
-    }
-
+    _symbols.add(symbol);
     TickerTileModel data = await yahooApi.get(
         symbol: symbol.toString(),
         lastData: TickerTileModel(isSaved: true),
@@ -102,16 +98,17 @@ class TickerTileProvider extends ChangeNotifier {
     DocumentSnapshot watchListDoc =
         await FirebaseApi.getWatchListDoc(watchListUid);
     //set needed parameter
-
     try {
       isPublic = watchListDoc['is_public'];
       List<dynamic> tickers = watchListDoc['items'];
       //getting watchlist data from api
       tickers.forEach((element) {
+        print("element: $element");
         _symbols.add(element.toString());
       });
     }
     //if error exists => google login is updating watchlist
+    //or init login
     //=> set the default settings
     catch (e) {
       defaultTickerTileModels.forEach((element) {

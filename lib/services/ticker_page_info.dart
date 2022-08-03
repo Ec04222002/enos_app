@@ -1,6 +1,11 @@
+import 'dart:io';
+
+import 'package:enos/models/article.dart';
 import 'package:enos/models/ticker_page_info.dart';
 import 'package:enos/models/ticker_spec.dart';
 import 'package:enos/models/ticker_tile.dart';
+import 'package:enos/screens/news.dart';
+import 'package:enos/services/news_api.dart';
 import 'package:enos/services/yahoo_api.dart';
 
 class TickerPageInfo {
@@ -91,15 +96,107 @@ class TickerPageInfo {
       'highPrices': highPriceData,
       'lowPrices': lowPriceData,
     };
-    print('got data index $i');
+  }
+
+  Future<void> getNewsInfo(TickerPageModel preData) async {
+    dynamic newsResult = await api.getNewsData(preData.symbol, 15);
+    if (newsResult == null) {
+      for (var i = api.validApiIndex + 1; i < api.apiKeys.length; ++i) {
+        api.resetApiKey(i);
+        newsResult = await api.getNewsData(preData.symbol, 12);
+        if (newsResult != null) {
+          api.validApiIndex = i;
+          break;
+        }
+      }
+      // results are still null => checked all apis and all is surpassed
+      if (newsResult == null) {
+        throw Exception("Surpassed Api Limit");
+      }
+    }
+    List<dynamic> streams = newsResult['data']['main']['stream'];
+    List<dynamic> storyStreams =
+        streams.where((e) => e['content']['contentType'] == "STORY").toList();
+    preData.articles =
+        List<ArticleModel>.generate(storyStreams.length, (index) {
+      dynamic parent = storyStreams[index]['content'];
+      return ArticleModel(
+          uuid: parent['id'],
+          shortName: preData.companyName,
+          name: parent['title'],
+          url: parent['clickThroughUrl'] != null
+              ? parent['clickThroughUrl']['url']
+              : "",
+          image: (() {
+            dynamic pre = parent['thumbnail'];
+            if (pre == null) return NewsAPI.defaultThumbnail;
+            dynamic resolutions = pre['resolutions'];
+            int i = 3;
+            dynamic img = resolutions[i];
+            while (img == null) {
+              if (i == 1) {
+                return NewsAPI.defaultThumbnail;
+              }
+              img = resolutions[--i];
+            }
+
+            return img['url'];
+          })(),
+          provider: parent['provider']['displayName'],
+          datePublished: parent['pubDate']);
+    });
+  }
+
+  Future<void> addPostPostLoadData(TickerPageModel preData) async {
+    List<int> articleIndexToRemove = [];
+    for (int index = 0; index < preData.articles.length; ++index) {
+      ArticleModel article = preData.articles[index];
+      String link = article.url;
+
+      if (link.isEmpty) {
+        dynamic details = await api.getArticleLink(article.uuid);
+        dynamic data = details['data']['contents'][0]['content'];
+        List<String> links = [
+          data['ampUrl'],
+          data['canonicalUrl'] != null ? data['canonicalUrl']['url'] : null,
+          data['clickThroughUrl'] != null
+              ? data['clickThroughUrl']['url']
+              : null,
+        ];
+
+        for (String l in links) {
+          if (l != null && l.isNotEmpty) {
+            link = l;
+            break;
+          }
+        }
+      }
+
+      if (link != null && link.isNotEmpty) {
+        preData.articles[index].url = link;
+        continue;
+      }
+
+      //didn't find article url
+      articleIndexToRemove.add(index);
+    }
+
+    if (articleIndexToRemove.isNotEmpty) {
+      //descending order
+      articleIndexToRemove.sort((a, b) => b.compareTo(a));
+      print("indexs : $articleIndexToRemove");
+      for (int index in articleIndexToRemove) {
+        preData.articles.removeAt(index);
+      }
+    }
   }
 
   Future<void> addPostLoadData(TickerPageModel preData) async {
     //retrieving chart range data
     for (var i = 0; i < chartRangeAndInt.length; ++i) {
-      getChartInfo(preData, i);
+      await getChartInfo(preData, i);
     }
-
+    await getNewsInfo(preData);
     //add comment data
   }
 
@@ -113,8 +210,6 @@ class TickerPageInfo {
   Future<void> setStreamChart(TickerPageModel data) async {
     int currentEpoch = (DateTime.now().millisecondsSinceEpoch / 1000).round();
 //updating charts
-    print(data.priceData['1d']['timeStamps'].last);
-    print(currentEpoch);
     if (data.priceData != null) {
       if (data.priceData['1d'] != null &&
           data.priceData['1d']['timeStamps'].last < currentEpoch - 300) {

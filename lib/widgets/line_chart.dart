@@ -90,6 +90,7 @@ class _LineChartWidgetState extends State<LineChartWidget> {
       result = DateFormat("hh a").format(time);
       if (!widget.isPreview && widget.pageData.isCrypto) {
         result = result.replaceAll("M", "");
+        //if(chartDataXMod)
       }
       if (!isJustPrefix) {
         result = DateFormat("hh:mm aa").format(time);
@@ -202,6 +203,20 @@ class _LineChartWidgetState extends State<LineChartWidget> {
     return val1;
   }
 
+  bool showLast;
+  void doShowLast() {
+    showLast = true;
+    int lastCount = 0;
+    for (int i = modTimeDataX.length - 1; i >= 0; --i) {
+      if (modTimeDataX[i] == modTimeDataX.last) {
+        lastCount++;
+        continue;
+      }
+      break;
+    }
+    showLast = lastCount > (0.065 * modTimeDataX.length);
+  }
+
   String lastTime;
   Widget bottomTitleWidget(double value, TitleMeta meta) {
     double xData = value;
@@ -217,11 +232,10 @@ class _LineChartWidgetState extends State<LineChartWidget> {
     String time = getFormattedTime(epoch: xData);
     // print(time);
     int occur = modTimeDataX.where((value) => value == time).toList().length;
-    // print(modTimeDataX);
-    // print('occur: $occur');
-    //if (lastTime == null) lastTime = time;
-    if (occur <= 3 || time == lastTime) return Text("");
-    print("return");
+
+    if (occur <= 3 ||
+        time == lastTime ||
+        (!showLast && time == modTimeDataX.last)) return Text("");
     lastTime = time;
     Widget timeWidget =
         Text(time.replaceAll(" ", ""), style: TextStyle(fontSize: 12));
@@ -262,15 +276,14 @@ class _LineChartWidgetState extends State<LineChartWidget> {
               style: TextStyle(fontSize: 22),
             )));
       }
-      print("triggered");
       chartDataX = widget.pageData.priceData[widget.range]['timeStamps'];
       chartDataY = widget.pageData.priceData[widget.range]['openPrices'];
       previousClose = widget.previousClose;
       setDataPoints();
     }
-    // print(chartDataX.length);
-    // print(chartDataY.length);
-    print("building chart");
+    doShowLast();
+    print(chartDataX.length);
+    print(chartDataY.length);
     minMaxX = widget.range == "5d" || widget.range == "1mo"
         ? Utils.maxMin(chartDataXMod)
         : Utils.maxMin(chartDataX);
@@ -409,7 +422,7 @@ class _LineChartWidgetState extends State<LineChartWidget> {
                     //axisNameSize: 6,
                     //drawBehindEverything: true,
                     sideTitles: SideTitles(
-                  reservedSize: 60,
+                  reservedSize: 65,
                   showTitles: true,
                   getTitlesWidget: (value, meta) {
                     if (widget.isPreview) return null;

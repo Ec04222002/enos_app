@@ -1,12 +1,12 @@
+import 'package:enos/models/article.dart';
 import 'package:enos/models/ticker_tile.dart';
 
 class TickerPageModel {
   String symbol;
   String companyName;
-  String postPrice;
   String marketPrice;
-  double marketPriceNum;
-  double postMarketPriceNum;
+  dynamic marketPriceNum;
+  dynamic postMarketPriceNum;
   String postMarketPrice;
   String percentChange;
   String postPercentChange;
@@ -15,11 +15,11 @@ class TickerPageModel {
   String shortName;
   String marketName;
   String msgBoardID;
-  double openPrice;
-  double previousClose;
+  dynamic openPrice;
+  dynamic previousClose;
   List chartDataY;
   List chartDataX;
-
+  List<ArticleModel> articles;
   Map<String, Map<String, List>> priceData = {};
   Map<String, dynamic> specsData;
   // List closePriceData;

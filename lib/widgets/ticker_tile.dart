@@ -41,16 +41,15 @@ class _TickerState extends State<TickerTile> {
   void initState() {
     // TODO: implement initState
     tickerProvider = Provider.of<TickerTileProvider>(widget.context);
-    tickerTileData = tickerProvider.tickerAt(widget.index);
+
     super.initState();
-    lastPrice = tickerTileData.priceNum;
-    lastPriceStr = tickerTileData.price;
   }
 
   @override
   Widget build(BuildContext context) {
-    print("building tickertile");
-
+    tickerTileData = tickerProvider.tickerAt(widget.index);
+    lastPrice = tickerTileData.priceNum;
+    lastPriceStr = tickerTileData.price;
     trailingWidget =
         tickerProvider.isLive ? getStreamWidget(widget.context) : priceWidget();
     return tickerTileData == null
@@ -149,7 +148,7 @@ class _TickerState extends State<TickerTile> {
               } else {
                 TickerTileModel data = snapshot.data;
                 isGreenAnime = null;
-                if (lastPrice != data.priceNum && tickerProvider.isLive)
+                if (lastPrice != data.priceNum)
                   isGreenAnime = lastPrice < data.priceNum;
                 indexOfChange = Utils.findFirstChange(lastPriceStr, data.price);
                 Provider.of<TickerTileProvider>(context)
@@ -164,6 +163,7 @@ class _TickerState extends State<TickerTile> {
   }
 
   Widget priceWidget() {
+    if (!tickerProvider.isLive) isGreenAnime = null;
     Color regularMarketChangeColor = kRedColor;
     Color postMarketChangeColor = kRedColor;
     String regularMarketOp = "";
@@ -271,8 +271,8 @@ class _TickerState extends State<TickerTile> {
   void deleteTicker(BuildContext context) {
     TickerTileProvider tickerProvider =
         Provider.of<TickerTileProvider>(context, listen: false);
-    List<String> tickers = tickerProvider.symbols;
-    tickerProvider.removeTicker(tickers.indexOf(tickerTileData.symbol));
+    tickerProvider
+        .removeTicker(tickerProvider.symbols.indexOf(tickerTileData.symbol));
   }
 
   void showInfo(BuildContext buildContext, String symbol, bool isSaved) async {

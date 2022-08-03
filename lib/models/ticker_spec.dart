@@ -22,7 +22,7 @@ class TickerSpecs {
   // final double lastDividend;
   // final double YTDReturn;
   static List<String> existSpecs = [
-    "Daily Range",
+    "Day's Range",
     "52 Week Range",
     "Open",
     "Market Price",
@@ -57,7 +57,7 @@ class TickerSpecs {
 
       //all tickers have these cases
       switch (specs) {
-        case "Daily Range":
+        case "Day's Range":
           existSpecsMap[specs] = parent2['dayLow'] == null
               ? null
               : [

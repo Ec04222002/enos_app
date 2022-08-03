@@ -24,7 +24,9 @@ class _WatchListWidgetState extends State<WatchListWidget> {
   Widget build(BuildContext context) {
     print("**in watchlist widget");
     tickerProvider = Provider.of<TickerTileProvider>(context);
+
     tickers = tickerProvider.symbols;
+    print("building watchlist: ${tickers}");
     return tickers.isEmpty
         ? Center(
             child: Text(
