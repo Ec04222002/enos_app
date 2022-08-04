@@ -1,3 +1,4 @@
+import 'package:enos/models/comment.dart';
 import 'package:enos/models/ticker_tile.dart';
 
 class TickerPageModel {
@@ -16,6 +17,7 @@ class TickerPageModel {
   double previousClose;
   List chartDataY;
   List chartDataX;
+  List<Comment> commentData = [];
 
   Map<String, Map<String, List>> priceData = {};
   // List closePriceData;
@@ -47,7 +49,8 @@ class TickerPageModel {
       this.isLive = true,
       this.isSaved = false,
       this.closeTime,
-      this.postCloseTime});
+      this.postCloseTime,
+      });
 
   static TickerPageModel fromTickerTileModel(
       {TickerTileModel data, dynamic compleData}) {

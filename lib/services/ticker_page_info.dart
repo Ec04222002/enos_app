@@ -1,6 +1,9 @@
+import 'package:enos/models/comment.dart';
 import 'package:enos/models/ticker_page_info.dart';
 import 'package:enos/models/ticker_tile.dart';
 import 'package:enos/services/yahoo_api.dart';
+
+import 'firebase_api.dart';
 
 class TickerPageInfo {
   //TickerPageInfo({this.tileData});
@@ -16,6 +19,56 @@ class TickerPageInfo {
   static Future<void> addPostLoadData(TickerPageModel preData) async {
     YahooApi api = YahooApi();
     bool isLowData = false;
+
+    dynamic commentResult = await api.getData(endpoint: "conversations/list", query: {"symbol":preData.symbol, "messageBoardId":"finmb_24937", "region":"US"});
+    List<Comment> apiComments = [];
+    commentResult["canvassMessages"].forEach((data) {
+      Comment com = Comment(
+          userUid: data["meta"]["author"]["nickname"],
+          commentUid: data["messageId"],
+          isNested: false,
+          stockUid: preData.symbol,
+          content: data["details"]["userText"],
+          likes: data["reactionStats"]["upVoteCount"],
+          createdTime: DateTime.fromMillisecondsSinceEpoch(data["meta"]["createdAt"]),
+          apiComment: true
+      );
+      apiComments.add(com);
+      List<String> nested = [];
+      if(data["replies"] != null) {
+        data["replies"].forEach((reply) {
+          Comment com2 = Comment(
+              userUid: reply["meta"]["author"]["nickname"],
+              commentUid: reply["messageId"],
+              isNested: true,
+              stockUid: preData.symbol,
+              content: reply["details"]["userText"],
+              likes: reply["reactionStats"]["upVoteCount"],
+              createdTime: DateTime.fromMillisecondsSinceEpoch(reply["meta"]["createdAt"]),
+              apiComment: true
+          );
+          nested.add(com2.commentUid);
+          apiComments.add(com2);
+        });
+      }
+      com.replies = nested;
+    });
+
+    for(Comment com in apiComments) {
+      if(!(await FirebaseApi.checkExist("Comments", com.commentUid))) {
+        if(!com.isNested)
+          preData.commentData.add(com);
+        FirebaseApi.updateComment(com);
+      }
+    }
+
+    List<Comment> firebaseComments = await FirebaseApi.getStockComment(preData.symbol);
+    print(firebaseComments);
+    firebaseComments.forEach((element) {
+      if(!element.isNested)
+        preData.commentData.add(element);
+    });
+
     for (var i = 0; i < chartRangeAndInt.length; ++i) {
       if (isLowData) {
         print("low data - not calling");
@@ -59,6 +112,7 @@ class TickerPageInfo {
           preData.priceData[chartRangeAndInt[i][0]] = {};
           continue;
         }
+        print(chartResult['chart']['result']);
         pre = chartResult['chart']['result'][0]["indicators"]['quote'][0];
         initClosePriceData = pre["close"];
         initLowPriceData = pre["low"];
@@ -84,7 +138,6 @@ class TickerPageInfo {
             }
           }
         });
-        //print("closePriceData: $closePriceData");
       }
       preData.priceData[chartRangeAndInt[i][0]] = {
         'openPrices': openPriceData,

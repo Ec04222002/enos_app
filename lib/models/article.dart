@@ -8,6 +8,7 @@ import 'package:intl/intl.dart';
 import '../constants.dart';
 import '../screens/search.dart';
 import '../services/news_api.dart';
+import '../widgets/loading.dart';
 
 class ArticleModel {
   String name, url, description, datePublished, provider, image;
@@ -250,7 +251,7 @@ class _ArticleViewState extends State<ArticleView> {
               });
             },
           ),
-          isLoading ? Center( child: CircularProgressIndicator(),)
+          isLoading ? Center( child: Loading(loadText: "Loading News ..."),)
               : Stack(),
         ],
       ),
