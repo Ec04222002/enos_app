@@ -138,10 +138,11 @@ class TickerSpecs {
                 break;
 
               case "Earning Date":
-                existSpecsMap[specs] =
-                    (parent4 == null || parent4['earnings'] == null)
-                        ? null
-                        : parent4['earnings']['earningsDate'][0]['fmt'];
+                existSpecsMap[specs] = (parent4 == null ||
+                        parent4['earnings'] == null ||
+                        parent4['earnings']['earningsDate'].isEmpty)
+                    ? null
+                    : parent4['earnings']['earningsDate'][0]['fmt'];
                 break;
             }
             if (parent != null) {

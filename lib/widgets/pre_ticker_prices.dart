@@ -175,7 +175,9 @@ class _PreTickerInfoState extends State<PreTickerInfo>
                           setState(() {
                             data.isSaved = true;
                           });
-                          await provider.addTicker(data.symbol);
+
+                          await provider.addTicker(data.symbol,
+                              context: context);
                         }
                       } else {
                         Utils.showAlertDialog(context,

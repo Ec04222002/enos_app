@@ -21,6 +21,7 @@ import 'package:enos/widgets/pre_ticker_prices.dart';
 import 'package:enos/widgets/slider.dart';
 import 'package:flutter/material.dart';
 import 'package:enos/constants.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:provider/provider.dart';
 
@@ -37,22 +38,40 @@ class TickerInfo extends StatefulWidget {
   State<TickerInfo> createState() => _TickerInfoState();
 }
 
-class _TickerInfoState extends State<TickerInfo> {
+class _TickerInfoState extends State<TickerInfo>
+    with SingleTickerProviderStateMixin {
   TickerPageInfo dataBase = TickerPageInfo();
-  bool isLoading = true;
+  bool isLoading = true, chartLoading = false;
   double initBtnOpacity = 0.75, btnOpacity = 0.75;
   TickerPageModel pageData;
   double previousClose;
   String range = "1d";
-  bool chartLoading = false;
-  bool previewLoaded = false;
-  bool newsLoaded = false;
-  ScrollController scrollController;
+  bool previewLoaded = false, newsLoaded = false;
+
+  TabController _tabController;
+  final List<Tab> myTabs = <Tab>[
+    Tab(
+      text: "Analyze",
+      height: 30,
+    ),
+    Tab(
+      text: "Comment",
+      height: 30,
+    ),
+    Tab(
+      text: "News",
+      height: 30,
+    ),
+  ];
+  int currentTabIndex = 0;
+  final ScrollController pageScrollController = ScrollController();
   bool isSelfScroll = false;
   bool showBtn = true;
   bool isStream = false;
   UserModel user;
 
+  final sectScrollController = ScrollController();
+  bool isScrollUp = true;
   //specs section
   List<String> specsAll = TickerSpecs.existSpecs;
   List<String> specsDisplay = [];
@@ -61,11 +80,13 @@ class _TickerInfoState extends State<TickerInfo> {
   bool isEdit = false;
   List<SlidableController> controllers;
   Map specsData = {};
+
+  double sectHeight;
   final double editButtonHeight = 45;
   final double dataHeight = 47;
   final double toolBarHeight = 33;
   double lastScrollOffset;
-
+  ValueNotifier<bool> toggleSpec = ValueNotifier(false);
   //animation
   bool triggerNewChart = false;
   bool isGreenAnime;
@@ -75,9 +96,36 @@ class _TickerInfoState extends State<TickerInfo> {
   String lastPriceStr;
   int indexOfChange;
   //comment page
+  @override
+  void dispose() {
+    sectScrollController.dispose();
+    pageScrollController.dispose();
+    _tabController.dispose();
+    super.dispose();
+  }
 
   Future<void> init() async {
     print("in init");
+    _tabController = new TabController(vsync: this, length: myTabs.length);
+    sectHeight =
+        editButtonHeight + dataHeight * specsUsing.length + toolBarHeight;
+    _tabController.addListener(() {
+      setState(() {
+        currentTabIndex = _tabController.index;
+      });
+    });
+
+    sectScrollController.addListener(() {
+      if (sectScrollController.position.userScrollDirection ==
+          ScrollDirection.reverse) {
+        isScrollUp = true;
+        print("scrolling up");
+        return;
+      }
+      print("scrolling down");
+      isScrollUp = false;
+    });
+
     if (!mounted) return;
     pageData =
         await dataBase.getModelData(widget.symbol, widget.isSaved, false, null);
@@ -101,18 +149,14 @@ class _TickerInfoState extends State<TickerInfo> {
       isLoading = false;
       WidgetsBinding.instance.addPostFrameCallback((_) async {
         if (!mounted) return;
-        print("adding post");
         await dataBase.addPostLoadData(pageData);
-        print("added post");
         // lastData = pageData;
         if (mounted) {
           setState(() {
             previewLoaded = true;
             chartLoading = false;
             WidgetsBinding.instance.addPostFrameCallback((_) async {
-              print("add post post");
               await dataBase.addPostPostLoadData(pageData);
-              print("added post post");
               if (!mounted) return;
               setState(() {
                 newsLoaded = true;
@@ -136,8 +180,14 @@ class _TickerInfoState extends State<TickerInfo> {
 
   //toggle data secion hide <-> show
   void _toggleData() {
+    print("toggling");
     controllers.forEach((element) {
-      isEdit ? element.openStartActionPane() : element.close();
+      if (isEdit) {
+        element.openStartActionPane();
+      } else {
+        element.close();
+      }
+      //isEdit ? element.openStartActionPane() : element.close();
     });
   }
 
@@ -148,208 +198,236 @@ class _TickerInfoState extends State<TickerInfo> {
     init();
   }
 
+  AppBar appBar;
   @override
   Widget build(BuildContext bContext) {
-    scrollController = ScrollController();
-    return isLoading
-        ? Loading(
-            type: "dot",
-            loadText: "Loading" " ${widget.symbol} ....",
-          )
-        : Scaffold(
-            appBar: AppBar(
-              leading: IconButton(
-                onPressed: () async {
-                  Navigator.pop(context, {
-                    'isSaved': pageData.isSaved,
-                  });
-                },
-                color: kDarkTextColor,
-                icon: Icon(Icons.arrow_back_ios),
-              ),
-              centerTitle: true,
-              backgroundColor: kLightBackgroundColor,
-              title: Text(
-                //${pageInfo.shortName()} * ${tileData.price}
-                "${pageData.symbol} * ${pageData.marketName}",
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                    color: kBrightTextColor,
-                    fontSize: 17,
-                    fontWeight: FontWeight.w600),
-                maxLines: 2,
-              ),
-            ),
-            floatingActionButton: showBtn
-                ? GestureDetector(
-                    onLongPress: () {
-                      if (!pageData.isCrypto) {
-                        if (Utils.isWeekend()) {
-                          util.showSnackBar(
-                              context, "Market Closed - Weekend", false);
-                          return;
-                        }
-                        if (Utils.isPastPostMarket()) {
-                          util.showSnackBar(
-                              context, "Market Closed - Past Time", false);
-                          return;
-                        }
-                        if (!pageData.isPostMarket && (Utils.isPostMarket())) {
-                          util.showSnackBar(
-                              context, "Stock is not post", false);
-                          return;
-                        }
-                      }
-                      //print("calling for data");
-                      triggerNewChart = true;
-                      util.showSnackBar(context, "Streaming Data ", true);
-                      //print("in long press");
-                      setState(() {
-                        isStream = true;
-                        btnOpacity = 0.3;
-                      });
-                    },
-                    onLongPressEnd: (_) {
-                      print("end press");
-                      util.removeSnackBar();
-                      setState(() {
-                        isStream = false;
-                        btnOpacity = initBtnOpacity;
-                      });
-                    },
-                    onLongPressCancel: () {
-                      print("cancel press");
-                      setState(() {
-                        isStream = false;
-                        btnOpacity = initBtnOpacity;
-                      });
-                    },
-                    onTap: () {
-                      print("tap");
-                      setState(() {
-                        isStream = false;
-                        btnOpacity = initBtnOpacity;
-                      });
-                    },
-                    onTapUp: (_) {
-                      print('tap up');
-                      setState(() {
-                        isStream = false;
-                        btnOpacity = initBtnOpacity;
-                      });
-                    },
-                    child: FloatingActionButton(
-                      child: Icon(
-                        Icons.keyboard_double_arrow_up_outlined,
-                        size: 50,
-                        color: kDarkTextColor,
-                      ),
-                      backgroundColor: Utils.lighten(kLightBackgroundColor)
-                          .withOpacity(btnOpacity),
-                    ),
-                  )
-                : null,
-            body: NotificationListener(
-              onNotification: (scrollNotification) {
-                if (lastScrollOffset == null)
-                  lastScrollOffset = scrollController.offset;
-                if (scrollController.offset == lastScrollOffset) return false;
-                if (scrollNotification is ScrollUpdateNotification) {
-                  double before = scrollController.position.extentBefore;
-                  double after = scrollController.position.extentAfter;
-
-                  if (after == 0) {
-                    if (!isSelfScroll) {
-                      setState(() {
-                        isSelfScroll = true;
-                      });
-                    }
-                    // print(
-                    //     "page scrolled to top sect end -> self scrolling starts");
-                  } else {
-                    if (isSelfScroll) {
-                      setState(() {
-                        isSelfScroll = false;
-                      });
-                    }
-                    // print(
-                    //     "page not scrolled to top sect end -> no self scrolling");
+    if (isLoading)
+      return Loading(
+        type: "dot",
+        loadText: "Loading" " ${widget.symbol} ....",
+      );
+    appBar = AppBar(
+      leading: IconButton(
+        onPressed: () async {
+          Navigator.pop(context, {
+            'isSaved': pageData.isSaved,
+          });
+        },
+        color: kDarkTextColor,
+        icon: Icon(Icons.arrow_back_ios),
+      ),
+      centerTitle: true,
+      backgroundColor: kLightBackgroundColor,
+      title: Text(
+        "${pageData.symbol} * ${pageData.marketName}",
+        textAlign: TextAlign.center,
+        style: TextStyle(
+            color: kBrightTextColor, fontSize: 17, fontWeight: FontWeight.w600),
+        maxLines: 2,
+      ),
+    );
+    return Scaffold(
+      appBar: appBar,
+      floatingActionButton: showBtn
+          ? GestureDetector(
+              onLongPress: () {
+                if (!pageData.isCrypto) {
+                  if (Utils.isWeekend()) {
+                    util.showSnackBar(
+                        context, "Market Closed - Weekend", false);
+                    return;
                   }
-                  //reducing setstate calls
-                  if (before < 85) {
-                    if (!showBtn) {
-                      setState(() {
-                        showBtn = true;
-                      });
-                    }
-                  } else {
-                    if (showBtn) {
-                      setState(() {
-                        showBtn = false;
-                      });
-                    }
+                  if (Utils.isPastPostMarket()) {
+                    util.showSnackBar(
+                        context, "Market Closed - Past Time", false);
+                    return;
+                  }
+                  if (!pageData.isPostMarket && (Utils.isPostMarket())) {
+                    util.showSnackBar(context, "Stock is not post", false);
+                    return;
                   }
                 }
-                //prevent not-toggling due to quick scroll
-                if (scrollNotification is ScrollEndNotification) {
-                  print("scroll end");
-                  setState(() {
-                    showBtn = scrollController.position.extentBefore < 85;
-                  });
-                }
-                lastScrollOffset = scrollController.offset;
-                return true;
+                //print("calling for data");
+                triggerNewChart = true;
+                util.showSnackBar(context, "Streaming Data ", true);
+                //print("in long press");
+                setState(() {
+                  isStream = true;
+                  btnOpacity = 0.3;
+                });
               },
-              child: isStream
-                  ? StreamBuilder<TickerPageModel>(
-                      initialData: pageData,
-                      stream: dataBase.getPageStream(
-                          pageData.symbol, pageData.isSaved, pageData),
-                      builder: (context, snapshot) {
-                        switch (snapshot.connectionState) {
-                          case ConnectionState.waiting:
-                            return TickerPage();
-                          default:
-                            if (snapshot.hasError) {
-                              print("error: ${snapshot.error}");
-                              return Center(
-                                  child: Text(
-                                      "Sorry, there seems to be an error 😔"));
-                            }
-                            isGreenAnime = null;
-                            isChangePost = false;
-                            double priceToCheck;
-                            String priceToCheckStr;
-                            if (pageData.isPostMarket && Utils.isPostMarket()) {
-                              isChangePost = true;
-                              indexOfChange = Utils.findFirstChange(
-                                  lastPriceStr, snapshot.data.postMarketPrice);
-                              priceToCheck = snapshot.data.postMarketPriceNum;
-                              priceToCheckStr = snapshot.data.postMarketPrice;
-                            } else {
-                              indexOfChange = Utils.findFirstChange(
-                                  lastPriceStr, snapshot.data.marketPrice);
-                              priceToCheck = snapshot.data.postMarketPriceNum;
-                              priceToCheckStr = snapshot.data.marketPrice;
-                            }
+              onLongPressEnd: (_) {
+                print("end press");
+                util.removeSnackBar();
+                setState(() {
+                  isStream = false;
+                  btnOpacity = initBtnOpacity;
+                });
+              },
+              onLongPressCancel: () {
+                print("cancel press");
+                setState(() {
+                  isStream = false;
+                  btnOpacity = initBtnOpacity;
+                });
+              },
+              onTap: () {
+                print("tap");
+                setState(() {
+                  isStream = false;
+                  btnOpacity = initBtnOpacity;
+                });
+              },
+              onTapUp: (_) {
+                print('tap up');
+                setState(() {
+                  isStream = false;
+                  btnOpacity = initBtnOpacity;
+                });
+              },
+              child: FloatingActionButton(
+                child: Icon(
+                  Icons.keyboard_double_arrow_up_outlined,
+                  size: 50,
+                  color: kDarkTextColor,
+                ),
+                backgroundColor: Utils.lighten(kLightBackgroundColor)
+                    .withOpacity(btnOpacity),
+              ),
+            )
+          : null,
+      body: NotificationListener(
+        onNotification: (scrollNotification) {
+          //reducing calls
+          if (lastScrollOffset == null)
+            lastScrollOffset = pageScrollController.offset;
+          if (pageScrollController.offset == lastScrollOffset) return false;
 
-                            if (priceToCheck != lastPrice)
-                              isGreenAnime = priceToCheck > lastPrice;
+          if (scrollNotification is ScrollUpdateNotification) {
+            double before = pageScrollController.position.extentBefore;
+            double after = pageScrollController.position.extentAfter;
 
-                            lastPrice = priceToCheck;
-                            lastPriceStr = priceToCheckStr;
-                            pageData = snapshot.data;
-                            return TickerPage();
-                        }
-                      })
-                  : TickerPage(),
-            ),
-          );
+            if (after == 0) {
+              if (!isSelfScroll) {
+                setState(() {
+                  isSelfScroll = true;
+                  print("self scrolling true");
+                });
+              }
+              print("page scrolled to top sect end -> self scrolling starts");
+            } else {
+              if (isSelfScroll) {
+                setState(() {
+                  print("not self scrolling");
+                  isSelfScroll = false;
+                });
+              }
+              print("page not scrolled to top sect end -> no self scrolling");
+            }
+            //reducing setstate calls
+            if (before < 85) {
+              if (!showBtn) {
+                //showBtn = true;
+                setState(() {
+                  print("setting state");
+                  showBtn = true;
+                });
+              }
+            } else {
+              if (showBtn) {
+                setState(() {
+                  print("setting state 2");
+                  showBtn = false;
+                });
+              }
+            }
+          }
+          // //prevent not-toggling due to quick scroll
+          // if (scrollNotification is ScrollEndNotification) {
+          //   print("scroll end");
+          //   showBtn = pageScrollController.position.extentBefore < 85;
+          //   setState(() {
+          //     print("setting state 5");
+          //     showBtn = pageScrollController.position.extentBefore < 85;
+          //   });
+          // }
+          lastScrollOffset = pageScrollController.offset;
+          return true;
+        },
+        child: isStream
+            ? StreamBuilder<TickerPageModel>(
+                initialData: pageData,
+                stream: dataBase.getPageStream(
+                    pageData.symbol, pageData.isSaved, pageData),
+                builder: (context, snapshot) {
+                  switch (snapshot.connectionState) {
+                    case ConnectionState.waiting:
+                      return TickerPage();
+                    default:
+                      if (snapshot.hasError) {
+                        print("error: ${snapshot.error}");
+                        return Center(
+                            child:
+                                Text("Sorry, there seems to be an error 😔"));
+                      }
+                      isGreenAnime = null;
+                      isChangePost = false;
+                      double priceToCheck;
+                      String priceToCheckStr;
+                      if (pageData.isPostMarket && Utils.isPostMarket()) {
+                        isChangePost = true;
+                        indexOfChange = Utils.findFirstChange(
+                            lastPriceStr, snapshot.data.postMarketPrice);
+                        priceToCheck = snapshot.data.postMarketPriceNum;
+                        priceToCheckStr = snapshot.data.postMarketPrice;
+                      } else {
+                        indexOfChange = Utils.findFirstChange(
+                            lastPriceStr, snapshot.data.marketPrice);
+                        priceToCheck = snapshot.data.postMarketPriceNum;
+                        priceToCheckStr = snapshot.data.marketPrice;
+                      }
+
+                      if (priceToCheck != lastPrice)
+                        isGreenAnime = priceToCheck > lastPrice;
+
+                      lastPrice = priceToCheck;
+                      lastPriceStr = priceToCheckStr;
+                      pageData = snapshot.data;
+                      return TickerPage();
+                  }
+                })
+            : TickerPage(),
+      ),
+    );
+  }
+
+  void setSectHeight() {
+    switch (currentTabIndex) {
+      case 0:
+        sectHeight =
+            editButtonHeight + dataHeight * specsUsing.length + toolBarHeight;
+        if (isEdit) {
+          sectHeight = MediaQuery.of(context).size.height -
+              toolBarHeight -
+              appBar.preferredSize.height;
+          // isSelfScroll = false;
+        }
+        break;
+      case 1:
+      case 2:
+        sectHeight = MediaQuery.of(context).size.height -
+            toolBarHeight -
+            appBar.preferredSize.height;
+        break;
+      default:
+    }
   }
 
   Widget TickerPage() {
+    setSectHeight();
+
     return SingleChildScrollView(
-        controller: scrollController,
+        controller: pageScrollController,
         child: Column(
           children: [
             Padding(
@@ -401,53 +479,37 @@ class _TickerInfoState extends State<TickerInfo> {
               child: ClipRRect(
                 borderRadius: BorderRadius.all(Radius.circular(8)),
                 child: Container(
-                  height: editButtonHeight +
-                      dataHeight * specsUsing.length +
-                      toolBarHeight,
-                  child: DefaultTabController(
-                    length: 3,
-                    child: Scaffold(
-                      appBar: AppBar(
-                        automaticallyImplyLeading: false,
-                        titleSpacing: 0,
-                        toolbarHeight: toolBarHeight,
-                        backgroundColor: kLightBackgroundColor,
-                        leading: Container(height: 0),
-                        flexibleSpace: Column(
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          children: [
-                            TabBar(
-                              labelPadding: EdgeInsets.zero,
-                              padding: EdgeInsets.zero,
-                              indicator: BoxDecoration(
-                                  // Creates border
-                                  color: kActiveColor),
-                              tabs: [
-                                Tab(
-                                  text: "Analyze",
-                                  height: 30,
-                                ),
-                                Tab(
-                                  text: "Comment",
-                                  height: 30,
-                                ),
-                                Tab(
-                                  text: "News",
-                                  height: 30,
-                                ),
-                              ],
-                            )
-                          ],
-                        ),
-                      ),
-                      body: TabBarView(
-                        physics: NeverScrollableScrollPhysics(),
+                  height: sectHeight,
+                  child: Scaffold(
+                    appBar: AppBar(
+                      automaticallyImplyLeading: false,
+                      titleSpacing: 0,
+                      toolbarHeight: toolBarHeight,
+                      backgroundColor: kLightBackgroundColor,
+                      leading: Container(height: 0),
+                      flexibleSpace: Column(
+                        mainAxisAlignment: MainAxisAlignment.end,
                         children: [
-                          specSection(),
-                          Text("comment"),
-                          newSection(),
+                          TabBar(
+                            controller: _tabController,
+                            labelPadding: EdgeInsets.zero,
+                            padding: EdgeInsets.zero,
+                            indicator: BoxDecoration(
+                                // Creates border
+                                color: kActiveColor),
+                            tabs: myTabs,
+                          )
                         ],
                       ),
+                    ),
+                    body: new TabBarView(
+                      controller: _tabController,
+                      physics: NeverScrollableScrollPhysics(),
+                      children: [
+                        specSection(),
+                        Text("comment"),
+                        newSection(),
+                      ],
                     ),
                   ),
                 ),
@@ -455,6 +517,25 @@ class _TickerInfoState extends State<TickerInfo> {
             ),
           ],
         ));
+  }
+
+  Widget _addNotifer(Widget child) {
+    return NotificationListener<ScrollNotification>(
+      onNotification: (notification) {
+        if (notification is ScrollUpdateNotification) {
+          if (notification.metrics.extentBefore == 0 && !isScrollUp) {
+            if (isSelfScroll) {
+              setState(() {
+                print('self scrol false - page going down');
+                isSelfScroll = false;
+              });
+            }
+          }
+        }
+        return false;
+      },
+      child: child,
+    );
   }
 
   Widget newSection() {
@@ -497,16 +578,19 @@ class _TickerInfoState extends State<TickerInfo> {
             setState(() {
               isEdit = !isEdit;
               _specsDisplayUpdate();
-              specsUsing = specsDisplay;
-              if (isEdit) specsUsing = specsAll;
-              //done button clicked
-              if (!isEdit) {
+              //edit btn clicked
+              if (isEdit) {
+                isSelfScroll = false;
+                specsUsing = specsAll;
+              }
+              //done btn clicked
+              else {
+                specsUsing = specsDisplay;
                 _toggleData();
-                //save to firebase
                 user.metrics = specsEdit;
                 FirebaseApi.updateUserData(user);
               }
-              //_toggleData();
+              // _toggleData();
             });
           },
           child: Text(
@@ -521,124 +605,157 @@ class _TickerInfoState extends State<TickerInfo> {
   Widget specSection() {
     Widget trailingWidget;
     dynamic specCurrentData;
-    return Container(
-      color: kLightBackgroundColor,
-      child: SingleChildScrollView(
-        scrollDirection: Axis.vertical,
-        physics: NeverScrollableScrollPhysics(),
-        child: Column(
-          //mainAxisAlignment: MainAxisAlignment.start,
-          children: [
-            editBtn(),
-            ListView.builder(
-                padding: EdgeInsets.all(3),
-                itemExtent: dataHeight,
-                physics: NeverScrollableScrollPhysics(),
-                itemCount: specsUsing.length,
-                shrinkWrap: true,
-                itemBuilder: (context, index) {
-                  specCurrentData = specsData[specsUsing[index]];
-                  trailingWidget = specsUsing[index].contains("Range") &&
-                          specCurrentData != null
-                      ? (() {
-                          try {
-                            double min = double.tryParse(
-                                specCurrentData[2].replaceAll(",", ""));
-                            double max = double.tryParse(
-                                specCurrentData[3].replaceAll(",", ""));
-                            double value = specsData['Market Price'].toDouble();
-                            if (min == null) {
-                              min = specCurrentData[0];
-                            }
-                            if (max == null) {
-                              max = specCurrentData[1];
-                            }
-                            if (value > max || value < min) {
-                              max = Utils.roundDouble(specCurrentData[1], 7);
-                              min = Utils.roundDouble(specCurrentData[0], 7);
-                            }
-                            Widget slider =
-                                SliderWidget(value: value, min: min, max: max);
-                            return slider;
-                          } catch (e) {
-                            return Text(
-                              "__",
-                              style: TextStyle(color: kBrightTextColor),
-                            );
-                          }
-                        })()
-                      : DefaultTextStyle(
-                          style: TextStyle(color: kBrightTextColor),
-                          child: Text(
-                            (() {
-                              if (specCurrentData == null) {
-                                return "__";
-                              } else if (specsUsing[index] == "Market Price") {
-                                return pageData.marketPrice;
-                              } else if (specsUsing[index] ==
-                                  "Post Market Price") {
-                                return pageData.postMarketPrice;
+    ValueNotifier<bool> showVisibleIcon = ValueNotifier(false);
+    return ValueListenableBuilder(
+      valueListenable: toggleSpec,
+      builder: (context, _, child) {
+        return Container(
+          color: kLightBackgroundColor,
+          child: _addNotifer(
+            SingleChildScrollView(
+              controller: sectScrollController,
+              physics: isSelfScroll
+                  ? ClampingScrollPhysics()
+                  : NeverScrollableScrollPhysics(),
+              child: Column(
+                //mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  editBtn(),
+                  ListView.builder(
+                      //controller: sectScrollController,
+                      padding: EdgeInsets.all(3),
+                      itemExtent: dataHeight,
+                      physics: isSelfScroll
+                          ? ClampingScrollPhysics()
+                          : NeverScrollableScrollPhysics(),
+                      itemCount: specsUsing.length,
+                      shrinkWrap: true,
+                      itemBuilder: (context, index) {
+                        specCurrentData = specsData[specsUsing[index]];
+                        trailingWidget = specsUsing[index].contains("Range") &&
+                                specCurrentData != null
+                            ? (() {
+                                try {
+                                  double min = double.tryParse(
+                                      specCurrentData[2].replaceAll(",", ""));
+                                  double max = double.tryParse(
+                                      specCurrentData[3].replaceAll(",", ""));
+                                  double value =
+                                      specsData['Market Price'].toDouble();
+                                  if (min == null) {
+                                    min = specCurrentData[0];
+                                  }
+                                  if (max == null) {
+                                    max = specCurrentData[1];
+                                  }
+                                  if (value > max || value < min) {
+                                    max = Utils.roundDouble(
+                                        specCurrentData[1], 7);
+                                    min = Utils.roundDouble(
+                                        specCurrentData[0], 7);
+                                  }
+                                  Widget slider = SliderWidget(
+                                      value: value, min: min, max: max);
+                                  return slider;
+                                } catch (e) {
+                                  return Text(
+                                    "__",
+                                    style: TextStyle(color: kBrightTextColor),
+                                  );
+                                }
+                              })()
+                            : DefaultTextStyle(
+                                style: TextStyle(color: kBrightTextColor),
+                                child: Text(
+                                  (() {
+                                    if (specCurrentData == null) {
+                                      return "__";
+                                    } else if (specsUsing[index] ==
+                                        "Market Price") {
+                                      return pageData.marketPrice;
+                                    } else if (specsUsing[index] ==
+                                        "Post Market Price") {
+                                      return pageData.postMarketPrice;
+                                    }
+                                    return specCurrentData;
+                                  }()),
+                                  style: TextStyle(color: kBrightTextColor),
+                                ),
+                              );
+                        return Slidable(
+                          enabled: false,
+                          closeOnScroll: false,
+                          startActionPane: ActionPane(
+                              dragDismissible: false,
+                              extentRatio: 0.2,
+                              motion: ScrollMotion(),
+                              children: [
+                                ValueListenableBuilder<bool>(
+                                  valueListenable: showVisibleIcon,
+                                  builder: (context, _, child) {
+                                    return SlidableAction(
+                                      //padding: EdgeInsets.only(top: 0),
+                                      autoClose: false,
+                                      onPressed: ((context) {
+                                        int indx =
+                                            specsAll.indexOf(specsUsing[index]);
+                                        specsEdit[indx] = !specsEdit[indx];
+                                        showVisibleIcon.value =
+                                            !showVisibleIcon.value;
+                                      }),
+                                      backgroundColor: kLightBackgroundColor,
+                                      foregroundColor: kDarkTextColor,
+                                      icon: specsEdit[index]
+                                          ? Icons.visibility_outlined
+                                          : Icons.visibility_off_outlined,
+                                    );
+                                  },
+                                )
+                              ]),
+                          key: UniqueKey(),
+                          child: Builder(builder: (context) {
+                            //set new controller only during edit mode
+                            // full specs && new context
+                            if (isEdit) {
+                              controllers[index] = Slidable.of(context);
+                              if (index == specsUsing.length - 1) {
+                                print("in");
+                                WidgetsBinding.instance
+                                    .addPostFrameCallback((_) {
+                                  // print("post");
+                                  _toggleData();
+                                });
                               }
-                              return specCurrentData;
-                            }()),
-                            style: TextStyle(color: kBrightTextColor),
-                          ),
-                        );
-                  return Slidable(
-                    enabled: false,
-                    closeOnScroll: false,
-                    startActionPane: ActionPane(
-                        dragDismissible: false,
-                        extentRatio: 0.2,
-                        motion: const ScrollMotion(),
-                        children: [
-                          SlidableAction(
-                            //padding: EdgeInsets.only(top: 0),
-                            autoClose: false,
-                            onPressed: ((context) {
-                              setState(() {
-                                int indx = specsAll.indexOf(specsUsing[index]);
-                                specsEdit[indx] = !specsEdit[indx];
-                              });
-                            }),
-                            backgroundColor: kLightBackgroundColor,
-                            foregroundColor: kDarkTextColor,
-                            icon: specsEdit[index]
-                                ? Icons.visibility_outlined
-                                : Icons.visibility_off_outlined,
-                          )
-                        ]),
-                    key: UniqueKey(),
-                    child: Builder(builder: (context) {
-                      //set new controller only during edit mode
-                      // full specs && new context
-                      if (isEdit) {
-                        controllers[index] = Slidable.of(context);
-                        if (index == specsUsing.length - 1) {
-                          print("in");
-                          WidgetsBinding.instance.addPostFrameCallback((_) {
-                            print("post");
-                            _toggleData();
-                          });
-                        }
-                      }
+                            }
 
-                      return ListTile(
-                        enabled: false,
-                        textColor: kDisabledColor,
-                        iconColor: kDisabledColor,
-                        title: Text(
-                          specsUsing[index],
-                          style: TextStyle(color: kDisabledColor),
-                        ),
-                        trailing: isEdit ? Text("") : trailingWidget,
-                      );
-                    }),
-                  );
-                }),
-          ],
-        ),
-      ),
+                            return ListTile(
+                              // onTap: isEdit
+                              //     ? () {
+                              //         setState(() {
+                              //           int indx =
+                              //               specsAll.indexOf(specsUsing[index]);
+                              //           specsEdit[indx] = !specsEdit[indx];
+                              //         });
+                              //       }
+                              //     : () {},
+                              enabled: false,
+                              textColor: kDisabledColor,
+                              iconColor: kDisabledColor,
+                              title: Text(
+                                specsUsing[index],
+                                style: TextStyle(color: kDisabledColor),
+                              ),
+                              trailing: isEdit ? Text("") : trailingWidget,
+                            );
+                          }),
+                        );
+                      }),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 }

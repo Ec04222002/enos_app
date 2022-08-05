@@ -91,24 +91,6 @@ class _SearchPageState extends State<SearchPage> {
   }
 
   @override
-  void initState() {
-    print("init");
-    super.initState();
-    // if (!widget.isMainPage) {
-    //   provider = Provider.of<TickerTileProvider>(widget.context);
-    //   savedSymbols = provider.symbols;
-    //   // user = widget.context.read<AuthService>().userModel;
-    //   // print(user);
-    //   // if (user == null) {
-    //   //   user = context.read<GoogleSignInProvider>().user;
-    //   // }
-    //   recommends = provider.recs;
-    //   //check if recommends is empty => put default if so
-    //   checkRecommends();
-    // }
-  }
-
-  @override
   void dispose() {
     if (debouncer != null) {
       debouncer.cancel();
@@ -131,6 +113,7 @@ class _SearchPageState extends State<SearchPage> {
 
   @override
   Widget build(BuildContext context) {
+    print("building search page");
     if (isInit) {
       mainContext = context;
       if (!widget.isMainPage) {
@@ -139,6 +122,7 @@ class _SearchPageState extends State<SearchPage> {
       provider = Provider.of<TickerTileProvider>(mainContext);
       setUser();
       savedSymbols = provider.symbols;
+      print("saved length: ${savedSymbols.length}");
       recommends = provider.recs;
       //check if recommends is empty => put default if so
       checkRecommends();
@@ -190,6 +174,7 @@ class _SearchPageState extends State<SearchPage> {
                       return buildUserTile(tile, index, context);
                     }
                     //for stock search tiles
+                    stockTileModel.isSaved = false;
                     if (savedSymbols.contains(stockTileModel.symbol)) {
                       stockTileModel.isSaved = true;
                     }
@@ -302,76 +287,80 @@ class _SearchPageState extends State<SearchPage> {
     );
   }
 
-  Widget buildTile(
-          SearchTile stockTileModel, int index, BuildContext context) =>
-      GestureDetector(
-        onTap: (() =>
-            showInfo(index, stockTileModel.symbol, stockTileModel.isSaved)),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(3),
-          child: Container(
-            color: kLightBackgroundColor,
-            child: ListTile(
-                // tileColor: kLightBackgroundColor,
-                title: Text(
-                  stockTileModel.symbol,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                      color: kBrightTextColor,
-                      fontSize: 21,
-                      fontWeight: FontWeight.w800),
-                ),
-                subtitle: Text(
-                  stockTileModel.name,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(fontSize: 14, color: kDisabledColor),
-                ),
-                trailing: IconButton(
-                    onPressed: () async {
-                      if (!recommends[index].isSaved) {
-                        if (savedSymbols.length >= 10) {
-                          Utils.showAlertDialog(context,
-                              "You have reached your limit of 10 tickers added.",
-                              () {
-                            Navigator.pop(context);
-                          }, null);
-                        } else {
-                          setState(() {
-                            recommends[index].isSaved = true;
-                          });
-                          await provider.addTicker(stockTileModel.symbol);
-                        }
-                      } else {
+  Widget buildTile(SearchTile stockTileModel, int index, BuildContext context) {
+    return GestureDetector(
+      onTap: (() =>
+          showInfo(index, stockTileModel.symbol, stockTileModel.isSaved)),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(3),
+        child: Container(
+          color: kLightBackgroundColor,
+          child: ListTile(
+              // tileColor: kLightBackgroundColor,
+              title: Text(
+                stockTileModel.symbol,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                    color: kBrightTextColor,
+                    fontSize: 21,
+                    fontWeight: FontWeight.w800),
+              ),
+              subtitle: Text(
+                stockTileModel.name,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(fontSize: 14, color: kDisabledColor),
+              ),
+              trailing: IconButton(
+                  onPressed: () async {
+                    if (!recommends[index].isSaved) {
+                      if (savedSymbols.length >= 10) {
                         Utils.showAlertDialog(context,
-                            "Are you sure you want to remove ${stockTileModel.symbol} from your watchlist?",
+                            "You have reached your limit of 10 tickers added.",
                             () {
                           Navigator.pop(context);
-                        }, () async {
-                          setState(() {
-                            recommends[index].isSaved = false;
-                          });
-                          await provider.removeTicker(
-                              savedSymbols.indexOf(stockTileModel.symbol));
-                          Navigator.pop(context);
+                        }, null);
+                      } else {
+                        setState(() {
+                          recommends[index].isSaved = true;
                         });
+
+                        await provider.addTicker(stockTileModel.symbol,
+                            context: context);
+                        // Utils().removeSnackBar();
                       }
-                    },
-                    icon: stockTileModel.isSaved
-                        ? Icon(
-                            Icons.star,
-                            color: Colors.yellow[400],
-                            size: 35,
-                          )
-                        : Icon(
-                            Icons.star_border,
-                            color: kDisabledColor,
-                            size: 35,
-                          ))),
-          ),
+                    } else {
+                      Utils.showAlertDialog(context,
+                          "Are you sure you want to remove ${stockTileModel.symbol} from your watchlist?",
+                          () {
+                        Navigator.pop(context);
+                      }, () async {
+                        setState(() {
+                          recommends[index].isSaved = false;
+                        });
+                        await provider.removeTicker(
+                            savedSymbols.indexOf(stockTileModel.symbol));
+                        Navigator.pop(context);
+                      });
+                    }
+                  },
+                  icon: stockTileModel.isSaved
+                      ? Icon(
+                          Icons.star,
+                          color: Colors.yellow[400],
+                          size: 35,
+                        )
+                      : Icon(
+                          Icons.star_border,
+                          color: kDisabledColor,
+                          size: 35,
+                        ))),
         ),
-      );
+      ),
+    );
+  }
+
   void showInfo(int index, String symbol, bool isSaved) async {
     Map<String, dynamic> response = await Navigator.push(
         mainContext,
@@ -387,7 +376,7 @@ class _SearchPageState extends State<SearchPage> {
 
     setState(() {
       print("resetting");
-      provider.tickerAt(index).isSaved = response['isSaved'];
+      recommends[index].isSaved = response['isSaved'];
     });
   }
 }

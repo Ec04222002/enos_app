@@ -270,7 +270,9 @@ class TickerPageInfo {
       "postPrice": tileModel.isPostMarket
           ? tickerResult['price']['postMarketPrice']['fmt']
           : null,
-      'shortName': tickerResult['quoteType']['shortName'].toString(),
+      'shortName': tickerResult['quoteType']['shortName'] == null
+          ? tickerResult['quoteType']['longName']
+          : tickerResult['quoteType']['shortName'],
       'marketCloseTime': tickerResult['price']['regularMarketTime'],
       'postMarketCloseTime': tileModel.isPostMarket
           ? tickerResult['price']['postMarketTime']

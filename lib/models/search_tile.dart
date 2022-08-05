@@ -10,7 +10,9 @@ class SearchTile {
 
   static SearchTile fromJson(Map<String, dynamic> json) => SearchTile(
         symbol: json['symbol'],
-        name: json['shortName'],
+        name: json['shortName'] == null
+            ? (json['longName'] == null ? "" : json['longName'])
+            : json['shortName'],
         market: json["fullExchangeName"],
         isUser: false,
       );

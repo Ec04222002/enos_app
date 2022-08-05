@@ -69,7 +69,7 @@ class YahooApi {
 
     final List quotes = response['finance']['result'][0]['quotes'];
     var quotesFirstSix = quotes.take(6);
-
+    print("quotes: ${quotesFirstSix.toList()[3]}");
     return quotesFirstSix.map((json) => SearchTile.fromJson(json)).toList();
   }
 
@@ -108,12 +108,15 @@ class YahooApi {
       "symbols": searchQuery,
     });
     List<TickerTileModel> listData = [];
+    print("in yahoo api");
     if (datas == null) {
       throw Exception("Cannot get init ticker data");
     }
     for (dynamic response in datas['quoteResponse']['result']) {
       String tickerSymbol = response['symbol'],
-          companyName = response['shortName'],
+          companyName = response['shortName'] == null
+              ? response['longName']
+              : response['shortName'],
           price = Utils.fixNumToFormat(
               num: response['regularMarketPrice'],
               isPercentage: false,
@@ -130,7 +133,7 @@ class YahooApi {
           postPriceChange;
 
       double previousClose = response['regularMarketPreviousClose'],
-          priceNum = response['regularMarketPrice'];
+          priceNum = response['regularMarketPrice'].toDouble();
       bool isCrypto = (response['quoteType'] == "CRYPTOCURRENCY"),
           isPost = !(response["fullExchangeName"].contains("OTC") ||
               response['quoteType'].contains("INDEX") ||
@@ -225,9 +228,11 @@ class YahooApi {
           throw Exception("Surpassed Api Limit");
         }
       }
-      priceNum = results['price']['regularMarketPrice']['raw'];
+      priceNum = results['price']['regularMarketPrice']['raw'].toDouble();
       tickerSymbol = results['quoteType']['symbol'];
-      companyName = results['quoteType']['shortName'];
+      companyName = results['quoteType']['shortName'] == null
+          ? results['quoteType']['longName']
+          : results['quoteType']['shortName'];
 
       price = results['price']["regularMarketPrice"]["fmt"];
       percentChange = results['price']['regularMarketChangePercent']["fmt"];

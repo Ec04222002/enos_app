@@ -50,6 +50,7 @@ class _TickerState extends State<TickerTile> {
     tickerTileData = tickerProvider.tickerAt(widget.index);
     lastPrice = tickerTileData.priceNum;
     lastPriceStr = tickerTileData.price;
+
     trailingWidget =
         tickerProvider.isLive ? getStreamWidget(widget.context) : priceWidget();
     return tickerTileData == null
@@ -174,7 +175,8 @@ class _TickerState extends State<TickerTile> {
     String postChangeShown = _toggle
         ? tickerTileData.postPriceChange
         : tickerTileData.postPercentChange;
-    double containerWidth = changeShown.length > 6 ? 70 : 60;
+    double containerWidth = changeShown.length > 7 ? 78 : 60;
+
     double priceSize = tickerTileData.price.length > 9 ? 17 : 20;
     if (changeShown != null) {
       if (changeShown[0] != "-") {

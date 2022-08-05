@@ -350,7 +350,6 @@ class _LineChartWidgetState extends State<LineChartWidget> {
                     closePriceData = preData['closePrices'];
                     highPriceData = preData['highPrices'];
                     lowPriceData = preData['lowPrices'];
-
                     // print("data: $data");
                     String openPrice = Utils.fixNumToFormat(
                       num: data['y'],

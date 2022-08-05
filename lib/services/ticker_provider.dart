@@ -61,34 +61,40 @@ class TickerTileProvider extends ChangeNotifier {
     _symbols.insert(endIndex, symbol);
   }
 
-  Future<void> removeTicker(int index) async {
-    _tickers.removeAt(index);
-    _symbols.removeAt(index);
-
+  Future<void> removeTicker(int index, {BuildContext, context}) async {
     await FirebaseApi.updateWatchList(Watchlist(
         watchlistUid: watchListUid,
         items: _symbols,
         updatedLast: DateTime.now(),
         isPublic: isPublic));
+    _tickers.removeAt(index);
+    _symbols.removeAt(index);
     notifyListeners();
   }
 
-  Future<void> addTicker(String symbol) async {
+  Future<void> addTicker(String symbol, {BuildContext context}) async {
     if (_symbols.length >= 10) {
       return;
     }
-    _symbols.add(symbol);
+    // Utils util = Utils();
+    // if (context != null) {
+    //   util.showSnackBar(context, "Adding $symbol ", true);
+    // }
+
     TickerTileModel data = await yahooApi.get(
         symbol: symbol.toString(),
         lastData: TickerTileModel(isSaved: true),
         requestChartData: true);
     _tickers.add(data);
-
+    _symbols.add(symbol);
     await FirebaseApi.updateWatchList(Watchlist(
         watchlistUid: watchListUid,
         items: _symbols,
         updatedLast: DateTime.now(),
         isPublic: isPublic));
+    // if (context != null) {
+    //   util.removeSnackBar();
+    // }
     notifyListeners();
   }
 

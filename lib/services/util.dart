@@ -83,11 +83,11 @@ class Utils {
   void showSnackBar(BuildContext context, String text, bool showLoader) {
     showTopSnackBar(
       context,
+
       ClipRRect(
         borderRadius: BorderRadius.circular(5.0), //or 15.0
         child: Container(
-          height: 55.0,
-          width: MediaQuery.of(context).size.width * 0.8,
+          height: 54.0,
           color: kLightBackgroundColor,
           padding: EdgeInsets.zero,
           child: Row(
@@ -121,6 +121,7 @@ class Utils {
       ),
       animationDuration: Duration(milliseconds: 350),
       //displayDuration: Duration(milliseconds: 100),
+      // padding: EdgeInsets.symmetric(vertical: 15, horizontal: 60),
       curve: Curves.decelerate,
       persistent: true,
       onAnimationControllerInit: (controller) =>
@@ -128,7 +129,11 @@ class Utils {
     );
   }
 
-  void removeSnackBar() => localAnimationController.reverse();
+  void removeSnackBar() {
+    if (localAnimationController != null) {
+      localAnimationController.reverse();
+    }
+  }
 
   static DateTime toDateTime(Timestamp value) {
     if (value == null) return null;
@@ -191,14 +196,15 @@ class Utils {
       bool isMainData = false}) {
     // double num = exp(number);
     // print("num = $num");
+    print("in utils");
     String numAsString = num.toString();
 
     int decIndex = numAsString.indexOf(".");
     String preDecimal = numAsString.substring(0, decIndex);
     String postDecimal = numAsString.substring(decIndex + 1);
 
-    print("preDecimal: $preDecimal");
-    print("postDecimal: $postDecimal");
+    // print("preDecimal: $preDecimal");
+    // print("postDecimal: $postDecimal");
     // print(preDecimal.replaceAll("0", "").replaceAll("-", ""));
     //if number contains e- => number really small
     if (numAsString.contains("e-")) {

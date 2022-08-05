@@ -31,7 +31,7 @@ class AuthButton extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
-                leadIcon == null ? Container() : leadIcon,
+                // leadIcon == null ? Container() : leadIcon,
                 text == null
                     ? Text('')
                     : Text(text,
