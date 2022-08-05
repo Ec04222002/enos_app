@@ -1,6 +1,9 @@
-import 'dart:async';
+  import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:enos/models/comment.dart';
+import 'package:enos/models/ticker_page_info.dart';
+import 'package:enos/services/ticker_page_info.dart';
 import 'package:enos/services/yahoo_api.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:enos/models/ticker_tile.dart';
@@ -38,6 +41,33 @@ class FirebaseApi {
     final user =
         await FirebaseFirestore.instance.collection("Users").doc(uid).get();
     return UserModel.fromJson(user.data());
+  } 
+
+  static Future<Comment> getComment(String uid) async{
+    final comment =
+        await FirebaseFirestore.instance.collection("Comments").doc(uid).get();
+    return Comment.fromJson(comment.data());
+  }
+
+  static Future<String> updateComment(Comment comment) async{
+    final com =
+        await FirebaseFirestore.instance.collection("Comments").doc(comment.commentUid);
+    comment.commentUid = com.id;
+    await com.set(comment.toJson());
+    return com.id;
+  }
+
+  static Future<List<Comment>> getStockComment(String symbol) async{
+    List<Comment> ret = [];
+    final comments = await FirebaseFirestore.instance.collection("Comments").get();
+    comments.docs.forEach((doc) {
+      String stockId = doc.data()['stock_uid'].toString();
+      bool nested = doc.data()['isNested'];
+      if(stockId == symbol && !nested) {
+        ret.add(Comment.fromJson(doc.data()));
+      }
+    });
+    return ret;
   }
 
   static Future<List<UserModel>> getAllUser({String searchQuery}) async {

@@ -28,7 +28,10 @@ environment:
 # versions available, run `flutter pub outdated`.
 dependencies:
   webview_flutter: ^0.3.22+1
+  carousel_slider: ^4.0.0
+  comment_tree: ^0.3.0
   syncfusion_flutter_sliders: ^20.2.39
+
   flutter:
     sdk: flutter
 

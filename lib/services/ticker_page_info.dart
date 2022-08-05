@@ -1,12 +1,15 @@
 import 'dart:io';
 
 import 'package:enos/models/article.dart';
+import 'package:enos/models/comment.dart';
 import 'package:enos/models/ticker_page_info.dart';
 import 'package:enos/models/ticker_spec.dart';
 import 'package:enos/models/ticker_tile.dart';
 import 'package:enos/screens/news.dart';
 import 'package:enos/services/news_api.dart';
 import 'package:enos/services/yahoo_api.dart';
+
+import 'firebase_api.dart';
 
 class TickerPageInfo {
   //TickerPageInfo({this.tileData});
@@ -129,13 +132,13 @@ class TickerPageInfo {
               : "",
           image: (() {
             dynamic pre = parent['thumbnail'];
-            if (pre == null) return NewsAPI.defaultThumbnail;
+            if (pre == null) return NewsAPI.default_thumbnail;
             dynamic resolutions = pre['resolutions'];
             int i = 3;
             dynamic img = resolutions[i];
             while (img == null) {
               if (i == 1) {
-                return NewsAPI.defaultThumbnail;
+                return NewsAPI;
               }
               img = resolutions[--i];
             }

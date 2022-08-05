@@ -15,6 +15,7 @@ import 'package:enos/models/ticker_tile.dart';
 import 'package:enos/services/ticker_provider.dart';
 import 'package:enos/services/util.dart';
 import 'package:enos/widgets/chart_dates_bar.dart';
+import 'package:enos/widgets/comment_section.dart';
 import 'package:enos/widgets/line_chart.dart';
 import 'package:enos/widgets/loading.dart';
 import 'package:enos/widgets/pre_ticker_prices.dart';
@@ -507,7 +508,8 @@ class _TickerInfoState extends State<TickerInfo>
                       physics: NeverScrollableScrollPhysics(),
                       children: [
                         specSection(),
-                        Text("comment"),
+                        CommentSection(
+                            pageData.commentData, widget.provider.watchListUid),
                         newSection(),
                       ],
                     ),

@@ -5,14 +5,16 @@ class CommentField {
 }
 
 class Comment {
-  final String commentUid;
+  String commentUid;
   final String stockUid;
   final String userUid;
   final DateTime createdTime;
   final String content;
-  final int likes;
-  final List<String> replies;
-
+  int likes;
+  List<dynamic> replies;
+  final bool isNested;
+  bool apiComment;
+  bool viewReply;
   Comment({
     this.commentUid,
     this.stockUid,
@@ -21,6 +23,9 @@ class Comment {
     this.content,
     this.likes = 0,
     this.replies,
+    this.isNested,
+    this.apiComment,
+    this.viewReply = false
   });
 
   static Comment fromJson(Map<String, dynamic> json) => Comment(
@@ -30,7 +35,16 @@ class Comment {
       createdTime: Utils.toDateTime(json['created_time']),
       content: json['content'],
       likes: json['likes'],
-      replies: json['replies']);
+      replies: json['replies'],
+      isNested: json['isNested'],
+      apiComment: json['apiComment']
+  );
+
+
+  @override
+  String toString() {
+    return 'Comment{commentUid: $commentUid, stockUid: $stockUid, userUid: $userUid, createdTime: $createdTime, content: $content, likes: $likes, replies: $replies, isNested: $isNested, apiComment: $apiComment}';
+  }
 
   Map<String, dynamic> toJson() => {
         'comment_uid': commentUid,
@@ -40,5 +54,7 @@ class Comment {
         'content': content,
         'likes': likes,
         'replies': replies,
+        'isNested':isNested,
+        'apiComment': apiComment
       };
 }

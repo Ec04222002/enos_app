@@ -20,8 +20,8 @@ class NewsAPI {
     "402d2f8e5amsh4d113d00393064ep173f23jsn6c05b23ecc6d",
   ];
 
-  static String defaultThumbnail =
-      "https://www.freeiconspng.com/thumbs/no-image-icon/no-image-icon-6.png";
+  static String default_thumbnail =
+      "https://user-images.githubusercontent.com/101482/29592647-40da86ca-875a-11e7-8bc3-941700b0a323.png";
   // Base headers for Response url
   static Map<String, String> _headers = {
     "content-type": "application/json",
@@ -35,12 +35,13 @@ class NewsAPI {
     "stock": [],
     "all": [
       "crypto",
-      "tech",
       "stock",
-      "block chain",
+      "blockchain",
       "shareholder",
       "technology",
-      "cryptocurrency"
+      "cryptocurrency",
+      "car",
+      "phone"
     ]
   };
 
@@ -84,7 +85,7 @@ class NewsAPI {
         provider = element1['name'];
       });
       if (element['image'] == null || element['image']['thumbnail'] == null) {
-        imageUrl = defaultThumbnail;
+        imageUrl = default_thumbnail;
       } else {
         imageUrl = element['image']['thumbnail']['contentUrl'];
       }
@@ -103,15 +104,30 @@ class NewsAPI {
       String category, int offset) async {
     var api = NewsAPI();
     Future<List<ArticleModel>> results;
-    if (category != "All")
-      results = api.get(
-          endpoint: "/news/search",
-          query: {"q": category, "offset": "$offset", "count": "20"});
-    else {
-      String query = "crypto OR tech OR stock";
+    print(category);
+    if (category == "All") {
+      String query = "intitle:tech";
+      for (String s in keywords['all']) {
+        query += " OR inititle:$s";
+      }
+      print(query);
       results = api.get(
           endpoint: "/news/search",
           query: {"q": query, "offset": "$offset", "count": "20"});
+    } else if (category == "Stocks") {
+      results = api.get(
+          endpoint: "/news",
+          query: {"offset": "$offset", "count": "20", "category": "Business"});
+    } else if (category == "Tech") {
+      results = api.get(endpoint: "/news", query: {
+        "offset": "$offset",
+        "count": "20",
+        "category": "ScienceAndTechnology"
+      });
+    } else {
+      results = api.get(
+          endpoint: "/news/search",
+          query: {"q": category, "offset": "$offset", "count": "20"});
     }
     return results;
   }

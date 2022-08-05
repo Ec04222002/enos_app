@@ -1,4 +1,5 @@
 import 'package:enos/models/article.dart';
+import 'package:enos/models/comment.dart';
 import 'package:enos/models/ticker_tile.dart';
 
 class TickerPageModel {
@@ -20,6 +21,8 @@ class TickerPageModel {
   List chartDataY;
   List chartDataX;
   List<ArticleModel> articles;
+  List<Comment> commentData = [];
+
   Map<String, Map<String, List>> priceData = {};
   Map<String, dynamic> specsData;
   // List closePriceData;
@@ -32,28 +35,29 @@ class TickerPageModel {
   bool isLive;
   int closeTime;
   int postCloseTime;
-  TickerPageModel(
-      {this.symbol,
-      this.companyName,
-      this.shortName,
-      this.marketName,
-      this.marketPrice,
-      this.postMarketPrice,
-      this.percentChange,
-      this.isPostMarket = false,
-      this.postPercentChange,
-      this.priceChange,
-      this.postPriceChange,
-      this.previousClose,
-      this.chartDataX,
-      this.chartDataY,
-      this.specsData,
-      this.isCrypto = false,
-      this.isLive = true,
-      this.isSaved = false,
-      this.msgBoardID,
-      this.closeTime,
-      this.postCloseTime});
+  TickerPageModel({
+    this.symbol,
+    this.companyName,
+    this.shortName,
+    this.marketName,
+    this.marketPrice,
+    this.postMarketPrice,
+    this.percentChange,
+    this.isPostMarket = false,
+    this.postPercentChange,
+    this.priceChange,
+    this.postPriceChange,
+    this.previousClose,
+    this.chartDataX,
+    this.chartDataY,
+    this.specsData,
+    this.isCrypto = false,
+    this.isLive = true,
+    this.isSaved = false,
+    this.msgBoardID,
+    this.closeTime,
+    this.postCloseTime,
+  });
 
   static TickerPageModel fromTickerTileModel(
       {TickerTileModel data, dynamic compleData}) {

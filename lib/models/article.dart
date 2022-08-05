@@ -9,6 +9,7 @@ import 'package:intl/intl.dart';
 import '../constants.dart';
 import '../screens/search.dart';
 import '../services/news_api.dart';
+import '../widgets/loading.dart';
 
 class ArticleModel {
   String name,
@@ -286,7 +287,7 @@ class ArticleView extends StatefulWidget {
 class _ArticleViewState extends State<ArticleView> {
   final Completer<WebViewController> _controller =
       Completer<WebViewController>();
-
+  bool isLoading = true;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -313,16 +314,23 @@ class _ArticleViewState extends State<ArticleView> {
               icon: Icon(Icons.search))
         ],
       ),
-      body: Container(
-        height: MediaQuery.of(context).size.height,
-        width: MediaQuery.of(context).size.width,
-        child: WebView(
-          initialUrl: widget.postUrl,
-          javascriptMode: JavascriptMode.unrestricted,
-          onWebViewCreated: (WebViewController webViewController) {
-            _controller.complete(webViewController);
-          },
-        ),
+      body: Stack(
+        children: <Widget>[
+          WebView(
+            initialUrl: widget.postUrl,
+            javascriptMode: JavascriptMode.unrestricted,
+            onPageFinished: (finish) {
+              setState(() {
+                isLoading = false;
+              });
+            },
+          ),
+          isLoading
+              ? Center(
+                  child: Loading(loadText: "Loading News ..."),
+                )
+              : Stack(),
+        ],
       ),
     );
   }

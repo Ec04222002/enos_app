@@ -8,7 +8,7 @@ class ProfilePicture extends StatelessWidget {
   double border_width = 1;
   Image image = null;
   String name;
-
+  double width, height, fontSize;
   Color color1;
   Color color2;
   static String getRandomColor() {
@@ -33,10 +33,16 @@ class ProfilePicture extends StatelessWidget {
       Colors.deepPurple,
       Colors.brown,
     ];
+
     return Utils.colorToHexString(colors[Random().nextInt(colors.length)]);
   }
 
-  ProfilePicture({this.image, this.name, this.color1, this.color2});
+  ProfilePicture({this.image, this.name, this.color1, this.color2, this.width = 35, this.height = 35, this.fontSize=18}) {
+    if(color1 == null)
+      color1 = Utils.stringToColor(getRandomColor());
+    if(color2 == null)
+      color2 = Utils.stringToColor(getRandomColor());
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -45,9 +51,9 @@ class ProfilePicture extends StatelessWidget {
 
   Widget hasImage() {
     return Container(
-      margin: EdgeInsets.all(10),
-      width: 35,
-      height: 35,
+      margin: EdgeInsets.all(5),
+      width: width,
+      height: height,
       alignment: Alignment.center,
       decoration: BoxDecoration(
           border: Border.all(color: color2, width: border_width),
@@ -58,14 +64,14 @@ class ProfilePicture extends StatelessWidget {
 
   Widget noImage() {
     return Container(
-      margin: EdgeInsets.all(10),
-      width: 35,
-      height: 35,
+      margin: EdgeInsets.all(5),
+      width: width,
+      height: height,
       alignment: Alignment.center,
       child: Text(
-        name.substring(0, 1).toUpperCase() + name.substring(1, 2),
+        name.substring(0, 1).toUpperCase() + (name.length  > 1 ?  name.substring(1, 2) : ""),
         style: TextStyle(
-            color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18),
+            color: Colors.white, fontWeight: FontWeight.bold, fontSize: fontSize),
       ),
       decoration: BoxDecoration(
           border: Border.all(color: color2, width: border_width),
