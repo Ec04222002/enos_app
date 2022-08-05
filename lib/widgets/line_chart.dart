@@ -87,11 +87,11 @@ class _LineChartWidgetState extends State<LineChartWidget> {
     DateTime time = DateTime.fromMillisecondsSinceEpoch((epoch * 1000).toInt());
     String result;
     if (isTime) {
-      result = DateFormat("hh a").format(time);
-      if (!widget.isPreview && widget.pageData.isCrypto) {
-        result = result.replaceAll("M", "");
-        //if(chartDataXMod)
-      }
+      result = DateFormat("hh a").format(time).replaceAll("M", "");
+      // if (!widget.isPreview && widget.pageData.isCrypto) {
+      //   result = result.replaceAll("M", "");
+      //   //if(chartDataXMod)
+      // }
       if (!isJustPrefix) {
         result = DateFormat("hh:mm aa").format(time);
       }
