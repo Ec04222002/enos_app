@@ -267,7 +267,9 @@ class _LineChartWidgetState extends State<LineChartWidget> {
     // }
     //occurs only in chart page
     if (widget.triggerNewChart) {
-      if (widget.pageData.priceData[widget.range].isEmpty) {
+      print('length: ${widget.pageData.priceData[widget.range].length}');
+      if (widget.pageData.priceData[widget.range].isEmpty ||
+          widget.pageData.priceData[widget.range].length < 5) {
         return AspectRatio(
             aspectRatio: widget.isPreview ? 3 : 1.5,
             child: Center(
@@ -282,8 +284,8 @@ class _LineChartWidgetState extends State<LineChartWidget> {
       setDataPoints();
     }
     doShowLast();
-    print(chartDataX.length);
-    print(chartDataY.length);
+    // print(chartDataX.length);
+    // print(chartDataY.length);
     minMaxX = widget.range == "5d" || widget.range == "1mo"
         ? Utils.maxMin(chartDataXMod)
         : Utils.maxMin(chartDataX);

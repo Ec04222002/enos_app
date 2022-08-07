@@ -468,8 +468,11 @@ class _TickerInfoState extends State<TickerInfo>
                     return;
                   }
                   if (range != '1d') {
+                    dynamic closePrice =
+                        pageData.priceData[localRange]['closePrices'];
+
                     previousClose =
-                        pageData.priceData[localRange]['closePrices'].first;
+                        closePrice == null ? null : closePrice.first;
                   }
                 });
                 //return 'Success';

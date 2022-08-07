@@ -25,6 +25,8 @@ class TickerTileProvider extends ChangeNotifier {
   bool toggle = false;
   List<int> times = [1, 2];
   //init recommendation
+
+  Function loadFunct;
   List<SearchTile> _recs = [];
 
   TickerTileProvider({this.watchListUid});
@@ -61,6 +63,10 @@ class TickerTileProvider extends ChangeNotifier {
     _symbols.insert(endIndex, symbol);
   }
 
+  void set setLoadingFunct(Function loadFunct) {
+    this.loadFunct = loadFunct;
+  }
+
   Future<void> removeTicker(int index, {BuildContext, context}) async {
     await FirebaseApi.updateWatchList(Watchlist(
         watchlistUid: watchListUid,
@@ -76,10 +82,6 @@ class TickerTileProvider extends ChangeNotifier {
     if (_symbols.length >= 10) {
       return;
     }
-    // Utils util = Utils();
-    // if (context != null) {
-    //   util.showSnackBar(context, "Adding $symbol ", true);
-    // }
 
     TickerTileModel data = await yahooApi.get(
         symbol: symbol.toString(),
@@ -92,9 +94,6 @@ class TickerTileProvider extends ChangeNotifier {
         items: _symbols,
         updatedLast: DateTime.now(),
         isPublic: isPublic));
-    // if (context != null) {
-    //   util.removeSnackBar();
-    // }
     notifyListeners();
   }
 

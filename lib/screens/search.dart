@@ -325,9 +325,9 @@ class _SearchPageState extends State<SearchPage> {
                         setState(() {
                           recommends[index].isSaved = true;
                         });
-
                         await provider.addTicker(stockTileModel.symbol,
                             context: context);
+                        // provider.loadFunct()
                         // Utils().removeSnackBar();
                       }
                     } else {

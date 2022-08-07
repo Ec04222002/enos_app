@@ -4,6 +4,7 @@ import 'package:enos/services/firebase_api.dart';
 import 'package:enos/services/ticker_provider.dart';
 import 'package:enos/services/yahoo_api.dart';
 import 'package:enos/widgets/loading.dart';
+import 'package:enos/widgets/loading_tile.dart';
 import 'package:enos/widgets/ticker_tile.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -19,6 +20,16 @@ class WatchListWidget extends StatefulWidget {
 class _WatchListWidgetState extends State<WatchListWidget> {
   TickerTileProvider tickerProvider;
   List<String> tickers;
+  int loadingTilesCount = 0;
+
+  @override
+  void initState() {
+    // TODO: implement initState
+
+    super.initState();
+    // WidgetsBinding.instance.addPostFrameCallback(
+    //     (_) => tickerProvider.setLoadingFunct = addLoadingTiles);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -26,7 +37,6 @@ class _WatchListWidgetState extends State<WatchListWidget> {
     tickerProvider = Provider.of<TickerTileProvider>(context);
 
     tickers = tickerProvider.symbols;
-    print("building watchlist: ${tickers}");
     return tickers.isEmpty
         ? Center(
             child: Text(
@@ -40,6 +50,9 @@ class _WatchListWidgetState extends State<WatchListWidget> {
               // itemExtent: 80.0,
               padding: EdgeInsets.all(10),
               itemBuilder: (context, index) {
+                if (index >= tickers.length) {
+                  return IgnorePointer(child: LoadingTiles());
+                }
                 return TickerTile(
                   key: ValueKey(index),
                   context: context,
@@ -51,6 +64,12 @@ class _WatchListWidgetState extends State<WatchListWidget> {
             ),
           );
   }
+
+  // void addLoadingTiles(int count) {
+  //   setState(() {
+  //     loadingTilesCount = count;
+  //   });
+  // }
 
   void _onReorder(int startIndex, int endIndex) {
     // print("StartIndex: $startIndex");

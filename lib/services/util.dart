@@ -32,9 +32,39 @@ class Utils {
     return hslLight.toColor();
   }
 
+  static String getTimeFromToday(DateTime time) {
+    DateTime now = DateTime.now();
+
+    Duration diff = now.difference(time);
+    int sec = diff.inSeconds,
+        min = diff.inMinutes,
+        hr = diff.inHours,
+        day = diff.inDays;
+    // List<int> timeLis = [sec, min, hr]
+    if (day + hr + min == 0) {
+      return "$sec sec";
+    }
+    if (day + hr == 0) {
+      return "$min m";
+    }
+
+    if (day == 0) {
+      return "$hr h";
+    }
+
+    if (day < 31) {
+      return "$day d";
+    } else {
+      int month = day ~/ 30;
+      if (month > 12) {
+        int year = month ~/ 12;
+        return "$year y";
+      }
+      return "$month mo";
+    }
+  }
+
   static int findFirstChange(String last, String current) {
-    print("last: $last");
-    print("current: $current");
     if (last.length != current.length) return 0;
 
     for (int i = 0; i < current.length; ++i) {
@@ -158,7 +188,7 @@ class Utils {
     DateTime date = DateTime.fromMillisecondsSinceEpoch((epoch * 1000).toInt());
     String result = DateFormat('E, MMM d, yyyy, h:mm aaa').format(date);
     if (isJustTime) {
-      result = DateFormat('hh:mm aaa').format(date);
+      result = DateFormat('h:mm aaa').format(date);
     }
     if (isDateNumeric) {
       //result = DateFormat.yMEd().add_jm().format(date);
@@ -250,8 +280,6 @@ class Utils {
   static String colorToHexString(Color color) {
     return color.toString();
   }
-
-
 
   static Color stringToColor(String color) {
     String valueString = color.split('(0x')[1].split(')')[0]; // kind of hacky..

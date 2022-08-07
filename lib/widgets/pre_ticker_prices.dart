@@ -64,7 +64,7 @@ class _PreTickerInfoState extends State<PreTickerInfo>
                 text: TextSpan(
                   text: data.shortName,
                   style: TextStyle(
-                      fontSize: data.shortName.length > 15 ? 16 : 21,
+                      fontSize: data.shortName.length > 15 ? 17 : 21,
                       fontWeight: FontWeight.w500),
                 ),
               ),
@@ -132,11 +132,11 @@ class _PreTickerInfoState extends State<PreTickerInfo>
                           ),
                           CupertinoButton(
                               minSize: double.minPositive,
-                              padding: EdgeInsets.only(left: 4),
+                              padding: EdgeInsets.only(right: 15),
                               onPressed: _showBottomModal,
                               child: Icon(
                                 Icons.info_outline,
-                                size: 20,
+                                size: 19,
                                 color: kActiveColor,
                               )),
                         ],
@@ -153,7 +153,7 @@ class _PreTickerInfoState extends State<PreTickerInfo>
           ),
         ),
         Container(
-          height: 145,
+          height: data.shortName.length > 15 ? 140 : 145,
           child: Padding(
             padding: EdgeInsets.only(
                 bottom:
@@ -296,11 +296,11 @@ class _PreTickerInfoState extends State<PreTickerInfo>
           "$postMarketPrefix${data.postPriceChange} (${data.postPercentChange}$postMarketPercentSuffix)",
           style: TextStyle(
               color: postMarketColor,
-              fontSize: 14,
+              fontSize: 13.5,
               fontWeight: FontWeight.w600),
         ),
         SizedBox(
-          height: 4,
+          height: 5,
         ),
         Utils.isPastPostMarket() || Utils.isWeekend()
             ? Text(
