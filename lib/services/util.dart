@@ -42,25 +42,25 @@ class Utils {
         day = diff.inDays;
     // List<int> timeLis = [sec, min, hr]
     if (day + hr + min == 0) {
-      return "$sec sec";
+      return "${sec}s ago";
     }
     if (day + hr == 0) {
-      return "$min m";
+      return "${min}m ago";
     }
 
     if (day == 0) {
-      return "$hr h";
+      return "${hr}h ago";
     }
 
     if (day < 31) {
-      return "$day d";
+      return "${day}d ago";
     } else {
       int month = day ~/ 30;
       if (month > 12) {
         int year = month ~/ 12;
-        return "$year y";
+        return "${year}y ago";
       }
-      return "$month mo";
+      return "${month}mo ago";
     }
   }
 

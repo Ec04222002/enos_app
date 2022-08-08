@@ -40,6 +40,7 @@ class _PreTickerInfoState extends State<PreTickerInfo>
   Color textColor = kBrightTextColor;
 
   Widget preTickerInfoWidget() {
+    ValueNotifier<bool> toggleStar = ValueNotifier(false);
     if (widget.isGreenAnime == null || !widget.isStream) {
       textColor = kBrightTextColor;
     } else if (widget.isGreenAnime) {
@@ -162,49 +163,50 @@ class _PreTickerInfoState extends State<PreTickerInfo>
               crossAxisAlignment: CrossAxisAlignment.end,
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                IconButton(
-                    onPressed: () async {
-                      if (!data.isSaved) {
-                        if (provider.symbols.length >= 10) {
+                ValueListenableBuilder(
+                  valueListenable: toggleStar,
+                  builder: ((context, value, child) => IconButton(
+                      onPressed: () {
+                        if (!data.isSaved) {
+                          if (provider.symbols.length >= 10) {
+                            Utils.showAlertDialog(context,
+                                "You have reached your limit of 10 tickers added.",
+                                () {
+                              Navigator.pop(context);
+                            }, null);
+                          } else {
+                            data.isSaved = true;
+
+                            provider.addTicker(data.symbol, context: context);
+                            toggleStar.value = !toggleStar.value;
+                          }
+                        } else {
                           Utils.showAlertDialog(context,
-                              "You have reached your limit of 10 tickers added.",
+                              "Are you sure you want to remove ${data.symbol} from your watchlist?",
                               () {
                             Navigator.pop(context);
-                          }, null);
-                        } else {
-                          setState(() {
-                            data.isSaved = true;
-                          });
-
-                          await provider.addTicker(data.symbol,
-                              context: context);
-                        }
-                      } else {
-                        Utils.showAlertDialog(context,
-                            "Are you sure you want to remove ${data.symbol} from your watchlist?",
-                            () {
-                          Navigator.pop(context);
-                        }, () async {
-                          setState(() {
+                          }, () {
                             data.isSaved = false;
+
+                            provider.removeTicker(
+                                provider.symbols.indexOf(data.symbol));
+                            toggleStar.value = !toggleStar.value;
+                            Navigator.pop(context);
                           });
-                          await provider.removeTicker(
-                              provider.symbols.indexOf(data.symbol));
-                          Navigator.pop(context);
-                        });
-                      }
-                    },
-                    icon: data.isSaved
-                        ? Icon(
-                            Icons.star,
-                            color: Colors.yellow[400],
-                            size: 38,
-                          )
-                        : Icon(
-                            Icons.star_border,
-                            color: kDisabledColor,
-                            size: 38,
-                          )),
+                        }
+                      },
+                      icon: data.isSaved
+                          ? Icon(
+                              Icons.star,
+                              color: Colors.yellow[400],
+                              size: 38,
+                            )
+                          : Icon(
+                              Icons.star_border,
+                              color: kDisabledColor,
+                              size: 38,
+                            ))),
+                ),
                 (data.isPostMarket &&
                         !data.isCrypto &&
                         (Utils.isPostMarket() ||

@@ -19,8 +19,9 @@ class TickerTileProvider extends ChangeNotifier {
   String watchListUid;
   List<TickerTileModel> _tickers = [];
   List<String> _symbols = [];
-  bool isPublic = false;
+  bool isPublic = true;
   bool isLive = false;
+  DateTime lastUpdatedTime = DateTime.now();
   YahooApi yahooApi = YahooApi();
   bool toggle = false;
   List<int> times = [1, 2];
@@ -63,18 +64,16 @@ class TickerTileProvider extends ChangeNotifier {
     _symbols.insert(endIndex, symbol);
   }
 
-  void set setLoadingFunct(Function loadFunct) {
-    this.loadFunct = loadFunct;
-  }
-
   Future<void> removeTicker(int index, {BuildContext, context}) async {
+    lastUpdatedTime = DateTime.now();
+    _symbols.removeAt(index);
+    _tickers.removeAt(index);
     await FirebaseApi.updateWatchList(Watchlist(
         watchlistUid: watchListUid,
         items: _symbols,
-        updatedLast: DateTime.now(),
+        updatedLast: lastUpdatedTime,
         isPublic: isPublic));
-    _tickers.removeAt(index);
-    _symbols.removeAt(index);
+
     notifyListeners();
   }
 
@@ -89,10 +88,11 @@ class TickerTileProvider extends ChangeNotifier {
         requestChartData: true);
     _tickers.add(data);
     _symbols.add(symbol);
+    lastUpdatedTime = DateTime.now();
     await FirebaseApi.updateWatchList(Watchlist(
         watchlistUid: watchListUid,
         items: _symbols,
-        updatedLast: DateTime.now(),
+        updatedLast: lastUpdatedTime,
         isPublic: isPublic));
     notifyListeners();
   }
@@ -105,6 +105,9 @@ class TickerTileProvider extends ChangeNotifier {
     //set needed parameter
     try {
       isPublic = watchListDoc['is_public'];
+      Timestamp time = watchListDoc['updated_last'];
+      print(time);
+      lastUpdatedTime = time.toDate();
       List<dynamic> tickers = watchListDoc['items'];
       //getting watchlist data from api
       tickers.forEach((element) {

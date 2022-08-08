@@ -288,32 +288,35 @@ class _SearchPageState extends State<SearchPage> {
   }
 
   Widget buildTile(SearchTile stockTileModel, int index, BuildContext context) {
-    return GestureDetector(
-      onTap: (() =>
-          showInfo(index, stockTileModel.symbol, stockTileModel.isSaved)),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(3),
-        child: Container(
-          color: kLightBackgroundColor,
-          child: ListTile(
-              // tileColor: kLightBackgroundColor,
-              title: Text(
-                stockTileModel.symbol,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                    color: kBrightTextColor,
-                    fontSize: 21,
-                    fontWeight: FontWeight.w800),
-              ),
-              subtitle: Text(
-                stockTileModel.name,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(fontSize: 14, color: kDisabledColor),
-              ),
-              trailing: IconButton(
-                  onPressed: () async {
+    ValueNotifier<bool> toggleStar = ValueNotifier(false);
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(3),
+      child: Container(
+        color: kLightBackgroundColor,
+        child: ListTile(
+            onTap: (() =>
+                showInfo(index, stockTileModel.symbol, stockTileModel.isSaved)),
+            // tileColor: kLightBackgroundColor,
+            title: Text(
+              stockTileModel.symbol,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                  color: kBrightTextColor,
+                  fontSize: 21,
+                  fontWeight: FontWeight.w800),
+            ),
+            subtitle: Text(
+              stockTileModel.name,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(fontSize: 14, color: kDisabledColor),
+            ),
+            trailing: ValueListenableBuilder(
+              valueListenable: toggleStar,
+              builder: ((context, value, child) => IconButton(
+                  onPressed: () {
+                    print("press");
                     if (!recommends[index].isSaved) {
                       if (savedSymbols.length >= 10) {
                         Utils.showAlertDialog(context,
@@ -322,25 +325,24 @@ class _SearchPageState extends State<SearchPage> {
                           Navigator.pop(context);
                         }, null);
                       } else {
-                        setState(() {
-                          recommends[index].isSaved = true;
-                        });
-                        await provider.addTicker(stockTileModel.symbol,
-                            context: context);
-                        // provider.loadFunct()
-                        // Utils().removeSnackBar();
+                        stockTileModel.isSaved = true;
+
+                        provider.addTicker(
+                          stockTileModel.symbol,
+                        );
+                        toggleStar.value = !toggleStar.value;
                       }
                     } else {
                       Utils.showAlertDialog(context,
                           "Are you sure you want to remove ${stockTileModel.symbol} from your watchlist?",
                           () {
                         Navigator.pop(context);
-                      }, () async {
-                        setState(() {
-                          recommends[index].isSaved = false;
-                        });
-                        await provider.removeTicker(
+                      }, () {
+                        stockTileModel.isSaved = false;
+
+                        provider.removeTicker(
                             savedSymbols.indexOf(stockTileModel.symbol));
+                        toggleStar.value = !toggleStar.value;
                         Navigator.pop(context);
                       });
                     }
@@ -356,7 +358,7 @@ class _SearchPageState extends State<SearchPage> {
                           color: kDisabledColor,
                           size: 35,
                         ))),
-        ),
+            )),
       ),
     );
   }

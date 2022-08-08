@@ -11,7 +11,7 @@ class UserModel {
   final DateTime createdTime;
   final String profilePic;
   final String username;
-  final bool isEmailNotify;
+  bool isEmailNotify;
   List<bool> metrics;
   List<String> userSaved;
   final String profileBgColor;

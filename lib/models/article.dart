@@ -1,6 +1,4 @@
 import 'dart:async';
-import 'dart:ui';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:webview_flutter/webview_flutter.dart';
@@ -288,6 +286,7 @@ class _ArticleViewState extends State<ArticleView> {
   final Completer<WebViewController> _controller =
       Completer<WebViewController>();
   bool isLoading = true;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(

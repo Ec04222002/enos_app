@@ -69,7 +69,6 @@ class YahooApi {
 
     final List quotes = response['finance']['result'][0]['quotes'];
     var quotesFirstSix = quotes.take(6);
-    print("quotes: ${quotesFirstSix.toList()[3]}");
     return quotesFirstSix.map((json) => SearchTile.fromJson(json)).toList();
   }
 
