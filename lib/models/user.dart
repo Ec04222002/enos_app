@@ -14,6 +14,8 @@ class UserModel {
   bool isEmailNotify;
   List<bool> metrics;
   List<String> userSaved;
+  List<String> comments;
+  List<String> likedComments;
   final String profileBgColor;
   final String profileBorderColor;
   UserModel(
@@ -21,6 +23,8 @@ class UserModel {
       this.createdTime,
       this.profilePic,
       this.username,
+      this.comments,
+      this.likedComments,
       this.isEmailNotify = true,
       this.metrics,
       this.userSaved,
@@ -35,7 +39,19 @@ class UserModel {
     json['user_saved'].forEach((user) {
       userSaved.add(user.toString());
     });
+
+    List<String> comments = [];
+    json['comments'].forEach((comment) {
+      comments.add(comment.toString());
+    });
+    List<String> likedComments = [];
+    json['liked_comments'].forEach((comment) {
+      likedComments.add(comment.toString());
+    });
+
     return UserModel(
+      comments: comments,
+      likedComments: likedComments,
       userUid: json['user_uid'],
       createdTime: Utils.toDateTime(json['created_time']),
       profilePic: json['profile_pic'],

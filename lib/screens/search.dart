@@ -226,6 +226,7 @@ class _SearchPageState extends State<SearchPage> {
 
   Widget buildUserTile(
       UserSearchTile searchTile, int index, BuildContext context) {
+    ValueNotifier<bool> toggleSave = ValueNotifier(false);
     return ClipRRect(
       borderRadius: BorderRadius.circular(3),
       child: Container(
@@ -241,48 +242,52 @@ class _SearchPageState extends State<SearchPage> {
                   fontSize: 21,
                   fontWeight: FontWeight.w800),
             ),
-            trailing: IconButton(
-                onPressed: () {
-                  if (searchTile.isSaved) {
-                    Utils.showAlertDialog(context,
-                        "Are you sure you want to remove @${searchTile.userName}?",
-                        () {
-                      Navigator.pop(context);
-                    }, () {
-                      setState(() {
-                        user.userSaved
-                            .removeAt(user.userSaved.indexOf(searchTile.uid));
-                      });
-                      Navigator.pop(context);
-                    });
-                  } else {
-                    if (user.userSaved.length > 15) {
+            trailing: ValueListenableBuilder(
+              valueListenable: toggleSave,
+              builder: ((context, value, child) => IconButton(
+                  onPressed: () {
+                    if (searchTile.isSaved) {
                       Utils.showAlertDialog(context,
-                          "You have reached your limit of 15 people added.",
+                          "Are you sure you want to remove @${searchTile.userName}?",
                           () {
                         Navigator.pop(context);
-                      }, null);
-                    } else {
-                      setState(() {
-                        user.userSaved.add(searchTile.uid);
+                      }, () {
+                        user.userSaved
+                            .removeAt(user.userSaved.indexOf(searchTile.uid));
+                        searchTile.isSaved = false;
+                        FirebaseApi.updateUserData(user);
+                        toggleSave.value = !toggleSave.value;
+                        Navigator.pop(context);
                       });
+                    } else {
+                      if (user.userSaved.length > 15) {
+                        Utils.showAlertDialog(context,
+                            "You have reached your limit of 15 people added.",
+                            () {
+                          Navigator.pop(context);
+                        }, null);
+                      } else {
+                        user.userSaved.add(searchTile.uid);
+                        searchTile.isSaved = true;
+                        FirebaseApi.updateUserData(user);
+                        toggleSave.value = !toggleSave.value;
+                      }
                     }
-                  }
-                  UserModel newUserModel = recommends[index];
-                  newUserModel.userSaved = user.userSaved;
-                  FirebaseApi.updateUserData(newUserModel);
-                },
-                icon: searchTile.isSaved
-                    ? Icon(
-                        Icons.bookmark_outlined,
-                        color: kDisabledColor,
-                        size: 35,
-                      )
-                    : Icon(
-                        Icons.bookmark_border,
-                        color: kDisabledColor,
-                        size: 35,
-                      ))),
+                    // UserModel newUserModel = recommends[index];
+                    // newUserModel.userSaved = user.userSaved;
+                  },
+                  icon: searchTile.isSaved
+                      ? Icon(
+                          Icons.bookmark_outlined,
+                          color: kDisabledColor,
+                          size: 35,
+                        )
+                      : Icon(
+                          Icons.bookmark_border,
+                          color: kDisabledColor,
+                          size: 35,
+                        ))),
+            )),
       ),
     );
   }

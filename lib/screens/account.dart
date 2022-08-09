@@ -2,6 +2,7 @@
 import 'package:enos/constants.dart';
 import 'package:enos/models/ticker_tile.dart';
 import 'package:enos/models/user.dart';
+import 'package:enos/models/user_tile.dart';
 import 'package:enos/models/watchlist.dart';
 import 'package:enos/services/auth.dart';
 import 'package:enos/services/firebase_api.dart';
@@ -38,6 +39,7 @@ class _AccountPageState extends State<AccountPage>
   Future<void> setInit() async {
     user = await FirebaseApi.getUser(uid);
 
+    //settingsList[1]['onclick'] =
     name = user.username;
     setState(() {
       isLoading = false;
@@ -52,6 +54,7 @@ class _AccountPageState extends State<AccountPage>
         "icon": Icons.bookmark_border,
         "title": "Saved Users",
         "trail": SavedUsers(),
+        'onclick': openSavedUser,
       },
       {
         "icon": Icons.comment_outlined,
@@ -471,5 +474,9 @@ class _AccountPageState extends State<AccountPage>
       FirebaseApi.deleteUser(uid);
       Navigator.pop(context);
     });
+  }
+
+  void openSavedUser() {
+    SavedUsers.openSavedUsersPage(context);
   }
 }
