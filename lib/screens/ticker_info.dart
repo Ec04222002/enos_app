@@ -509,7 +509,7 @@ class _TickerInfoState extends State<TickerInfo>
                       children: [
                         specSection(),
                         CommentSection(
-                            pageData.commentData, widget.provider.watchListUid),
+                            widget.provider.watchListUid, pageData.symbol),
                         newSection(),
                       ],
                     ),

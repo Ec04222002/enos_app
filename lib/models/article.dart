@@ -235,6 +235,7 @@ class NewsTile extends StatelessWidget {
 
   Widget Tile() {
     return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
       children: <Widget>[
         // Container(
         //   padding: EdgeInsets.all(6.0),
@@ -301,18 +302,6 @@ class _ArticleViewState extends State<ArticleView> {
                 color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
           )
         ]),
-        actions: [
-          IconButton(
-              iconSize: 30,
-              color: kDarkTextColor.withOpacity(0.9),
-              onPressed: () {
-                //  NewsAPI.getArticles("crypto");
-                Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => SearchPage()));
-              },
-              tooltip: "Search",
-              icon: Icon(Icons.search))
-        ],
       ),
       body: Stack(
         children: <Widget>[

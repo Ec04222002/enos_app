@@ -49,8 +49,9 @@ class _CommentBoxState extends State<CommentBox> {
        children: [
         Row(
           children: [
+
            Text(
-            '${widget.data.userUid}',
+            widget.data.userUid.length <= 15? '${widget.data.userUid}': '${widget.data.userUid.substring(0,15)}...',
             style: Theme.of(context).textTheme.caption.copyWith(
                 fontWeight: FontWeight.w600, color: Colors.white),
            ),
@@ -79,7 +80,7 @@ class _CommentBoxState extends State<CommentBox> {
              color: Colors.white, fontWeight: FontWeight.bold),
          child: Padding(
           padding: EdgeInsets.only(top: 0),
-          child: Row(
+          child:  Row(
            mainAxisAlignment: MainAxisAlignment.start,
            children: [
              widget.manager.userProfilePic,
@@ -105,6 +106,8 @@ class _CommentBoxState extends State<CommentBox> {
 
                   String id = await FirebaseApi.updateComment(com);
                   widget.manager.root.replies.add(id);
+                  await FirebaseApi.updateComment(widget.manager.root);
+                  await widget.manager.loadComments(1);
                   _controller.clear();
                   widget.notifyParent();
                 },
