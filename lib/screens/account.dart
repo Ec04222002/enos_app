@@ -387,18 +387,23 @@ class _AccountPageState extends State<AccountPage>
                         ticker.symbol,
                       );
                       toggleStar.value = !toggleStar.value;
-                    } else {
-                      Utils.showAlertDialog(context,
-                          "Are you sure you want to remove ${ticker.symbol} from your watchlist?",
-                          () {
-                        Navigator.pop(context);
-                      }, () {
-                        provider.removeTicker(
-                            provider.symbols.indexOf(ticker.symbol));
+                    } else if (!provider.isLoading) {
+                      // Utils.showAlertDialog(context,
+                      //     "Are you sure you want to remove ${ticker.symbol} from your watchlist?",
+                      //     () {
+                      //   Navigator.pop(context);
+                      // }, () {
+                      //   provider.removeTicker(
+                      //       provider.symbols.indexOf(ticker.symbol));
 
-                        toggleStar.value = !toggleStar.value;
-                        Navigator.pop(context);
-                      });
+                      //   toggleStar.value = !toggleStar.value;
+                      //   Navigator.pop(context);
+                      // });
+                      tickers[tickerIndex].isSaved = false;
+                      provider.removeTicker(
+                          provider.symbols.indexOf(ticker.symbol));
+
+                      toggleStar.value = !toggleStar.value;
                     }
                   },
                   icon: tickers[tickerIndex].isSaved

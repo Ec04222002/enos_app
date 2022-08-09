@@ -247,18 +247,24 @@ class _SearchPageState extends State<SearchPage> {
               builder: ((context, value, child) => IconButton(
                   onPressed: () {
                     if (searchTile.isSaved) {
-                      Utils.showAlertDialog(context,
-                          "Are you sure you want to remove @${searchTile.userName}?",
-                          () {
-                        Navigator.pop(context);
-                      }, () {
-                        user.userSaved
-                            .removeAt(user.userSaved.indexOf(searchTile.uid));
-                        searchTile.isSaved = false;
-                        FirebaseApi.updateUserData(user);
-                        toggleSave.value = !toggleSave.value;
-                        Navigator.pop(context);
-                      });
+                      // Utils.showAlertDialog(context,
+                      //     "Are you sure you want to remove @${searchTile.userName}?",
+                      //     () {
+                      //   Navigator.pop(context);
+                      // }, () {
+                      // user.userSaved
+                      //     .removeAt(user.userSaved.indexOf(searchTile.uid));
+                      // searchTile.isSaved = false;
+                      // FirebaseApi.updateUserData(user);
+                      // toggleSave.value = !toggleSave.value;
+                      // Navigator.pop(context);
+                      // });
+
+                      user.userSaved
+                          .removeAt(user.userSaved.indexOf(searchTile.uid));
+                      searchTile.isSaved = false;
+                      FirebaseApi.updateUserData(user);
+                      toggleSave.value = !toggleSave.value;
                     } else {
                       if (user.userSaved.length > 15) {
                         Utils.showAlertDialog(context,
@@ -320,8 +326,7 @@ class _SearchPageState extends State<SearchPage> {
             trailing: ValueListenableBuilder(
               valueListenable: toggleStar,
               builder: ((context, value, child) => IconButton(
-                  onPressed: () {
-                    print("press");
+                  onPressed: () async {
                     if (!recommends[index].isSaved) {
                       if (savedSymbols.length >= 10) {
                         Utils.showAlertDialog(context,
@@ -335,27 +340,35 @@ class _SearchPageState extends State<SearchPage> {
                         provider.addTicker(
                           stockTileModel.symbol,
                         );
+
                         toggleStar.value = !toggleStar.value;
                       }
-                    } else {
-                      Utils.showAlertDialog(context,
-                          "Are you sure you want to remove ${stockTileModel.symbol} from your watchlist?",
-                          () {
-                        Navigator.pop(context);
-                      }, () {
-                        stockTileModel.isSaved = false;
+                    } else if (!provider.isLoading) {
+                      // Utils.showAlertDialog(context,
+                      //     "Are you sure you want to remove ${stockTileModel.symbol} from your watchlist?",
+                      //     () {
+                      //   Navigator.pop(context);
+                      // }, () {
+                      //   stockTileModel.isSaved = false;
 
-                        provider.removeTicker(
-                            savedSymbols.indexOf(stockTileModel.symbol));
-                        toggleStar.value = !toggleStar.value;
-                        Navigator.pop(context);
-                      });
+                      // provider.removeTicker(
+                      //     savedSymbols.indexOf(stockTileModel.symbol));
+                      // toggleStar.value = !toggleStar.value;
+                      // Navigator.pop(context);
+                      // });
+
+                      stockTileModel.isSaved = false;
+
+                      provider.removeTicker(
+                          savedSymbols.indexOf(stockTileModel.symbol));
+
+                      toggleStar.value = !toggleStar.value;
                     }
                   },
                   icon: stockTileModel.isSaved
                       ? Icon(
                           Icons.star,
-                          color: Colors.yellow[400],
+                          color: Colors.yellow,
                           size: 35,
                         )
                       : Icon(

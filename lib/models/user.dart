@@ -69,6 +69,8 @@ class UserModel {
         'created_time': Utils.fromDateTimeToJson(createdTime),
         'profile_pic': profilePic,
         'username': username,
+        'comments': comments,
+        'liked_comments': likedComments,
         'is_email_notify': isEmailNotify,
         'metrics': metrics,
         'user_saved': userSaved,

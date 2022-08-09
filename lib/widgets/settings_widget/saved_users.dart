@@ -82,19 +82,25 @@ class SavedUsers extends StatelessWidget {
                             trailing: IconButton(
                                 onPressed: () {
                                   if (userTile.isSaved) {
-                                    Utils.showAlertDialog(context,
-                                        "Are you sure you want to remove @${userTile.userName}?",
-                                        () {
-                                      Navigator.pop(context);
-                                    }, () {
-                                      savedUserId.removeAt(
-                                          savedUserId.indexOf(userTile.uid));
-                                      user.userSaved = savedUserId;
-                                      userTile.isSaved = false;
-                                      FirebaseApi.updateUserData(user);
-                                      toggleSave.value = !toggleSave.value;
-                                      Navigator.pop(context);
-                                    });
+                                    // Utils.showAlertDialog(context,
+                                    //     "Are you sure you want to remove @${userTile.userName}?",
+                                    //     () {
+                                    //   Navigator.pop(context);
+                                    // }, () {
+                                    //   savedUserId.removeAt(
+                                    //       savedUserId.indexOf(userTile.uid));
+                                    //   user.userSaved = savedUserId;
+                                    //   userTile.isSaved = false;
+                                    //   FirebaseApi.updateUserData(user);
+                                    //   toggleSave.value = !toggleSave.value;
+                                    //   Navigator.pop(context);
+                                    // });
+                                    savedUserId.removeAt(
+                                        savedUserId.indexOf(userTile.uid));
+                                    user.userSaved = savedUserId;
+                                    userTile.isSaved = false;
+                                    FirebaseApi.updateUserData(user);
+                                    toggleSave.value = !toggleSave.value;
                                   } else {
                                     if (user.userSaved.length > 15) {
                                       Utils.showAlertDialog(context,

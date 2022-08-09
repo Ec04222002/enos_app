@@ -49,9 +49,9 @@ class AuthService {
       print("trying to sign in");
       dynamic result = await _auth.signInWithEmailAndPassword(
           email: email, password: password);
-      User user = result.user;
-      await setUser(user.uid);
-      return user;
+      // User user = result.user;
+      // await setUser(user.uid);
+      return result;
     } catch (error) {
       print(error.toString());
       return null;
@@ -132,7 +132,7 @@ class GoogleSignInProvider extends ChangeNotifier {
           userUid: u.uid,
           createdTime: DateTime.now(),
           username: u.email.substring(0, u.email.indexOf("@")),
-          metrics: List.filled(22, true),
+          metrics: List.filled(11, true) + List.filled(12, false),
           comments: [],
           likedComments: [],
           userSaved: [],

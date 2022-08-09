@@ -16,6 +16,7 @@ import 'package:flutter/material.dart';
 // //run firebase methods to update tickers for watchlist
 // // access list of tickers
 class TickerTileProvider extends ChangeNotifier {
+  bool isLoading = false;
   String watchListUid;
   List<TickerTileModel> _tickers = [];
   List<String> _symbols = [];
@@ -65,6 +66,7 @@ class TickerTileProvider extends ChangeNotifier {
   }
 
   Future<void> removeTicker(int index, {BuildContext, context}) async {
+    isLoading = true;
     lastUpdatedTime = DateTime.now();
     _symbols.removeAt(index);
     _tickers.removeAt(index);
@@ -73,15 +75,24 @@ class TickerTileProvider extends ChangeNotifier {
         items: _symbols,
         updatedLast: lastUpdatedTime,
         isPublic: isPublic));
-
+    isLoading = false;
+    print("calling loadended function");
+    loadEndedFunct();
+    loadEndedFunct = () {};
     notifyListeners();
+  }
+
+  Function loadEndedFunct = () {};
+  void onLoadEnded(Function loadEndedFunct) {
+    print("setting load ended function");
+    loadEndedFunct = loadEndedFunct;
   }
 
   Future<void> addTicker(String symbol, {BuildContext context}) async {
     if (_symbols.length >= 10) {
       return;
     }
-
+    isLoading = true;
     TickerTileModel data = await yahooApi.get(
         symbol: symbol.toString(),
         lastData: TickerTileModel(isSaved: true),
@@ -94,6 +105,10 @@ class TickerTileProvider extends ChangeNotifier {
         items: _symbols,
         updatedLast: lastUpdatedTime,
         isPublic: isPublic));
+    isLoading = false;
+    print("calling load end function");
+    loadEndedFunct();
+    loadEndedFunct = () {};
     notifyListeners();
   }
 
