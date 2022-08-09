@@ -14,7 +14,18 @@ class CommentBox extends StatefulWidget {
   final Comment data;
   final CommentManager manager;
   final Function() notifyParent;
+  String time;
   CommentBox({this.context,this.data, this.manager, @required this.notifyParent}) {
+    Duration diff = DateTime.now().difference(data.createdTime);
+    if (diff.inMinutes < 1) {
+      time = "${diff.inSeconds} seconds ago";
+    } else if (diff.inHours < 1) {
+      time = "${diff.inMinutes} minutes ago";
+    } else if (diff.inDays < 1) {
+      time = "${diff.inHours} hours ago";
+    } else {
+      time = "${diff.inDays} days ago";
+    }
   }
 
   @override
@@ -51,13 +62,13 @@ class _CommentBoxState extends State<CommentBox> {
           children: [
 
            Text(
-            widget.data.userUid.length <= 15? '${widget.data.userUid}': '${widget.data.userUid.substring(0,15)}...',
+            widget.data.userName.length <= 15? '${widget.data.userName}': '${widget.data.userName.substring(0,15)}...',
             style: Theme.of(context).textTheme.caption.copyWith(
                 fontWeight: FontWeight.w600, color: Colors.white),
            ),
            SizedBox(width: 5,),
            Text(
-            '${widget.manager.time}',
+            '${widget.time}',
             style: Theme.of(context).textTheme.caption.copyWith(
                 color: Colors.grey),
            ),
@@ -85,31 +96,17 @@ class _CommentBoxState extends State<CommentBox> {
            children: [
              widget.manager.userProfilePic,
             Container(
-              width: 100,
+              width: 90,
               color: kLightBackgroundColor,
  //             padding: EdgeInsets.symmetric(horizontal: 10, vertical: 1),
               child: TextField(
                 controller: _controller,
+                minLines: 1,
+                maxLines: 5,
+                onChanged: (String s) {
+                  setState((){});
+                },
                 onEditingComplete : () async {
-                  UserModel user = widget.manager.user;
-
-                  Comment com = Comment(
-                    content: _controller.value.text,
-                    userUid: user.userUid,
-                    stockUid: widget.data.stockUid,
-                    likes: 0,
-                    isNested: true,
-                    apiComment: false,
-                    createdTime: DateTime.now(),
-                    replies: [],
-                  );
-
-                  String id = await FirebaseApi.updateComment(com);
-                  widget.manager.root.replies.add(id);
-                  await FirebaseApi.updateComment(widget.manager.root);
-                  await widget.manager.loadComments(1);
-                  _controller.clear();
-                  widget.notifyParent();
                 },
                 style: TextStyle(fontSize: 11, color: Colors.white),
                 decoration: InputDecoration(
@@ -118,10 +115,59 @@ class _CommentBoxState extends State<CommentBox> {
                 ),
                ),
             ),
-            IconButton(onPressed: () async {
+             Container(
+               width: 46,
+               height: 40,
+               child: TextButton(
+                 onPressed: () async{
+                   if(_controller.text != "") {
+                     UserModel user = widget.manager.user;
 
-            }, icon: Icon(Icons.thumb_up,size: 20,) ,color: Colors.blue),
-            Text("${widget.data.likes}"),
+                     Comment com = Comment(
+                         content: _controller.value.text,
+                         userUid: user.userUid,
+                         stockUid: widget.data.stockUid,
+                         likes: 0,
+                         isNested: true,
+                         apiComment: false,
+                         createdTime: DateTime.now(),
+                         replies: [],
+                         userName: user.username
+                     );
+
+                     String id = await FirebaseApi.updateComment(com);
+                     widget.manager.root.replies.add(id);
+                     await FirebaseApi.updateComment(widget.manager.root);
+                     await widget.manager.loadComments(1);
+                     user.comments.add(id);
+                     await FirebaseApi.updateUserData(user);
+                     _controller.clear();
+                     widget.notifyParent();
+                     setState((){});
+                   }
+                 },
+                 child: Text(
+                   "Submit",
+                   style: TextStyle(color: _controller.text == ""? kDisabledColor : kActiveColor,fontSize: 9),
+                 ),
+               ),
+             ),
+            IconButton(
+                onPressed: () async {
+              UserModel user = widget.manager.user;
+              if(user.likedComments.contains(widget.data.commentUid)) {
+                user.likedComments.remove(widget.data.commentUid);
+                widget.data.likes--;
+              } else {
+                user.likedComments.add(widget.data.commentUid);
+                widget.data.likes++;
+              }
+              await FirebaseApi.updateUserData(user);
+              await FirebaseApi.updateComment(widget.data);
+              widget.notifyParent();
+            },
+                icon: Icon(Icons.thumb_up,size: 15,) ,color: widget.manager.user.likedComments == null ||  widget.manager.user.likedComments.contains(widget.data.commentUid)?Colors.blue:Colors.white),
+            Text("${widget.data.likes}", style: TextStyle(fontSize: 9),),
             SizedBox(
              width: 24,
             ),

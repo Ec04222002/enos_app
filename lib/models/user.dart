@@ -11,21 +11,25 @@ class UserModel {
   final DateTime createdTime;
   final String profilePic;
   final String username;
-  final bool isEmailNotify;
+  bool isEmailNotify;
   List<bool> metrics;
   List<String> userSaved;
+  List<String> comments;
+  List<String> likedComments;
   final String profileBgColor;
   final String profileBorderColor;
   UserModel(
       {this.userUid,
-      this.createdTime,
-      this.profilePic,
-      this.username,
-      this.isEmailNotify = true,
-      this.metrics,
-      this.userSaved,
-      this.profileBgColor,
-      this.profileBorderColor});
+        this.createdTime,
+        this.profilePic,
+        this.username,
+        this.comments,
+        this.likedComments,
+        this.isEmailNotify = true,
+        this.metrics,
+        this.userSaved,
+        this.profileBgColor,
+        this.profileBorderColor});
   static UserModel fromJson(Map<String, dynamic> json) {
     List<bool> metrics = [];
     json['metrics'].forEach((metric) {
@@ -35,7 +39,19 @@ class UserModel {
     json['user_saved'].forEach((user) {
       userSaved.add(user.toString());
     });
+
+    List<String> comments = [];
+    json['comments'].forEach((comment) {
+      comments.add(comment.toString());
+    });
+    List<String> likedComments = [];
+    json['liked_comments'].forEach((comment) {
+      likedComments.add(comment.toString());
+    });
+
     return UserModel(
+      comments: comments,
+      likedComments: likedComments,
       userUid: json['user_uid'],
       createdTime: Utils.toDateTime(json['created_time']),
       profilePic: json['profile_pic'],
@@ -49,14 +65,16 @@ class UserModel {
   }
 
   Map<String, dynamic> toJson() => {
-        'user_uid': userUid,
-        'created_time': Utils.fromDateTimeToJson(createdTime),
-        'profile_pic': profilePic,
-        'username': username,
-        'is_email_notify': isEmailNotify,
-        'metrics': metrics,
-        'user_saved': userSaved,
-        'profile_bg_color': profileBgColor,
-        'profile_border_color': profileBorderColor,
-      };
+    'user_uid': userUid,
+    'created_time': Utils.fromDateTimeToJson(createdTime),
+    'profile_pic': profilePic,
+    'username': username,
+    'comments': comments,
+    'liked_comments': likedComments,
+    'is_email_notify': isEmailNotify,
+    'metrics': metrics,
+    'user_saved': userSaved,
+    'profile_bg_color': profileBgColor,
+    'profile_border_color': profileBorderColor,
+  };
 }

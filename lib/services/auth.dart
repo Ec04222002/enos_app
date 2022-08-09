@@ -72,6 +72,8 @@ class AuthService {
         createdTime: DateTime.now(),
         username: userName,
         userSaved: [],
+        comments: [],
+        likedComments: [],
         metrics: List.filled(11, true) + List.filled(12, false),
         profileBgColor: ProfilePicture.getRandomColor(),
         profileBorderColor: ProfilePicture.getRandomColor(),
@@ -117,7 +119,7 @@ class GoogleSignInProvider extends ChangeNotifier {
         idToken: googleAuth.idToken,
       );
       dynamic result =
-          await FirebaseAuth.instance.signInWithCredential(credential);
+      await FirebaseAuth.instance.signInWithCredential(credential);
       //checking if user exists
       User u = result.user;
       bool userExist = await FirebaseApi.checkExist('Users', u.uid);
@@ -131,6 +133,8 @@ class GoogleSignInProvider extends ChangeNotifier {
           createdTime: DateTime.now(),
           username: u.email.substring(0, u.email.indexOf("@")),
           metrics: List.filled(22, true),
+          comments: [],
+          likedComments: [],
           userSaved: [],
           profileBgColor: ProfilePicture.getRandomColor(),
           profileBorderColor: ProfilePicture.getRandomColor(),

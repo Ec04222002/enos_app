@@ -16,7 +16,6 @@ import 'package:flutter/material.dart';
 class CommentManager extends StatefulWidget {
   Comment root;
   List<Comment> visibleReplies = [];
-  String time;
   CommentTreeWidget<Comment, Comment> tree;
   String userId;
   UserModel user;
@@ -39,17 +38,7 @@ class CommentManager extends StatefulWidget {
       profilePic[root.userUid] = rootProfilePic;
     }
     if (root.replies.length > 0) root.viewReply = true;
-    Duration diff = DateTime.now().difference(root.createdTime);
 
-    if (diff.inMinutes < 1) {
-      time = "${diff.inSeconds} seconds ago";
-    } else if (diff.inHours < 1) {
-      time = "${diff.inMinutes} minutes ago";
-    } else if (diff.inDays < 1) {
-      time = "${diff.inHours} hours ago";
-    } else {
-      time = "${diff.inDays} days ago";
-    }
 
     if (root.apiComment == null) {
       root.apiComment = true;
@@ -117,8 +106,6 @@ class _CommentManagerState extends State<CommentManager> {
   }
 
   Widget build(BuildContext context) {
-    print('yohey');
-    print(widget.visibleReplies.length);
     return Container(
       child: CommentTreeWidget<Comment, Comment>(
         widget.root,
@@ -128,13 +115,13 @@ class _CommentManagerState extends State<CommentManager> {
         avatarRoot: (context, data) => PreferredSize(
           child: widget.rootProfilePic != null
               ? ProfilePicture(
-                  name: data.userUid,
+                  name: data.userName,
                   image: widget.rootProfilePic,
                   color1: widget.rootColor1,
                   color2: widget.rootColor2,
                 )
               : ProfilePicture(
-                  name: data.userUid,
+                  name: data.userName,
                   color1: widget.rootColor1,
                   color2: widget.rootColor2,
                 ),
@@ -143,13 +130,13 @@ class _CommentManagerState extends State<CommentManager> {
         avatarChild: (context, data) => PreferredSize(
           child: widget.profilePic[data.userUid] != null
               ? ProfilePicture(
-                  name: data.userUid,
+                  name: data.userName,
                   image: widget.profilePic[data.userUid],
                   color1: widget.color1[data.userUid],
                   color2: widget.color2[data.userUid],
                 )
               : ProfilePicture(
-                  name: data.userUid,
+                  name: data.userName,
                   color1: widget.color1[data.userUid],
                   color2: widget.color2[data.userUid],
                 ),
@@ -218,7 +205,7 @@ class _CommentSectionState extends State<CommentSection> {
       img = Image.network(user.profilePic);
     }
     ProfilePicture pic = ProfilePicture(
-      name: user.userUid,
+      name: user.username,
       image: img,
       color1: Utils.stringToColor(user.profileBgColor),
       color2: Utils.stringToColor(user.profileBorderColor),
@@ -252,6 +239,9 @@ class _CommentSectionState extends State<CommentSection> {
       }
 
     });
+    comments.sort((a,b) {
+     return b.root.likes - a.root.likes;
+    });
     isLoad = false;
     setState((){});
   }
@@ -271,7 +261,7 @@ class _CommentSectionState extends State<CommentSection> {
             }
             return Row(
               children: [
-                ProfilePicture(name: user.userUid,
+                ProfilePicture(name: user.username,
                   color1: Utils.stringToColor(user.profileBgColor),
                   color2: Utils.stringToColor(user.profileBorderColor) ,
                   image: user.profilePic != null? Image.network(user.profilePic) : null,
@@ -282,6 +272,13 @@ class _CommentSectionState extends State<CommentSection> {
                   color: kLightBackgroundColor,
                   width: 250,
                   child: TextField(
+                    onTap: () {
+                      FocusScopeNode currentFocus = FocusScope.of(context);
+
+                      if (!currentFocus.hasPrimaryFocus) {
+                        currentFocus.unfocus();
+                      }
+                    },
                     controller: _controller,
                     onChanged: (String s) {
                       setState((){});
@@ -311,11 +308,12 @@ class _CommentSectionState extends State<CommentSection> {
                           replies: [],
                           apiComment: false,
                           isNested: false,
-                          createdTime: DateTime.now()
+                          createdTime: DateTime.now(),
+                          userName: user.username
                         );
                         String id = await FirebaseApi.updateComment(com);
                         ProfilePicture pic = ProfilePicture(
-                          name: user.userUid,
+                          name: user.username,
                           image: user.profilePic != null? Image.network(user.profilePic) : null,
                           color1: Utils.stringToColor(user.profileBgColor),
                           color2: Utils.stringToColor(user.profileBorderColor),
@@ -323,6 +321,8 @@ class _CommentSectionState extends State<CommentSection> {
                           height: 25,
                           fontSize: 15,
                         );
+                        user.comments.add(id);
+                        await FirebaseApi.updateUserData(user);
                         comments.insert(0, CommentManager(
                           root: com,
                           user: user,
