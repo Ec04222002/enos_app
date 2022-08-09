@@ -4,6 +4,7 @@ import 'package:enos/models/ticker_tile.dart';
 import 'package:enos/models/user.dart';
 import 'package:enos/models/user_tile.dart';
 import 'package:enos/models/watchlist.dart';
+import 'package:enos/screens/ticker_info.dart';
 import 'package:enos/services/auth.dart';
 import 'package:enos/services/firebase_api.dart';
 import 'package:enos/services/ticker_provider.dart';
@@ -310,9 +311,10 @@ class _AccountPageState extends State<AccountPage>
         itemCount: settingsList.length);
   }
 
+  ValueNotifier<bool> toggleStar = ValueNotifier(false);
   Widget watchlist() {
     List<TickerTileModel> tickers = provider.tickers;
-    ValueNotifier<bool> toggleStar = ValueNotifier(false);
+
     if (tickers.isEmpty) {
       return Center(
         child: Text(
@@ -328,6 +330,7 @@ class _AccountPageState extends State<AccountPage>
           physics: BouncingScrollPhysics(),
           // padding: EdgeInsets.only(top: 8),
           itemBuilder: (context, index) {
+            print("rebuilding");
             if (index == 0) {
               return Container(
                 height: 35,
@@ -361,6 +364,8 @@ class _AccountPageState extends State<AccountPage>
             int tickerIndex = index - 1;
 
             return ListTile(
+              onTap: (() => _showInfo(tickerIndex, tickers[tickerIndex].symbol,
+                  tickers[tickerIndex].isSaved)),
               tileColor: kLightBackgroundColor,
               title: Text(
                 tickers[tickerIndex].symbol,
@@ -426,6 +431,22 @@ class _AccountPageState extends State<AccountPage>
           },
           itemCount: tickers.length + 1),
     );
+  }
+
+  void _showInfo(int index, String symbol, bool isSaved) async {
+    Map<String, dynamic> response = await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => TickerInfo(
+            symbol: symbol,
+            uid: provider.watchListUid,
+            isSaved: isSaved,
+            provider: provider,
+          ),
+        ));
+    if (!mounted) return;
+
+    setState(() {});
   }
 
   void toggleWatchlist(bool value) {

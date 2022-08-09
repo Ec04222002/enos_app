@@ -305,8 +305,8 @@ class _SearchPageState extends State<SearchPage> {
       child: Container(
         color: kLightBackgroundColor,
         child: ListTile(
-            onTap: (() =>
-                showInfo(index, stockTileModel.symbol, stockTileModel.isSaved)),
+            onTap: (() => _showInfo(
+                index, stockTileModel.symbol, stockTileModel.isSaved)),
             // tileColor: kLightBackgroundColor,
             title: Text(
               stockTileModel.symbol,
@@ -381,7 +381,7 @@ class _SearchPageState extends State<SearchPage> {
     );
   }
 
-  void showInfo(int index, String symbol, bool isSaved) async {
+  void _showInfo(int index, String symbol, bool isSaved) async {
     Map<String, dynamic> response = await Navigator.push(
         mainContext,
         MaterialPageRoute(
