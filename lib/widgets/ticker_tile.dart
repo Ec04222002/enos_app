@@ -278,15 +278,28 @@ class _TickerState extends State<TickerTile> {
   }
 
   void showInfo(BuildContext buildContext, String symbol, bool isSaved) async {
-    Navigator.push(
+    TickerTileProvider provider =
+        Provider.of<TickerTileProvider>(buildContext, listen: false);
+    dynamic response = await Navigator.push(
         buildContext,
         MaterialPageRoute(
           builder: (context) => TickerInfo(
             uid: Provider.of<UserField>(buildContext, listen: false).userUid,
             symbol: symbol,
             isSaved: isSaved,
-            provider: Provider.of<TickerTileProvider>(buildContext),
+            provider: provider,
           ),
         ));
+
+    setState(() {
+      if (response['isSaved'] != isSaved) {
+        if (response['isSaved']) {
+          provider.addTicker(symbol, context: context);
+          return;
+        }
+
+        provider.removeTicker(provider.symbols.indexOf(symbol));
+      }
+    });
   }
 }

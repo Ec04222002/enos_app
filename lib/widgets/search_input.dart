@@ -8,14 +8,16 @@ class SearchInput extends StatefulWidget {
   final String text;
   final ValueChanged<String> onChanged;
   final String hintText;
+  Map<String, dynamic> passBack;
   Function setMarketName;
-  SearchInput({
-    Key key,
-    @required this.text,
-    @required this.setMarketName,
-    @required this.onChanged,
-    @required this.hintText,
-  }) : super(key: key);
+  SearchInput(
+      {Key key,
+      @required this.text,
+      @required this.setMarketName,
+      @required this.onChanged,
+      @required this.hintText,
+      this.passBack = const {}})
+      : super(key: key);
 
   @override
   _SearchInputState createState() => _SearchInputState();
@@ -51,7 +53,7 @@ class _SearchInputState extends State<SearchInput> {
                 width: 0,
               )
             : IconButton(
-                onPressed: () => Navigator.pop(context),
+                onPressed: () => Navigator.pop(context, widget.passBack),
                 color: kDarkTextColor,
                 icon: Icon(Icons.arrow_back_ios),
               ),

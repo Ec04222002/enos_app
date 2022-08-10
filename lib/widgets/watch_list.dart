@@ -50,9 +50,9 @@ class _WatchListWidgetState extends State<WatchListWidget> {
               // itemExtent: 80.0,
               padding: EdgeInsets.all(10),
               itemBuilder: (context, index) {
-                if (index >= tickers.length) {
-                  return IgnorePointer(child: LoadingTiles());
-                }
+                // if (index >= tickers.length) {
+                //   return IgnorePointer(child: LoadingTiles());
+                // }
                 return TickerTile(
                   key: ValueKey(index),
                   context: context,

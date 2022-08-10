@@ -30,7 +30,7 @@ class SearchPage extends StatefulWidget {
 }
 
 class _SearchPageState extends State<SearchPage> {
-  List<dynamic> recommends = [];
+  List<SearchTile> recommends = [];
   List trendingRecs = [];
   String query = '';
   Timer debouncer;
@@ -113,7 +113,6 @@ class _SearchPageState extends State<SearchPage> {
 
   @override
   Widget build(BuildContext context) {
-    print("building search page");
     if (isInit) {
       mainContext = context;
       if (!widget.isMainPage) {
@@ -162,11 +161,9 @@ class _SearchPageState extends State<SearchPage> {
                   ),
                   itemCount: recommends.length,
                   itemBuilder: (context, index) {
-                    final stockTileModel = recommends[index];
-
                     if (market.toLowerCase() == "users") {
                       UserSearchTile tile =
-                          UserSearchTile.modelToSearchTile(stockTileModel);
+                          UserSearchTile.modelToSearchTile(user);
 
                       if (user.userSaved.contains(tile.uid)) {
                         tile.isSaved = true;
@@ -174,11 +171,11 @@ class _SearchPageState extends State<SearchPage> {
                       return buildUserTile(tile, index, context);
                     }
                     //for stock search tiles
-                    stockTileModel.isSaved = false;
-                    if (savedSymbols.contains(stockTileModel.symbol)) {
-                      stockTileModel.isSaved = true;
+                    recommends[index].isSaved = false;
+                    if (savedSymbols.contains(recommends[index].symbol)) {
+                      recommends[index].isSaved = true;
                     }
-                    return buildTile(stockTileModel, index, context);
+                    return buildTile(index, context);
                   },
                 ),
               ),
@@ -298,18 +295,19 @@ class _SearchPageState extends State<SearchPage> {
     );
   }
 
-  Widget buildTile(SearchTile stockTileModel, int index, BuildContext context) {
+  Widget buildTile(int index, BuildContext context) {
     ValueNotifier<bool> toggleStar = ValueNotifier(false);
+    SearchTile searchTile = recommends[index];
     return ClipRRect(
       borderRadius: BorderRadius.circular(3),
       child: Container(
         color: kLightBackgroundColor,
         child: ListTile(
-            onTap: (() => _showInfo(
-                index, stockTileModel.symbol, stockTileModel.isSaved)),
+            onTap: (() =>
+                _showInfo(index, searchTile.symbol, searchTile.isSaved)),
             // tileColor: kLightBackgroundColor,
             title: Text(
-              stockTileModel.symbol,
+              searchTile.symbol,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
@@ -318,7 +316,7 @@ class _SearchPageState extends State<SearchPage> {
                   fontWeight: FontWeight.w800),
             ),
             subtitle: Text(
-              stockTileModel.name,
+              searchTile.name,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(fontSize: 14, color: kDisabledColor),
@@ -335,10 +333,10 @@ class _SearchPageState extends State<SearchPage> {
                           Navigator.pop(context);
                         }, null);
                       } else {
-                        stockTileModel.isSaved = true;
+                        searchTile.isSaved = true;
 
                         provider.addTicker(
-                          stockTileModel.symbol,
+                          searchTile.symbol,
                         );
 
                         toggleStar.value = !toggleStar.value;
@@ -357,15 +355,15 @@ class _SearchPageState extends State<SearchPage> {
                       // Navigator.pop(context);
                       // });
 
-                      stockTileModel.isSaved = false;
+                      searchTile.isSaved = false;
 
                       provider.removeTicker(
-                          savedSymbols.indexOf(stockTileModel.symbol));
+                          savedSymbols.indexOf(searchTile.symbol));
 
                       toggleStar.value = !toggleStar.value;
                     }
                   },
-                  icon: stockTileModel.isSaved
+                  icon: searchTile.isSaved
                       ? Icon(
                           Icons.star,
                           color: Colors.yellow,
@@ -382,6 +380,8 @@ class _SearchPageState extends State<SearchPage> {
   }
 
   void _showInfo(int index, String symbol, bool isSaved) async {
+    TickerTileProvider provider =
+        Provider.of<TickerTileProvider>(mainContext, listen: false);
     Map<String, dynamic> response = await Navigator.push(
         mainContext,
         MaterialPageRoute(
@@ -389,14 +389,21 @@ class _SearchPageState extends State<SearchPage> {
             symbol: symbol,
             uid: Provider.of<UserField>(mainContext, listen: false).userUid,
             isSaved: isSaved,
-            provider: Provider.of<TickerTileProvider>(mainContext),
+            provider: provider,
           ),
         ));
     if (!mounted) return;
-
-    setState(() {
-      print("resetting");
-      recommends[index].isSaved = response['isSaved'];
-    });
+    if (response['isSaved'] != isSaved) {
+      setState(() {
+        //recommends[index].isSaved = response['isSaved'];
+        if (response['isSaved']) {
+          savedSymbols.add(symbol);
+          provider.addTicker(symbol);
+        } else {
+          savedSymbols.remove(symbol);
+          provider.removeTicker(provider.symbols.indexOf(symbol));
+        }
+      });
+    }
   }
 }

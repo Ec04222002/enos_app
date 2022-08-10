@@ -133,7 +133,7 @@ class _PreTickerInfoState extends State<PreTickerInfo>
                           ),
                           CupertinoButton(
                               minSize: double.minPositive,
-                              padding: EdgeInsets.only(right: 15),
+                              padding: EdgeInsets.only(right: 10),
                               onPressed: _showBottomModal,
                               child: Icon(
                                 Icons.info_outline,
@@ -177,7 +177,6 @@ class _PreTickerInfoState extends State<PreTickerInfo>
                           } else {
                             data.isSaved = true;
 
-                            provider.addTicker(data.symbol, context: context);
                             toggleStar.value = !toggleStar.value;
                           }
                         } else if (!provider.isLoading) {
@@ -196,8 +195,6 @@ class _PreTickerInfoState extends State<PreTickerInfo>
 
                           data.isSaved = false;
 
-                          provider.removeTicker(
-                              provider.symbols.indexOf(data.symbol));
                           toggleStar.value = !toggleStar.value;
                         }
                       },

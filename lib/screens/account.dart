@@ -108,7 +108,7 @@ class _AccountPageState extends State<AccountPage>
     size = MediaQuery.of(context).size;
     provider = Provider.of<TickerTileProvider>(context, listen: false);
     uid = Provider.of<UserField>(context, listen: false).userUid;
-
+    print(provider.symbols);
     if (init) {
       setInit();
     }
@@ -446,7 +446,16 @@ class _AccountPageState extends State<AccountPage>
         ));
     if (!mounted) return;
 
-    setState(() {});
+    setState(() {
+      if (response['isSaved'] != isSaved) {
+        // if (response['isSaved']) {
+        //   provider.addTicker(symbol, context: context);
+        //   return;
+        // }
+
+        provider.removeTicker(provider.symbols.indexOf(symbol));
+      }
+    });
   }
 
   void toggleWatchlist(bool value) {
