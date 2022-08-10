@@ -486,6 +486,7 @@ class _TickerInfoState extends State<TickerInfo>
                   height: sectHeight,
                   child: Scaffold(
                     appBar: AppBar(
+                      elevation: 0,
                       automaticallyImplyLeading: false,
                       titleSpacing: 0,
                       toolbarHeight: toolBarHeight,
@@ -506,15 +507,18 @@ class _TickerInfoState extends State<TickerInfo>
                         ],
                       ),
                     ),
-                    body: new TabBarView(
-                      controller: _tabController,
-                      physics: NeverScrollableScrollPhysics(),
-                      children: [
-                        specSection(),
-                        CommentSection(
-                            widget.provider.watchListUid, pageData.symbol),
-                        newSection(),
-                      ],
+                    body: Padding(
+                      padding: EdgeInsets.only(top: 8),
+                      child: new TabBarView(
+                        controller: _tabController,
+                        physics: NeverScrollableScrollPhysics(),
+                        children: [
+                          specSection(),
+                          CommentSection(
+                              widget.provider.watchListUid, pageData.symbol),
+                          newSection(),
+                        ],
+                      ),
                     ),
                   ),
                 ),

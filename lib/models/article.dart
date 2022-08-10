@@ -101,7 +101,10 @@ class _ArticleViewerState extends State<ArticleViewer> {
         child: Column(
           children: <Widget>[
             Expanded(
-              child: ListView.builder(
+              child: ListView.separated(
+                  separatorBuilder: (context, _) => SizedBox(
+                        height: 8,
+                      ),
                   controller: _controller,
                   shrinkWrap: true,
                   itemCount: widget.tiles.length,
@@ -117,11 +120,15 @@ class _ArticleViewerState extends State<ArticleViewer> {
       );
     }
     return Container(
+      padding: EdgeInsets.zero,
       color: kDarkBackgroundColor,
       child: Column(
         children: <Widget>[
           Expanded(
-              child: ListView.builder(
+              child: ListView.separated(
+                  separatorBuilder: (context, _) => SizedBox(
+                        height: 8,
+                      ),
                   itemCount: widget.tiles.length + 1,
                   scrollDirection: Axis.vertical,
                   itemBuilder: (context, index) {
@@ -197,17 +204,18 @@ class NewsTile extends StatelessWidget {
                       )));
         },
         child: Container(
-          margin: EdgeInsets.all(5.0),
+          // margin: EdgeInsets.all(5.0),
+          color: kLightBackgroundColor,
           padding: EdgeInsets.all(8.0),
-          decoration: BoxDecoration(
-              color: bg,
-              borderRadius: BorderRadius.circular(8.0),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black12,
-                  blurRadius: 3.0,
-                ),
-              ]),
+          // decoration: BoxDecoration(
+          //     color: bg,
+          //     borderRadius: BorderRadius.circular(8.0),
+          //     boxShadow: [
+          //       BoxShadow(
+          //         color: Colors.black12,
+          //         blurRadius: 3.0,
+          //       ),
+          //     ]),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.start,
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -223,7 +231,7 @@ class NewsTile extends StatelessWidget {
                 decoration: BoxDecoration(
                   image: DecorationImage(
                       image: NetworkImage(img), fit: BoxFit.cover),
-                  borderRadius: BorderRadius.circular(12.0),
+                  borderRadius: BorderRadius.circular(3.0),
                 ),
               ),
             ],
@@ -284,23 +292,28 @@ class ArticleView extends StatefulWidget {
 }
 
 class _ArticleViewState extends State<ArticleView> {
-  final Completer<WebViewController> _controller =
-      Completer<WebViewController>();
+  // final Completer<WebViewController> _controller =
+  //     Completer<WebViewController>();
   bool isLoading = true;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        centerTitle: true,
+        leading: IconButton(
+          onPressed: () {
+            Navigator.pop(context);
+          },
+          color: kDarkTextColor,
+          icon: Icon(Icons.arrow_back_ios),
+        ),
         backgroundColor: kLightBackgroundColor,
-        title:
-            Row(mainAxisAlignment: MainAxisAlignment.center, children: <Widget>[
-          Text(
-            widget.shortName.isNotEmpty ? widget.shortName : "News",
-            style: TextStyle(
-                color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
-          )
-        ]),
+        title: Text(
+          widget.shortName.isNotEmpty ? widget.shortName : "News",
+          style: TextStyle(
+              color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+        ),
       ),
       body: Stack(
         children: <Widget>[

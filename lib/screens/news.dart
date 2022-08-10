@@ -58,59 +58,36 @@ class _NewsPageState extends State<NewsPage> {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Container(
-          width: 275,
-          child: Text(
-            title,
-            maxLines: 3,
-            style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 16.0,
-                color: Colors.white),
-          ),
+        Text(
+          title,
+          textAlign: TextAlign.center,
+          maxLines: 3,
+          style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 16.0,
+              color: kBrightTextColor),
         ),
-        SizedBox(
-          height: 10,
-        ),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              width: 100,
-              height: 120,
-              child: Image.network(img),
+        Column(
+          // mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            SizedBox(height: 12.0),
+            Text(
+              desc,
+              maxLines: 3,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(color: kDarkTextColor, fontSize: 13),
             ),
-            SizedBox(
-              width: 10,
+            SizedBox(height: 8.0),
+            Text(
+              desc2,
+              textAlign: TextAlign.left,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(color: kDisabledColor, fontSize: 13),
             ),
-            Container(
-                width: 180,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: <Widget>[
-                    SizedBox(height: 8.0),
-                    Container(
-                      width: 250,
-                      child: Text(
-                        desc,
-                        maxLines: 4,
-                        style: TextStyle(color: Colors.white, fontSize: 13),
-                      ),
-                    ),
-                    SizedBox(height: 10.0),
-                    Container(
-                      width: 250,
-                      child: Text(
-                        desc2,
-                        maxLines: 1,
-                        style: TextStyle(
-                            color: Colors.grey.shade400, fontSize: 13),
-                      ),
-                    ),
-                  ],
-                ))
           ],
-        )
+        ),
       ],
     );
   }
@@ -142,24 +119,18 @@ class _NewsPageState extends State<NewsPage> {
           },
           child: Container(
             //    height: 300,
-            margin: EdgeInsets.all(12.0),
-            //      padding: EdgeInsets.all(8.0),
+            margin: EdgeInsets.fromLTRB(0, 0, 10, 15),
+            padding: EdgeInsets.all(6.0),
             decoration: BoxDecoration(
                 color: kLightBackgroundColor,
-                borderRadius: BorderRadius.circular(12.0),
+                borderRadius: BorderRadius.circular(8.0),
                 boxShadow: [
                   BoxShadow(
                     color: Colors.black12,
                     blurRadius: 3.0,
                   ),
                 ]),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.start,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Tile(m.name, m.description, desc, m.image),
-              ],
-            ),
+            child: Tile(m.name, m.description, desc, m.image),
           )));
     }
   }
@@ -167,6 +138,7 @@ class _NewsPageState extends State<NewsPage> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       home: DefaultTabController(
         length: 4,
         child: Scaffold(
@@ -188,9 +160,6 @@ class _NewsPageState extends State<NewsPage> {
               child: Padding(
                 padding: EdgeInsets.all(8),
                 child: Column(children: <Widget>[
-                  SizedBox(
-                    height: 10,
-                  ),
                   // Container(
                   //   child: Text(
                   //     "Trending News",
@@ -211,6 +180,7 @@ class _NewsPageState extends State<NewsPage> {
                     borderRadius:
                         BorderRadius.vertical(top: Radius.circular(8)),
                     child: Container(
+                      padding: EdgeInsets.zero,
                       color: kLightBackgroundColor,
                       height: 30,
                       child: TabBar(
@@ -248,6 +218,7 @@ class _NewsPageState extends State<NewsPage> {
                   ),
                   Expanded(
                       child: Container(
+                    padding: EdgeInsets.only(top: 8),
                     child: TabBarView(
                       physics: NeverScrollableScrollPhysics(),
                       children: [
