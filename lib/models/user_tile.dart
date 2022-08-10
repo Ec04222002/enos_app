@@ -1,7 +1,6 @@
 import 'package:enos/models/user.dart';
 import 'package:enos/services/util.dart';
 import 'package:enos/widgets/profile_pic.dart';
-import 'package:flutter/cupertino.dart';
 
 class UserSearchTile {
   final String userName;

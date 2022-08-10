@@ -1,7 +1,5 @@
 import 'package:enos/screens/auth_wrapper.dart';
 import 'package:enos/services/auth.dart';
-import 'package:enos/services/ticker_provider.dart';
-import 'package:enos/services/yahoo_api.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:enos/constants.dart';
@@ -35,6 +33,7 @@ class MyApp extends StatelessWidget {
           create: (_) => AuthService(FirebaseAuth.instance),
         ),
         StreamProvider(
+            // initialData: null,
             create: (context) => context.read<AuthService>().authChanges),
         ChangeNotifierProvider(create: (context) => GoogleSignInProvider()),
       ],

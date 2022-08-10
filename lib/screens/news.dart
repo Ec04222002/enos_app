@@ -30,7 +30,12 @@ class NewsPage extends StatefulWidget {
         slider.add(lis.first);
         lis.removeAt(0);
       }
-      articles[i] = ArticleViewer(lis, categories[i], false);
+      articles[i] = ArticleViewer(
+        lis,
+        categories[i],
+        true,
+        isSelfScroll: false,
+      );
     }
   }
 }
@@ -44,62 +49,17 @@ List<ArticleViewer> articles = [
 List<String> categories = ["All", "Crypto", "Stocks", "Tech"];
 List<ArticleModel> slider = [];
 
-// class Slideshow extends StatefulWidget {
-//   List<ArticleModel> articles;
-//   Slideshow({List<ArticleModel> articles});
-//
-//   @override
-//   State<Slideshow> createState() => _SlideshowState();
-// }
-//
-// class _SlideshowState extends State<Slideshow> {
-//   PageController _pageController;
-//   void initState() {
-//     super.initState();
-//     _pageController = PageController(viewportFraction: 0.8);
-//   }
-//   @override
-//     Widget build(BuildContext context) {
-//     int activePage = 1;
-//     return PageView.builder(
-//         itemCount: widget.articles.length,
-//         pageSnapping: true,
-//         controller: _pageController,
-//         onPageChanged: (page) {
-//           setState(() {
-//             activePage = page;
-//           });
-//         },
-//         itemBuilder: (context, pagePosition) {
-//           return Placeholder();
-//         });
-//   }
-// }
-
 class _NewsPageState extends State<NewsPage> {
   TabController controller;
   List<Widget> slideShow = [];
   int tabPos = 0;
 
-  Widget Tile(String title, String desc, String desc2) {
+  Widget Tile(String title, String desc, String desc2, String img) {
     return Column(
-      children: <Widget>[
-        // Container(
-        //   padding: EdgeInsets.all(6.0),
-        //   decoration: BoxDecoration(
-        //     color: Colors.red,
-        //     borderRadius: BorderRadius.circular(30.0),
-        //   ),
-        //   child: Text(
-        //     provider,
-        //     style: TextStyle(
-        //       color: Colors.white,
-        //     ),
-        //   ),
-        // ),
-        SizedBox(height: 8.0),
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
         Container(
-          width: 250,
+          width: 275,
           child: Text(
             title,
             maxLines: 3,
@@ -109,24 +69,48 @@ class _NewsPageState extends State<NewsPage> {
                 color: Colors.white),
           ),
         ),
-        SizedBox(height: 8.0),
-        Container(
-          width: 250,
-          child: Text(
-            desc,
-            maxLines: 4,
-            style: TextStyle(color: Colors.white, fontSize: 13),
-          ),
+        SizedBox(
+          height: 10,
         ),
-        SizedBox(height: 10.0),
-        Container(
-          width: 250,
-          child: Text(
-            desc2,
-            maxLines: 1,
-            style: TextStyle(color: Colors.grey.shade400, fontSize: 13),
-          ),
-        ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              width: 100,
+              height: 120,
+              child: Image.network(img),
+            ),
+            SizedBox(
+              width: 10,
+            ),
+            Container(
+                width: 180,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: <Widget>[
+                    SizedBox(height: 8.0),
+                    Container(
+                      width: 250,
+                      child: Text(
+                        desc,
+                        maxLines: 4,
+                        style: TextStyle(color: Colors.white, fontSize: 13),
+                      ),
+                    ),
+                    SizedBox(height: 10.0),
+                    Container(
+                      width: 250,
+                      child: Text(
+                        desc2,
+                        maxLines: 1,
+                        style: TextStyle(
+                            color: Colors.grey.shade400, fontSize: 13),
+                      ),
+                    ),
+                  ],
+                ))
+          ],
+        )
       ],
     );
   }
@@ -157,9 +141,9 @@ class _NewsPageState extends State<NewsPage> {
                         )));
           },
           child: Container(
-            height: 300,
+            //    height: 300,
             margin: EdgeInsets.all(12.0),
-            padding: EdgeInsets.all(8.0),
+            //      padding: EdgeInsets.all(8.0),
             decoration: BoxDecoration(
                 color: kLightBackgroundColor,
                 borderRadius: BorderRadius.circular(12.0),
@@ -173,7 +157,7 @@ class _NewsPageState extends State<NewsPage> {
               mainAxisAlignment: MainAxisAlignment.start,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Tile(m.name, m.description, desc),
+                Tile(m.name, m.description, desc, m.image),
               ],
             ),
           )));
@@ -187,6 +171,7 @@ class _NewsPageState extends State<NewsPage> {
         length: 4,
         child: Scaffold(
             appBar: AppBar(
+              titleSpacing: 0,
               backgroundColor: kLightBackgroundColor,
               title: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -197,99 +182,84 @@ class _NewsPageState extends State<NewsPage> {
                           color: Colors.white, fontWeight: FontWeight.bold),
                     )
                   ]),
-              // actions: [
-              //   IconButton(
-              //       iconSize: 30,
-              //       color: kDarkTextColor.withOpacity(0.9),
-              //       onPressed: () {
-              //         //  NewsAPI.getArticles("crypto");
-              //         Navigator.push(context, MaterialPageRoute(builder: (context)=> SearchPage()));
-              //       },
-              //       tooltip: "Search",
-              //       icon: Icon(Icons.search))
-              // ],
-              // bottom: TabBar(
-              //   onTap: (int num) {
-              //     tabPos = num;
-              //     setState(() {});
-              //   },
-              //   tabs: <Tab>[
-              //     Tab(
-              //       child: Text("All"),
-              //     ),
-              //     Tab(
-              //       child: Text("Crypto"),
-              //     ),
-              //     Tab(
-              //       child: Text("Stocks"),
-              //     ),
-              //     Tab(
-              //       child: Text("Tech"),
-              //     )
-              //   ],
-              // ),
             ),
             body: Container(
               color: kDarkBackgroundColor,
-              child: Column(children: <Widget>[
-                SizedBox(
-                  height: 10,
-                ),
-                Container(
-                  child: Text(
-                    "Trending News",
-                    style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold),
+              child: Padding(
+                padding: EdgeInsets.all(8),
+                child: Column(children: <Widget>[
+                  SizedBox(
+                    height: 10,
                   ),
-                ),
-                Container(
-                  color: kDarkBackgroundColor,
-                  height: 200,
-                  child: CarouselSlider(
-                      items: slideShow,
-                      options: CarouselOptions(height: 300, autoPlay: true)),
-                ),
-                Container(
-                  child: TabBar(
-                    onTap: (int num) {
-                      tabPos = num;
-                      setState(() {});
-                    },
-                    indicatorPadding: EdgeInsets.all(10),
-                    indicator: BoxDecoration(
-                        color: Colors.lightBlue,
-                        shape: BoxShape.rectangle,
-                        borderRadius: BorderRadius.all(Radius.circular(8))),
-                    tabs: <Tab>[
-                      Tab(
-                        child: Text("All"),
-                      ),
-                      Tab(
-                        child: Text("Crypto"),
-                      ),
-                      Tab(
-                        child: Text("Stocks"),
-                      ),
-                      Tab(
-                        child: Text("Tech"),
-                      )
-                    ],
+                  // Container(
+                  //   child: Text(
+                  //     "Trending News",
+                  //     style: TextStyle(
+                  //         color: Colors.white,
+                  //         fontSize: 20,
+                  //         fontWeight: FontWeight.bold),
+                  //   ),
+                  // ),
+                  Container(
+                    color: kDarkBackgroundColor,
+                    //         height: 210,
+                    child: CarouselSlider(
+                        items: slideShow,
+                        options: CarouselOptions(autoPlay: true)),
                   ),
-                ),
-                Expanded(
+                  ClipRRect(
+                    borderRadius:
+                        BorderRadius.vertical(top: Radius.circular(8)),
                     child: Container(
-                  child: TabBarView(
-                    children: [
-                      articles[0],
-                      articles[1],
-                      articles[2],
-                      articles[3]
-                    ],
+                      color: kLightBackgroundColor,
+                      height: 30,
+                      child: TabBar(
+                        unselectedLabelColor: kDisabledColor,
+                        labelColor: kBrightTextColor,
+                        onTap: (int num) {
+                          tabPos = num;
+                          setState(() {});
+                        },
+                        labelPadding: EdgeInsets.zero,
+                        padding: EdgeInsets.zero,
+                        indicator: BoxDecoration(
+                            // Creates border
+                            color: kActiveColor),
+                        tabs: <Tab>[
+                          Tab(
+                            child: Text("All"),
+                            height: 30,
+                          ),
+                          Tab(
+                            child: Text("Crypto"),
+                            height: 30,
+                          ),
+                          Tab(
+                            child: Text("Stocks"),
+                            height: 30,
+                          ),
+                          Tab(
+                            child: Text("Tech"),
+                            height: 30,
+                          )
+                        ],
+                      ),
+                    ),
                   ),
-                ))
-              ]),
+                  Expanded(
+                      child: Container(
+                    child: TabBarView(
+                      physics: NeverScrollableScrollPhysics(),
+                      children: [
+                        articles[0],
+                        articles[1],
+                        articles[2],
+                        articles[3]
+                      ],
+                    ),
+                  ))
+                ]),
+              ),
             )),
       ),
     );

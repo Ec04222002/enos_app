@@ -68,7 +68,7 @@ class ProfilePicture extends StatelessWidget {
       width: width,
       height: height,
       alignment: Alignment.center,
-      child: Text(
+      child: name == "" || name == null? SizedBox.shrink():Text(
         name.substring(0, 1).toUpperCase() + (name.length  > 1 ?  name.substring(1, 2) : ""),
         style: TextStyle(
             color: Colors.white, fontWeight: FontWeight.bold, fontSize: fontSize),

@@ -128,7 +128,7 @@ class TickerPageInfo {
           shortName: preData.companyName,
           name: parent['title'],
           url: parent['clickThroughUrl'] != null
-              ? parent['clickThroughUrl']['url']
+              ? parent['clickTh roughUrl']['url']
               : "",
           image: (() {
             dynamic pre = parent['thumbnail'];
@@ -151,6 +151,9 @@ class TickerPageInfo {
   }
 
   Future<void> addPostPostLoadData(TickerPageModel preData) async {
+
+
+
     List<int> articleIndexToRemove = [];
     for (int index = 0; index < preData.articles.length; ++index) {
       ArticleModel article = preData.articles[index];
@@ -201,6 +204,12 @@ class TickerPageInfo {
     }
     await getNewsInfo(preData);
     //add comment data
+    List<Comment> firebaseComments = await FirebaseApi.getStockComment(preData.symbol);
+    print(firebaseComments);
+    firebaseComments.forEach((element) {
+      if(!element.isNested)
+        preData.commentData.add(element);
+    });
   }
 
   Stream<TickerPageModel> getPageStream(

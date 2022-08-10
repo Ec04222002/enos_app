@@ -1,26 +1,4 @@
 class TickerSpecs {
-  // final List<double> dailyRange;
-  // final List<double> monthRange;
-  // final List<double> yearRange;
-  // final double openPrice;
-  // final double closePrice;
-  // final double previousClosePrice;
-  // final double volume;
-  // final double trailingPE;
-  // final double forwardPE;
-  // final double marketCap;
-  // final double avgDailyVol10day;
-  // final double avgDailyVol3mo;
-  // final double profitMargin;
-  // final double forwardEPS;
-  // final double trailingEPS;
-  // final double bookValue;
-  // final double yield;
-  // final double beta;
-  // final DateTime earningDate;
-  // final double dividend;
-  // final double lastDividend;
-  // final double YTDReturn;
   static List<String> existSpecs = [
     "Day's Range",
     "52 Week Range",

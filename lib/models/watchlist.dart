@@ -1,6 +1,4 @@
-import 'package:enos/models/ticker_tile.dart';
 import 'package:enos/services/util.dart';
-import 'package:enos/widgets/ticker_tile.dart';
 
 class WatchlistField {
   static const createdTime = 'createdTime';

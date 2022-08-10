@@ -1,3 +1,4 @@
+import 'package:enos/models/user.dart';
 import 'package:enos/services/util.dart';
 
 class CommentField {
@@ -15,18 +16,19 @@ class Comment {
   final bool isNested;
   bool apiComment;
   bool viewReply;
-  Comment({
-    this.commentUid,
-    this.stockUid,
-    this.userUid,
-    this.createdTime,
-    this.content,
-    this.likes = 0,
-    this.replies,
-    this.isNested,
-    this.apiComment,
-    this.viewReply = false
-  });
+  String userName;
+  Comment(
+      {this.commentUid,
+      this.stockUid,
+      this.userUid,
+      this.createdTime,
+      this.content,
+      this.likes = 0,
+      this.replies,
+      this.isNested,
+      this.apiComment,
+      this.viewReply = false,
+      this.userName = ""});
 
   static Comment fromJson(Map<String, dynamic> json) => Comment(
       commentUid: json['comment_uid'],
@@ -37,9 +39,8 @@ class Comment {
       likes: json['likes'],
       replies: json['replies'],
       isNested: json['isNested'],
-      apiComment: json['apiComment']
-  );
-
+      apiComment: json['apiComment'],
+      userName: json['userName']);
 
   @override
   String toString() {
@@ -54,7 +55,8 @@ class Comment {
         'content': content,
         'likes': likes,
         'replies': replies,
-        'isNested':isNested,
-        'apiComment': apiComment
+        'isNested': isNested,
+        'apiComment': apiComment,
+        'userName': userName
       };
 }

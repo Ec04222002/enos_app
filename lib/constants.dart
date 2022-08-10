@@ -1,4 +1,3 @@
-import 'package:enos/models/ticker_tile.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
