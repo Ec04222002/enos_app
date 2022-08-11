@@ -61,24 +61,30 @@ class _NavDisplayScreenState extends State<NavDisplayScreen> {
           create: (context) => tickerProvider,
           child: screens[currentIndex],
         ),
-        bottomNavigationBar: BottomNavigationBar(
-          currentIndex: currentIndex,
-          type: BottomNavigationBarType.fixed,
-          iconSize: 35,
-          backgroundColor: kDarkBackgroundColor,
-          unselectedItemColor: kDisabledColor,
-          selectedItemColor: kActiveColor,
-          onTap: (index) => setState(() => currentIndex = index),
-          items: [
-            BottomNavigationBarItem(icon: Icon(Icons.list), label: 'Watchlist'),
-            BottomNavigationBarItem(
-                icon: Icon(
-                  Icons.newspaper_sharp,
-                ),
-                label: 'News'),
-            BottomNavigationBarItem(icon: Icon(Icons.search), label: 'Search'),
-            BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Account'),
-          ],
+        bottomNavigationBar: SizedBox(
+          height: 68,
+          child: BottomNavigationBar(
+            currentIndex: currentIndex,
+            type: BottomNavigationBarType.fixed,
+            iconSize: 35,
+            backgroundColor: kDarkBackgroundColor,
+            unselectedItemColor: kDisabledColor,
+            selectedItemColor: kActiveColor,
+            onTap: (index) => setState(() => currentIndex = index),
+            items: [
+              BottomNavigationBarItem(
+                  icon: Icon(Icons.list), label: 'Watchlist'),
+              BottomNavigationBarItem(
+                  icon: Icon(
+                    Icons.newspaper_sharp,
+                  ),
+                  label: 'News'),
+              BottomNavigationBarItem(
+                  icon: Icon(Icons.search), label: 'Search'),
+              BottomNavigationBarItem(
+                  icon: Icon(Icons.person), label: 'Account'),
+            ],
+          ),
         ),
       );
     }

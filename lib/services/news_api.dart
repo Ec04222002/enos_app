@@ -104,7 +104,6 @@ class NewsAPI {
       String category, int offset) async {
     var api = NewsAPI();
     Future<List<ArticleModel>> results;
-    print(category);
     if (category == "All") {
       String query = "intitle:tech";
       for (String s in keywords['all']) {
