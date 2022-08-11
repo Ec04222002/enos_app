@@ -24,6 +24,7 @@ class CommentManager extends StatefulWidget {
   Image rootProfilePic;
   Map<String, Color> color1, color2;
   Map<String, Image> profilePic;
+
   CommentManager(
       {this.root,
       this.user,
@@ -39,7 +40,6 @@ class CommentManager extends StatefulWidget {
     }
     if (root.replies.length > 0) root.viewReply = true;
 
-
     if (root.apiComment == null) {
       root.apiComment = true;
       FirebaseApi.updateComment(root);
@@ -51,11 +51,9 @@ class CommentManager extends StatefulWidget {
   // }
 
   void refresh() {
-    if(visibleReplies.length == root.replies.length) {
+    if (visibleReplies.length == root.replies.length) {
       loadComments(1);
-    } else {
-
-    }
+    } else {}
   }
 
   void loadComments(int amt) async {
@@ -125,7 +123,7 @@ class _CommentManagerState extends State<CommentManager> {
                   color1: widget.rootColor1,
                   color2: widget.rootColor2,
                 ),
-          preferredSize: Size.fromRadius(18),
+          preferredSize: Size.fromRadius(8),
         ),
         avatarChild: (context, data) => PreferredSize(
           child: widget.profilePic[data.userUid] != null
@@ -159,24 +157,20 @@ class _CommentManagerState extends State<CommentManager> {
           );
         },
       ),
-      padding: EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+      padding: EdgeInsets.symmetric(vertical: 12),
     );
   }
 }
 
 class CommentSection extends StatefulWidget {
-
   String userId;
   String symbol;
   List<CommentManager> comments;
   CommentSection(String userId, String symbol) {
     this.symbol = symbol;
     this.userId = userId;
-    if(comments == null)
-      comments = [];
+    if (comments == null) comments = [];
   }
-
-
 
   @override
   State<CommentSection> createState() => _CommentSectionState();
@@ -191,9 +185,14 @@ class _CommentSectionState extends State<CommentSection> {
     super.initState();
     comments = [];
     _controller = TextEditingController();
-    if(comments.length == 0)
-      loadComments();
+    if (comments.length == 0) loadComments();
   }
+
+  final double inputHeight = 35;
+  final double profileWidth = 35;
+  final double postBtnWidth = 65;
+  double width;
+  double height;
 
   void loadComments() async {
     isLoad = true;
@@ -209,12 +208,12 @@ class _CommentSectionState extends State<CommentSection> {
       image: img,
       color1: Utils.stringToColor(user.profileBgColor),
       color2: Utils.stringToColor(user.profileBorderColor),
-      width: 25,
+      width: profileWidth,
       height: 25,
       fontSize: 15,
     );
     com.forEach((element) async {
-      if(!element.isNested) {
+      if (!element.isNested) {
         Color color1, color2;
         Image profilePic = null;
         if (!element.apiComment) {
@@ -237,114 +236,145 @@ class _CommentSectionState extends State<CommentSection> {
           rootProfilePic: profilePic,
         ));
       }
-
     });
-    comments.sort((a,b) {
-     return b.root.likes - a.root.likes;
+    comments.sort((a, b) {
+      return b.root.likes - a.root.likes;
     });
     isLoad = false;
-    setState((){});
+    setState(() {});
   }
 
   @override
   Widget build(BuildContext context) {
-    return isLoad? Loading(loadText: "Loading Comments...") :ListView.builder(
-        itemCount: comments.length + 2,
-        scrollDirection: Axis.vertical,
-        itemBuilder: (BuildContext c, index) {
-          if(index == 0) {
-            return SizedBox(height: 5,);
-          }
-          if(index == 1) {
-            if(this.user == null) {
-              return SizedBox.shrink();
-            }
-            return Row(
-              children: [
-                ProfilePicture(name: user.username,
-                  color1: Utils.stringToColor(user.profileBgColor),
-                  color2: Utils.stringToColor(user.profileBorderColor) ,
-                  image: user.profilePic != null? Image.network(user.profilePic) : null,
-                  width: 45,
-                  height: 45,
-                ),
-                Container(
+    width = MediaQuery.of(context).size.width;
+    height = MediaQuery.of(context).size.height;
+    return isLoad
+        ? Loading()
+        : ListView.builder(
+            itemCount: comments.length + 2,
+            scrollDirection: Axis.vertical,
+            itemBuilder: (BuildContext c, index) {
+              if (index == 0) {
+                return SizedBox(
+                  height: 5,
+                );
+              }
+              if (index == 1) {
+                if (this.user == null) {
+                  return SizedBox.shrink();
+                }
+                return Container(
                   color: kLightBackgroundColor,
-                  width: 250,
-                  child: TextField(
-                    onTap: () {
-                      FocusScopeNode currentFocus = FocusScope.of(context);
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      ProfilePicture(
+                        name: user.username,
+                        color1: Utils.stringToColor(user.profileBgColor),
+                        color2: Utils.stringToColor(user.profileBorderColor),
+                        image: user.profilePic != null
+                            ? Image.network(user.profilePic)
+                            : null,
+                        width: profileWidth,
+                        height: inputHeight,
+                      ),
+                      Container(
+                        //color: kDisabledColor,
+                        // height: inputHeight,
+                        //35 = padding ?
+                        width: width - postBtnWidth - profileWidth - 35,
+                        child: TextField(
+                          keyboardType: TextInputType.multiline,
+                          maxLines: null,
+                          minLines: 1,
 
-                      if (!currentFocus.hasPrimaryFocus) {
-                        currentFocus.unfocus();
-                      }
-                    },
-                    controller: _controller,
-                    onChanged: (String s) {
-                      setState((){});
-                    },
-                    style: TextStyle(fontSize: 14, color: Colors.white),
-                    maxLines: 2,
-                    decoration: InputDecoration(
-                        hintText: "Add a comment...",
-                        hintStyle: TextStyle(color: Colors.grey),
-                        border: OutlineInputBorder()
-                    ),
+                          // cursorHeight: inputHeight,
+                          decoration: InputDecoration.collapsed(
+                            hintText: "Add a comment ...",
+                            hintStyle: TextStyle(
+                              color: kDisabledColor,
+                            ),
+                          ),
+                          onTap: () {
+                            FocusScopeNode currentFocus =
+                                FocusScope.of(context);
+
+                            if (!currentFocus.hasPrimaryFocus) {
+                              currentFocus.unfocus();
+                            }
+                          },
+                          controller: _controller,
+                          onChanged: (String s) {
+                            setState(() {});
+                          },
+                          style:
+                              TextStyle(fontSize: 15, color: kBrightTextColor),
+                        ),
+                      ),
+                      //       SizedBox(width: 10,),
+                      Container(
+                        width: postBtnWidth,
+                        color: _controller.text == ""
+                            ? kDisabledColor
+                            : kActiveColor,
+                        child: TextButton(
+                          onPressed: () async {
+                            if (_controller.text != "") {
+                              Comment com = Comment(
+                                  content: _controller.value.text,
+                                  likes: 0,
+                                  stockUid: widget.symbol,
+                                  userUid: user.userUid,
+                                  replies: [],
+                                  apiComment: false,
+                                  isNested: false,
+                                  createdTime: DateTime.now(),
+                                  userName: user.username);
+                              String id = await FirebaseApi.updateComment(com);
+                              ProfilePicture pic = ProfilePicture(
+                                name: user.username,
+                                image: user.profilePic != null
+                                    ? Image.network(user.profilePic)
+                                    : null,
+                                color1:
+                                    Utils.stringToColor(user.profileBgColor),
+                                color2: Utils.stringToColor(
+                                    user.profileBorderColor),
+                                fontSize: 15,
+                              );
+                              user.comments.add(id);
+                              await FirebaseApi.updateUserData(user);
+                              comments.insert(
+                                  0,
+                                  CommentManager(
+                                    root: com,
+                                    user: user,
+                                    rootColor1: Utils.stringToColor(
+                                        user.profileBgColor),
+                                    rootColor2: Utils.stringToColor(
+                                        user.profileBorderColor),
+                                    rootProfilePic: user.profilePic != null
+                                        ? Image.network(user.profilePic)
+                                        : null,
+                                    userProfilePic: pic,
+                                  ));
+                              _controller.clear();
+                              setState(() {});
+                            }
+                          },
+                          child: Text(
+                            "POST",
+                            style: TextStyle(
+                                color: kBrightTextColor,
+                                fontWeight: FontWeight.w600),
+                          ),
+                        ),
+                      )
+                    ],
                   ),
-                ),
-         //       SizedBox(width: 10,),
-                Container(
-                  color: _controller.text == ""? kDisabledColor : kActiveColor,
-                  width: 90,
-                  height: 75,
-                  child: TextButton(
-                    onPressed: () async{
-                      if(_controller.text != "") {
-                        Comment com = Comment(
-                          content: _controller.value.text,
-                          likes: 0,
-                          stockUid: widget.symbol,
-                          userUid: user.userUid,
-                          replies: [],
-                          apiComment: false,
-                          isNested: false,
-                          createdTime: DateTime.now(),
-                          userName: user.username
-                        );
-                        String id = await FirebaseApi.updateComment(com);
-                        ProfilePicture pic = ProfilePicture(
-                          name: user.username,
-                          image: user.profilePic != null? Image.network(user.profilePic) : null,
-                          color1: Utils.stringToColor(user.profileBgColor),
-                          color2: Utils.stringToColor(user.profileBorderColor),
-                          width: 25,
-                          height: 25,
-                          fontSize: 15,
-                        );
-                        user.comments.add(id);
-                        await FirebaseApi.updateUserData(user);
-                        comments.insert(0, CommentManager(
-                          root: com,
-                          user: user,
-                          rootColor1: Utils.stringToColor(user.profileBgColor),
-                          rootColor2: Utils.stringToColor(user.profileBorderColor) ,
-                          rootProfilePic: user.profilePic != null? Image.network(user.profilePic) : null,
-                          userProfilePic: pic,
-                        ));
-                        _controller.clear();
-                        setState((){});
-                      }
-                    },
-                    child: Text(
-                      "Submit",
-                      style: TextStyle(color: kBrightTextColor),
-                    ),
-                  ),
-                )
-              ],
-            );
-          }
-          return comments[index-2];
-        });
+                );
+              }
+              return comments[index - 2];
+            });
   }
 }

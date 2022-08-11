@@ -133,7 +133,7 @@ class _PreTickerInfoState extends State<PreTickerInfo>
                           ),
                           CupertinoButton(
                               minSize: double.minPositive,
-                              padding: EdgeInsets.only(right: 10),
+                              padding: EdgeInsets.zero,
                               onPressed: _showBottomModal,
                               child: Icon(
                                 Icons.info_outline,

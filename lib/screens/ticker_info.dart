@@ -1,17 +1,11 @@
 // ticker/chart page
 
-import 'dart:math';
-import 'dart:ui';
-
 import 'package:enos/models/article.dart';
 import 'package:enos/models/ticker_page_info.dart';
 import 'package:enos/models/ticker_spec.dart';
 import 'package:enos/models/user.dart';
-import 'package:enos/screens/news.dart';
-import 'package:enos/services/auth.dart';
 import 'package:enos/services/firebase_api.dart';
 import 'package:enos/services/ticker_page_info.dart';
-import 'package:enos/models/ticker_tile.dart';
 import 'package:enos/services/ticker_provider.dart';
 import 'package:enos/services/util.dart';
 import 'package:enos/widgets/chart_dates_bar.dart';
@@ -24,7 +18,6 @@ import 'package:flutter/material.dart';
 import 'package:enos/constants.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
-import 'package:provider/provider.dart';
 
 class TickerInfo extends StatefulWidget {
   final String symbol;
