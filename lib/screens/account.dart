@@ -73,7 +73,8 @@ class _AccountPageState extends State<AccountPage>
       {
         "icon": Icons.messenger_outline,
         "title": "Message Request",
-        "trail": MessageRequest()
+        "trail": MessageRequest(),
+        "onclick": messageRequest
       },
       {
         "icon": Icons.edit_outlined,
@@ -514,4 +515,12 @@ class _AccountPageState extends State<AccountPage>
   void openSavedUser() {
     SavedUsers.openSavedUsersPage(context);
   }
+
+  void messageRequest() {
+    Navigator.push(
+        context,
+        MaterialPageRoute(
+            builder: (context) => MessageRequest()));
+  }
+
 }
