@@ -33,7 +33,7 @@ class MyApp extends StatelessWidget {
           create: (_) => AuthService(FirebaseAuth.instance),
         ),
         StreamProvider(
-            // initialData: null,
+            initialData: null,
             create: (context) => context.read<AuthService>().authChanges),
         ChangeNotifierProvider(create: (context) => GoogleSignInProvider()),
       ],

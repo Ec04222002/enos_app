@@ -52,11 +52,10 @@ class YahooApi {
       @required Map<String, String> query}) async {
     Uri uri = Uri.https(_baseUrl, endPoint, query);
 
-    http.Response response = await http.post(uri,
-        headers: _headers, body: body, encoding: Encoding.getByName('utf-8'));
-
+    http.Response response =
+        await http.post(uri, headers: _headers, body: body);
     if (response.statusCode == 200) {
-      return jsonDecode(response.body);
+      return jsonDecode(utf8.decode(response.bodyBytes));
     }
     return null;
   }

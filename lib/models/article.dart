@@ -83,65 +83,64 @@ class _ArticleViewerState extends State<ArticleViewer> {
   }
 
   Widget build(BuildContext context) {
-    if (!widget.isMain) {
-      return NotificationListener<ScrollNotification>(
-        onNotification: (notification) {
-          if (notification is ScrollUpdateNotification) {
-            if (notification.metrics.extentBefore == 0 && !isScrollUp) {
-              if (widget.isSelfScroll) {
-                setState(() {
-                  widget.isSelfScroll = false;
-                });
-              }
-              print("scrolling articles down -> hit top edge, moving page ");
+    return NotificationListener<ScrollNotification>(
+      onNotification: (notification) {
+        if (notification is ScrollUpdateNotification) {
+          if (notification.metrics.extentBefore == 0 && !isScrollUp) {
+            if (widget.isSelfScroll) {
+              setState(() {
+                widget.isSelfScroll = false;
+              });
             }
+            print("scrolling articles down -> hit top edge, moving page ");
           }
-          return false;
-        },
-        child: Column(
-          children: <Widget>[
-            Expanded(
-              child: ListView.separated(
-                  separatorBuilder: (context, _) => SizedBox(
-                        height: 8,
-                      ),
-                  controller: _controller,
-                  shrinkWrap: true,
-                  itemCount: widget.tiles.length,
-                  physics: widget.isSelfScroll
-                      ? ClampingScrollPhysics()
-                      : NeverScrollableScrollPhysics(),
-                  itemBuilder: (context, index) {
-                    return widget.tiles[index];
-                  }),
-            )
-          ],
-        ),
-      );
-    }
-    return Container(
-      padding: EdgeInsets.zero,
-      color: kDarkBackgroundColor,
+        }
+        return false;
+      },
       child: Column(
         children: <Widget>[
           Expanded(
-              child: ListView.separated(
-                  separatorBuilder: (context, _) => SizedBox(
-                        height: 8,
-                      ),
-                  itemCount: widget.tiles.length + 1,
-                  scrollDirection: Axis.vertical,
-                  itemBuilder: (context, index) {
-                    if (index < widget.tiles.length)
-                      return widget.tiles[index];
-                    else {
-                      getNewArticles();
-                      return CircularProgressIndicator();
-                    }
-                  }))
+            child: ListView.separated(
+                separatorBuilder: (context, _) => SizedBox(
+                      height: 8,
+                    ),
+                controller: _controller,
+                shrinkWrap: true,
+                itemCount: widget.tiles.length,
+                physics: widget.isSelfScroll
+                    ? ClampingScrollPhysics()
+                    : NeverScrollableScrollPhysics(),
+                itemBuilder: (context, index) {
+                  return widget.tiles[index];
+                }),
+          )
         ],
       ),
     );
+
+    // return Container(
+    //   padding: EdgeInsets.zero,
+    //   color: kDarkBackgroundColor,
+    //   child: Column(
+    //     children: <Widget>[
+    //       Expanded(
+    //           child: ListView.separated(
+    //               separatorBuilder: (context, _) => SizedBox(
+    //                     height: 8,
+    //                   ),
+    //               itemCount: widget.tiles.length + 1,
+    //               scrollDirection: Axis.vertical,
+    //               itemBuilder: (context, index) {
+    //                 if (index < widget.tiles.length)
+    //                   return widget.tiles[index];
+    //                 else {
+    //                   getNewArticles();
+    //                   return CircularProgressIndicator();
+    //                 }
+    //               }))
+    //     ],
+    //   ),
+    // );
   }
 
   Future<void> getNewArticles() async {
