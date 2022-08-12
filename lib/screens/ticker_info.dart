@@ -213,7 +213,7 @@ class _TickerInfoState extends State<TickerInfo>
       centerTitle: true,
       backgroundColor: kLightBackgroundColor,
       title: Text(
-        "${pageData.symbol} * ${pageData.marketName}",
+        "${pageData.symbol} · ${pageData.marketName}",
         textAlign: TextAlign.center,
         style: TextStyle(
             color: kBrightTextColor, fontSize: 17, fontWeight: FontWeight.w600),
