@@ -1,4 +1,5 @@
 // account page
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:enos/constants.dart';
 import 'package:enos/models/ticker_tile.dart';
 import 'package:enos/models/user.dart';
@@ -30,15 +31,19 @@ class AccountPage extends StatefulWidget {
 
 class _AccountPageState extends State<AccountPage>
     with SingleTickerProviderStateMixin {
+  //not always self
   String uid;
   UserModel user;
   String name;
+  TickerTileProvider provider;
+  bool watchListPublic = true;
   bool isLoading = true, watchlistLoading = true;
   bool isSelfView = true;
+  bool showWatchlist = true;
   bool init = true;
   dynamic size;
   TabController _tabController;
-  TickerTileProvider provider;
+
   List<Map<String, dynamic>> settingsList;
   //tickers used to show tiles
   List<TickerTileModel> _tickers;
@@ -104,14 +109,29 @@ class _AccountPageState extends State<AccountPage>
 
   Future<void> setOtherTickers() async {
     setOtherCalled = true;
-    _tickers = await TickerTileProvider.getOtherTickers(uid);
-    for (int i = 0; i < _tickers.length; ++i) {
-      if (provider.symbols.contains(_tickers[i].symbol)) {
-        _tickers[i].isSaved = true;
-        continue;
+
+    //view your own account
+    // on users page
+    if (viewAccountIsSelf()) {
+      _tickers = provider.tickers;
+      showWatchlist = true;
+    } else {
+      DocumentSnapshot<Map<String, dynamic>> watchList =
+          await FirebaseApi.getWatchListDoc(uid);
+      _tickers = [];
+      showWatchlist = watchList.get("is_public");
+      if (showWatchlist) {
+        _tickers = await TickerTileProvider.getOtherTickers(uid);
+        for (int i = 0; i < _tickers.length; ++i) {
+          if (provider.symbols.contains(_tickers[i].symbol)) {
+            _tickers[i].isSaved = true;
+            continue;
+          }
+          _tickers[i].isSaved = false;
+        }
       }
-      _tickers[i].isSaved = false;
     }
+
     if (!mounted) return;
     setState(() {
       watchlistLoading = false;
@@ -356,10 +376,55 @@ class _AccountPageState extends State<AccountPage>
     return response;
   }
 
+  Widget requestWatchlist() {
+    ValueNotifier<bool> toggleRequestBtn = ValueNotifier(false);
+    String btnTxt = "Request View";
+    Color btnColor = kActiveColor;
+    return ValueListenableBuilder(
+      valueListenable: toggleRequestBtn,
+      builder: (context, value, child) => Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              "$name turned on privacy",
+              maxLines: 2,
+              textAlign: TextAlign.center,
+              style: TextStyle(color: kDisabledColor, fontSize: 15),
+            ),
+            SizedBox(
+              height: 4,
+            ),
+            TextButton(
+                onPressed: () {
+                  btnColor = kDisabledColor;
+                  btnTxt = "Submitted";
+                  toggleRequestBtn.value = !toggleRequestBtn.value;
+                },
+                child: ClipRRect(
+                  borderRadius: BorderRadius.all(Radius.circular(3)),
+                  child: Container(
+                    padding: EdgeInsets.all(8),
+                    child: Text(
+                      btnTxt,
+                      style: TextStyle(color: kDarkTextColor),
+                    ),
+                    color: btnColor,
+                  ),
+                ))
+          ]),
+    );
+  }
+
   Widget watchlist() {
     if (watchlistLoading) {
       return Loading();
     }
+
+    if (!showWatchlist) {
+      return requestWatchlist();
+    }
+
     if (_tickers.isEmpty) {
       return Center(
         child: Text(
