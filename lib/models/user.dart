@@ -11,7 +11,6 @@ class UserModel {
   final DateTime createdTime;
   final String profilePic;
   final String username;
-  bool isEmailNotify;
   List<bool> metrics;
   List<String> userSaved;
   List<String> comments;
@@ -25,7 +24,6 @@ class UserModel {
       this.username,
       this.comments,
       this.likedComments,
-      this.isEmailNotify = true,
       this.metrics,
       this.userSaved,
       this.profileBgColor,
@@ -56,7 +54,6 @@ class UserModel {
       createdTime: Utils.toDateTime(json['created_time']),
       profilePic: json['profile_pic'],
       username: json['username'],
-      isEmailNotify: json['is_email_notify'],
       metrics: metrics,
       userSaved: userSaved,
       profileBgColor: json['profile_bg_color'],
@@ -71,7 +68,6 @@ class UserModel {
         'username': username,
         'comments': comments,
         'liked_comments': likedComments,
-        'is_email_notify': isEmailNotify,
         'metrics': metrics,
         'user_saved': userSaved,
         'profile_bg_color': profileBgColor,

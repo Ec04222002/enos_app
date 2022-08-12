@@ -18,8 +18,9 @@ import 'package:provider/provider.dart';
 //access data & stream from firestore
 
 class FirebaseApi {
-  static List<String> _tickerDataFromSnapshot(DocumentSnapshot snapshot) {
+  static List<String> tickerDataFromSnapshot(DocumentSnapshot snapshot) {
     List<dynamic> tickers = snapshot.get('items');
+    if (tickers.isEmpty) return [];
     List<String> newTickers = tickers.map((e) => e.toString()).toList();
     return newTickers;
   }
@@ -30,7 +31,7 @@ class FirebaseApi {
           .collection('Watchlists')
           .doc(watchListUid)
           .snapshots()
-          .map(_tickerDataFromSnapshot);
+          .map(tickerDataFromSnapshot);
       return watchListStream;
     } catch (error) {
       print("watchlist doesn't exist");

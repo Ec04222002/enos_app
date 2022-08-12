@@ -3,6 +3,7 @@ import 'dart:convert';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:enos/models/search_tile.dart';
+import 'package:enos/screens/account.dart';
 import 'package:enos/services/ticker_page_info.dart';
 import 'package:enos/models/ticker_tile.dart';
 import 'package:enos/models/user.dart';
@@ -30,7 +31,7 @@ class SearchPage extends StatefulWidget {
 }
 
 class _SearchPageState extends State<SearchPage> {
-  List<SearchTile> recommends = [];
+  List<dynamic> recommends = [];
   List trendingRecs = [];
   String query = '';
   Timer debouncer;
@@ -84,10 +85,8 @@ class _SearchPageState extends State<SearchPage> {
   }
 
   Future<void> setUser() async {
-    print("setting user");
     uid = mainContext.read<UserField>().userUid;
     user = await FirebaseApi.getUser(uid);
-    print(user);
   }
 
   @override
@@ -121,7 +120,6 @@ class _SearchPageState extends State<SearchPage> {
       provider = Provider.of<TickerTileProvider>(mainContext);
       setUser();
       savedSymbols = provider.symbols;
-      print("saved length: ${savedSymbols.length}");
       recommends = provider.recs;
       //check if recommends is empty => put default if so
       checkRecommends();
@@ -163,7 +161,7 @@ class _SearchPageState extends State<SearchPage> {
                   itemBuilder: (context, index) {
                     if (market.toLowerCase() == "users") {
                       UserSearchTile tile =
-                          UserSearchTile.modelToSearchTile(user);
+                          UserSearchTile.modelToSearchTile(recommends[index]);
 
                       if (user.userSaved.contains(tile.uid)) {
                         tile.isSaved = true;
@@ -229,6 +227,9 @@ class _SearchPageState extends State<SearchPage> {
       child: Container(
         color: kLightBackgroundColor,
         child: ListTile(
+            onTap: () {
+              _showUserInfo(searchTile.uid);
+            },
             leading: searchTile.leadWidget,
             title: Text(
               "@" + searchTile.userName,
@@ -244,24 +245,24 @@ class _SearchPageState extends State<SearchPage> {
               builder: ((context, value, child) => IconButton(
                   onPressed: () {
                     if (searchTile.isSaved) {
-                      // Utils.showAlertDialog(context,
-                      //     "Are you sure you want to remove @${searchTile.userName}?",
-                      //     () {
-                      //   Navigator.pop(context);
-                      // }, () {
+                      Utils.showAlertDialog(context,
+                          "Are you sure you want to remove @${searchTile.userName}?",
+                          () {
+                        Navigator.pop(context);
+                      }, () {
+                        user.userSaved
+                            .removeAt(user.userSaved.indexOf(searchTile.uid));
+                        searchTile.isSaved = false;
+                        FirebaseApi.updateUserData(user);
+                        toggleSave.value = !toggleSave.value;
+                        Navigator.pop(context);
+                      });
+
                       // user.userSaved
                       //     .removeAt(user.userSaved.indexOf(searchTile.uid));
                       // searchTile.isSaved = false;
                       // FirebaseApi.updateUserData(user);
                       // toggleSave.value = !toggleSave.value;
-                      // Navigator.pop(context);
-                      // });
-
-                      user.userSaved
-                          .removeAt(user.userSaved.indexOf(searchTile.uid));
-                      searchTile.isSaved = false;
-                      FirebaseApi.updateUserData(user);
-                      toggleSave.value = !toggleSave.value;
                     } else {
                       if (user.userSaved.length > 15) {
                         Utils.showAlertDialog(context,
@@ -342,25 +343,25 @@ class _SearchPageState extends State<SearchPage> {
                         toggleStar.value = !toggleStar.value;
                       }
                     } else if (!provider.isLoading) {
-                      // Utils.showAlertDialog(context,
-                      //     "Are you sure you want to remove ${stockTileModel.symbol} from your watchlist?",
-                      //     () {
-                      //   Navigator.pop(context);
-                      // }, () {
-                      //   stockTileModel.isSaved = false;
+                      Utils.showAlertDialog(context,
+                          "Are you sure you want to remove ${searchTile.symbol} from your watchlist?",
+                          () {
+                        Navigator.pop(context);
+                      }, () {
+                        searchTile.isSaved = false;
+
+                        provider.removeTicker(
+                            savedSymbols.indexOf(searchTile.symbol));
+                        toggleStar.value = !toggleStar.value;
+                        Navigator.pop(context);
+                      });
+
+                      // searchTile.isSaved = false;
 
                       // provider.removeTicker(
-                      //     savedSymbols.indexOf(stockTileModel.symbol));
+                      //     savedSymbols.indexOf(searchTile.symbol));
+
                       // toggleStar.value = !toggleStar.value;
-                      // Navigator.pop(context);
-                      // });
-
-                      searchTile.isSaved = false;
-
-                      provider.removeTicker(
-                          savedSymbols.indexOf(searchTile.symbol));
-
-                      toggleStar.value = !toggleStar.value;
                     }
                   },
                   icon: searchTile.isSaved
@@ -405,5 +406,17 @@ class _SearchPageState extends State<SearchPage> {
         }
       });
     }
+  }
+
+  void _showUserInfo(String uid) async {
+    Map<String, dynamic> response = await Navigator.push(
+        mainContext,
+        MaterialPageRoute(
+            builder: ((context) => AccountPage(
+                  uid: uid,
+                  provider: provider,
+                ))));
+
+    print('done');
   }
 }

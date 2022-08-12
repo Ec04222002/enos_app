@@ -12,14 +12,17 @@ import 'package:enos/services/util.dart';
 import 'package:enos/widgets/loading.dart';
 import 'package:enos/widgets/settings_widget/comments_replies.dart';
 import 'package:enos/widgets/settings_widget/edit_profile.dart';
-import 'package:enos/widgets/settings_widget/email_notify.dart';
 import 'package:enos/widgets/settings_widget/msg_request.dart';
 import 'package:enos/widgets/settings_widget/saved_users.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 class AccountPage extends StatefulWidget {
-  const AccountPage({Key key}) : super(key: key);
+  bool isSelf;
+  TickerTileProvider provider;
+  //if uid passed in then its not self profile
+  String uid;
+  AccountPage({Key key, this.uid = "", this.provider}) : super(key: key);
 
   @override
   State<AccountPage> createState() => _AccountPageState();
@@ -30,21 +33,24 @@ class _AccountPageState extends State<AccountPage>
   String uid;
   UserModel user;
   String name;
-  bool isLoading = true;
+  bool isLoading = true, watchlistLoading = true;
+  bool isSelfView = true;
   bool init = true;
   dynamic size;
   TabController _tabController;
   TickerTileProvider provider;
   List<Map<String, dynamic>> settingsList;
+  //tickers used to show tiles
+  List<TickerTileModel> _tickers;
 
+  bool initCalled = false, setOtherCalled = false;
   Future<void> setInit() async {
+    initCalled = true;
     user = await FirebaseApi.getUser(uid);
-
     //settingsList[1]['onclick'] =
     name = user.username;
     setState(() {
       isLoading = false;
-      init = false;
     });
   }
 
@@ -61,14 +67,6 @@ class _AccountPageState extends State<AccountPage>
         "icon": Icons.comment_outlined,
         "title": "Comments and Replies",
         "trail": CommentReply(),
-      },
-      {
-        "icon": Icons.email_outlined,
-        "title": "Email Notification",
-        "trail": Container(
-          height: 0,
-          width: 0,
-        )
       },
       {
         "icon": Icons.messenger_outline,
@@ -104,14 +102,43 @@ class _AccountPageState extends State<AccountPage>
     super.initState();
   }
 
+  Future<void> setOtherTickers() async {
+    setOtherCalled = true;
+    _tickers = await TickerTileProvider.getOtherTickers(uid);
+    for (int i = 0; i < _tickers.length; ++i) {
+      if (provider.symbols.contains(_tickers[i].symbol)) {
+        _tickers[i].isSaved = true;
+        continue;
+      }
+      _tickers[i].isSaved = false;
+    }
+    if (!mounted) return;
+    setState(() {
+      watchlistLoading = false;
+    });
+  }
+
   Widget build(BuildContext context) {
+    print("building");
     size = MediaQuery.of(context).size;
-    provider = Provider.of<TickerTileProvider>(context, listen: false);
-    uid = Provider.of<UserField>(context, listen: false).userUid;
-    print(provider.symbols);
-    if (init) {
+    //viewing own accounts page
+    if (widget.uid.isEmpty) {
+      provider = Provider.of<TickerTileProvider>(context, listen: false);
+      uid = Provider.of<UserField>(context, listen: false).userUid;
+      _tickers = provider.tickers;
+      watchlistLoading = false;
+    }
+    //view other users watchlist
+    if (!setOtherCalled && widget.uid.isNotEmpty) {
+      provider = widget.provider;
+      uid = widget.uid;
+      isSelfView = false;
+      setOtherTickers();
+    }
+    if (!initCalled) {
       setInit();
     }
+
     return isLoading
         ? Loading()
         : Scaffold(
@@ -124,6 +151,10 @@ class _AccountPageState extends State<AccountPage>
           );
   }
 
+  bool viewAccountIsSelf() {
+    return Provider.of<UserField>(context, listen: false).userUid == uid;
+  }
+
   Widget topProfile() {
     return Container(
       margin: EdgeInsets.zero,
@@ -132,7 +163,7 @@ class _AccountPageState extends State<AccountPage>
       width: size.width,
       height: size.height * 0.20,
       child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 13, horizontal: 20),
+        padding: EdgeInsets.fromLTRB(20, 25, 0, 13),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.end,
           mainAxisAlignment: MainAxisAlignment.start,
@@ -155,7 +186,7 @@ class _AccountPageState extends State<AccountPage>
                   )),
             ),
             Padding(
-              padding: EdgeInsets.fromLTRB(13, 0, 0, 5),
+              padding: EdgeInsets.fromLTRB(10, 0, 0, 5),
               child: RichText(
                 overflow: TextOverflow.ellipsis,
                 softWrap: true,
@@ -174,7 +205,9 @@ class _AccountPageState extends State<AccountPage>
                               color: kDisabledColor,
                               fontWeight: FontWeight.bold)),
                       TextSpan(
-                        text: "${Utils.getTimeFromToday(user.createdTime)}",
+                        text: viewAccountIsSelf()
+                            ? "${Utils.getTimeFromToday(user.createdTime)} (You)"
+                            : "${Utils.getTimeFromToday(user.createdTime)}",
                         style: TextStyle(
                             color: kDisabledColor,
                             fontSize: 21,
@@ -182,7 +215,32 @@ class _AccountPageState extends State<AccountPage>
                       )
                     ]),
               ),
-            )
+            ),
+            isSelfView
+                ? Container(
+                    height: 0,
+                  )
+                : Expanded(
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        Column(
+                          children: [
+                            IconButton(
+                                onPressed: () {
+                                  Navigator.pop(context);
+                                },
+                                icon: Icon(
+                                  Icons.cancel_outlined,
+                                  size: 32,
+                                  color: Utils.lighten(
+                                      kLightBackgroundColor, 0.25),
+                                )),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
           ],
         ),
       ),
@@ -191,54 +249,59 @@ class _AccountPageState extends State<AccountPage>
 
   Widget bottomSect() {
     return Padding(
-      padding: EdgeInsets.symmetric(vertical: 15, horizontal: 8),
+      padding:
+          EdgeInsets.symmetric(vertical: isSelfView ? 15 : 0, horizontal: 8),
       child: ClipRRect(
         borderRadius: BorderRadius.all(Radius.circular(8)),
         child: Container(
           height: size.height * 0.8,
-          child: Scaffold(
-            appBar: AppBar(
-              elevation: 0,
-              automaticallyImplyLeading: false,
-              titleSpacing: 0,
-              backgroundColor: kLightBackgroundColor,
-              toolbarHeight: 25,
-              leading: Container(height: 0),
-              flexibleSpace: Column(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  TabBar(
-                    controller: _tabController,
-                    labelPadding: EdgeInsets.zero,
-                    padding: EdgeInsets.zero,
-                    indicator: BoxDecoration(
-                        // Creates border
-                        color: kActiveColor),
-                    tabs: [
-                      Tab(
-                        child: Text(
-                          "Watchlist",
-                          style: TextStyle(fontSize: 16),
-                        ),
-                      ),
-                      Tab(
-                        child: Text(
-                          "Settings",
-                          style: TextStyle(fontSize: 16),
-                        ),
-                      )
-                    ],
-                  )
-                ],
-              ),
-            ),
-            body: TabBarView(
-              controller: _tabController,
-              physics: NeverScrollableScrollPhysics(),
-              children: [watchlist(), setting()],
-            ),
-          ),
+          child: isSelfView ? selfViewAccount() : watchlist(),
         ),
+      ),
+    );
+  }
+
+  Widget selfViewAccount() {
+    return Scaffold(
+      appBar: AppBar(
+        elevation: 0,
+        automaticallyImplyLeading: false,
+        titleSpacing: 0,
+        backgroundColor: kLightBackgroundColor,
+        toolbarHeight: 25,
+        leading: Container(height: 0),
+        flexibleSpace: Column(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            TabBar(
+              controller: _tabController,
+              labelPadding: EdgeInsets.zero,
+              padding: EdgeInsets.zero,
+              indicator: BoxDecoration(
+                  // Creates border
+                  color: kActiveColor),
+              tabs: [
+                Tab(
+                  child: Text(
+                    "Watchlist",
+                    style: TextStyle(fontSize: 16),
+                  ),
+                ),
+                Tab(
+                  child: Text(
+                    "Settings",
+                    style: TextStyle(fontSize: 16),
+                  ),
+                )
+              ],
+            )
+          ],
+        ),
+      ),
+      body: TabBarView(
+        controller: _tabController,
+        physics: NeverScrollableScrollPhysics(),
+        children: [watchlist(), setting()],
       ),
     );
   }
@@ -252,31 +315,6 @@ class _AccountPageState extends State<AccountPage>
           IconData icon = settingsList[index]['icon'];
           Widget trail = settingsList[index]['trail'];
 
-          if (title == "Email Notification") {
-            return SwitchListTile(
-              tileColor: kLightBackgroundColor,
-              inactiveTrackColor: kDisabledColor,
-              activeTrackColor: kActiveColor,
-              inactiveThumbColor: kDarkTextColor,
-              activeColor: kDarkTextColor,
-              value: user.isEmailNotify,
-              onChanged: (value) {
-                setState(() {
-                  user.isEmailNotify = !user.isEmailNotify;
-                  FirebaseApi.updateUserData(user);
-                });
-              },
-              title: Text(
-                title,
-                style: TextStyle(color: kBrightTextColor),
-              ),
-              secondary: Icon(
-                icon,
-                color: kDisabledColor,
-                size: 28,
-              ),
-            );
-          }
           return ListTile(
             onTap: settingsList[index]['onclick'],
             leading: Icon(
@@ -312,13 +350,22 @@ class _AccountPageState extends State<AccountPage>
   }
 
   ValueNotifier<bool> toggleStar = ValueNotifier(false);
-  Widget watchlist() {
-    List<TickerTileModel> tickers = provider.tickers;
 
-    if (tickers.isEmpty) {
+  Future<UserModel> getUser() async {
+    UserModel response = await FirebaseApi.getUser(uid);
+    return response;
+  }
+
+  Widget watchlist() {
+    if (watchlistLoading) {
+      return Loading();
+    }
+    if (_tickers.isEmpty) {
       return Center(
         child: Text(
-          "No tickers in your watchlist",
+          isSelfView
+              ? "No tickers in your watchlist"
+              : "No tickers in $name's watchlist",
           style: TextStyle(color: kDisabledColor, fontSize: 18),
         ),
       );
@@ -332,6 +379,18 @@ class _AccountPageState extends State<AccountPage>
           itemBuilder: (context, index) {
             print("rebuilding");
             if (index == 0) {
+              if (!isSelfView)
+                return Container(
+                  padding: EdgeInsets.symmetric(horizontal: 12, vertical: 0),
+                  margin: EdgeInsets.zero,
+                  child: Text(
+                    "Updated ${Utils.getTimeFromToday(provider.lastUpdatedTime)}",
+                    style: TextStyle(
+                        color: kDisabledColor,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w400),
+                  ),
+                );
               return Container(
                 height: 35,
                 child: SwitchListTile(
@@ -364,11 +423,11 @@ class _AccountPageState extends State<AccountPage>
             int tickerIndex = index - 1;
 
             return ListTile(
-              onTap: (() => _showInfo(tickerIndex, tickers[tickerIndex].symbol,
-                  tickers[tickerIndex].isSaved)),
+              onTap: (() => _showInfo(tickerIndex, _tickers[tickerIndex].symbol,
+                  _tickers[tickerIndex].isSaved)),
               tileColor: kLightBackgroundColor,
               title: Text(
-                tickers[tickerIndex].symbol,
+                _tickers[tickerIndex].symbol,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
@@ -377,41 +436,43 @@ class _AccountPageState extends State<AccountPage>
                     fontWeight: FontWeight.w800),
               ),
               subtitle: Text(
-                tickers[tickerIndex].companyName,
+                _tickers[tickerIndex].companyName,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(fontSize: 14, color: kDisabledColor),
               ),
               trailing: IconButton(
                   onPressed: () {
-                    TickerTileModel ticker = tickers[tickerIndex];
-                    if (!tickers[tickerIndex].isSaved) {
-                      tickers[tickerIndex].isSaved = true;
+                    TickerTileModel ticker = _tickers[tickerIndex];
+                    if (!_tickers[tickerIndex].isSaved) {
+                      _tickers[tickerIndex].isSaved = true;
 
                       provider.addTicker(
                         ticker.symbol,
                       );
                       toggleStar.value = !toggleStar.value;
                     } else if (!provider.isLoading) {
-                      // Utils.showAlertDialog(context,
-                      //     "Are you sure you want to remove ${ticker.symbol} from your watchlist?",
-                      //     () {
-                      //   Navigator.pop(context);
-                      // }, () {
-                      //   provider.removeTicker(
-                      //       provider.symbols.indexOf(ticker.symbol));
+                      Utils.showAlertDialog(context,
+                          "Are you sure you want to remove ${ticker.symbol} from your watchlist?",
+                          () {
+                        Navigator.pop(context);
+                      }, () {
+                        _tickers[tickerIndex].isSaved = false;
+                        _tickers.remove(_tickers[tickerIndex]);
+                        provider.removeTicker(
+                            provider.symbols.indexOf(ticker.symbol));
 
-                      //   toggleStar.value = !toggleStar.value;
-                      //   Navigator.pop(context);
-                      // });
-                      tickers[tickerIndex].isSaved = false;
-                      provider.removeTicker(
-                          provider.symbols.indexOf(ticker.symbol));
+                        toggleStar.value = !toggleStar.value;
+                        Navigator.pop(context);
+                      });
+                      // _tickers[tickerIndex].isSaved = false;
+                      // provider.removeTicker(
+                      //     provider.symbols.indexOf(ticker.symbol));
 
-                      toggleStar.value = !toggleStar.value;
+                      // toggleStar.value = !toggleStar.value;
                     }
                   },
-                  icon: tickers[tickerIndex].isSaved
+                  icon: _tickers[tickerIndex].isSaved
                       ? Icon(
                           Icons.star,
                           color: Colors.yellow[400],
@@ -429,7 +490,7 @@ class _AccountPageState extends State<AccountPage>
               height: 8,
             );
           },
-          itemCount: tickers.length + 1),
+          itemCount: _tickers.length + 1),
     );
   }
 

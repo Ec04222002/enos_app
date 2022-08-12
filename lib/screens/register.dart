@@ -40,7 +40,6 @@ class _RegisterPageState extends State<RegisterPage> {
             extendBodyBehindAppBar: true,
             appBar: AppBar(
               backgroundColor: Colors.transparent,
-              elevation: 0,
               centerTitle: true,
               title: Text('Sign Up',
                   style: Theme.of(context)

@@ -180,22 +180,22 @@ class _PreTickerInfoState extends State<PreTickerInfo>
                             toggleStar.value = !toggleStar.value;
                           }
                         } else if (!provider.isLoading) {
-                          // Utils.showAlertDialog(context,
-                          //     "Are you sure you want to remove ${data.symbol} from your watchlist?",
-                          //     () {
-                          //   Navigator.pop(context);
-                          // }, () {
-                          //   data.isSaved = false;
+                          Utils.showAlertDialog(context,
+                              "Are you sure you want to remove ${data.symbol} from your watchlist?",
+                              () {
+                            Navigator.pop(context);
+                          }, () {
+                            data.isSaved = false;
 
-                          //   provider.removeTicker(
-                          //       provider.symbols.indexOf(data.symbol));
-                          //   toggleStar.value = !toggleStar.value;
-                          //   Navigator.pop(context);
-                          // });
+                            provider.removeTicker(
+                                provider.symbols.indexOf(data.symbol));
+                            toggleStar.value = !toggleStar.value;
+                            Navigator.pop(context);
+                          });
 
-                          data.isSaved = false;
+                          // data.isSaved = false;
 
-                          toggleStar.value = !toggleStar.value;
+                          // toggleStar.value = !toggleStar.value;
                         }
                       },
                       icon: data.isSaved

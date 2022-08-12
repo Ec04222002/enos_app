@@ -285,7 +285,6 @@ class _NewsPageState extends State<NewsPage> {
           body: NotificationListener(
             onNotification: (scrollNotification) {
               if (scrollNotification is ScrollUpdateNotification) {
-                double before = pageScrollController.position.extentBefore;
                 double after = pageScrollController.position.extentAfter;
                 print(after);
                 if (after == 0) {
