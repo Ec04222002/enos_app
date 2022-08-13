@@ -101,6 +101,7 @@ class YahooApi {
 
   Future<List<TickerTileModel>> getWatchlistUpdates(
       List<String> symbols, bool requestChart) async {
+    if (symbols.isEmpty) return [];
     String searchQuery = symbols.join(",");
     dynamic datas = await getData(endpoint: "market/v2/get-quotes", query: {
       "symbols": searchQuery,

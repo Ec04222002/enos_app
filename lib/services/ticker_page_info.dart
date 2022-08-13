@@ -132,16 +132,22 @@ class TickerPageInfo {
               : "",
           image: (() {
             dynamic pre = parent['thumbnail'];
+
             if (pre == null) return NewsAPI.default_thumbnail;
-            dynamic resolutions = pre['resolutions'];
-            int i = 3;
-            dynamic img = resolutions[i];
-            while (img == null) {
-              if (i == 1) {
-                return NewsAPI;
-              }
-              img = resolutions[--i];
-            }
+            List resolutions = pre['resolutions'];
+            if (resolutions.isEmpty) return NewsAPI.default_thumbnail;
+            dynamic img = resolutions.last;
+            // for (int i = resolutions.length - 1; i >= 0; --i) {
+
+            // }
+            // int i = 3;
+            // dynamic img = resolutions[i];
+            // while (img == null) {
+            //   if (i == 1) {
+            //     return NewsAPI.default_thumbnail;
+            //   }
+            //   img = resolutions[--i];
+            // }
 
             return img['url'];
           })(),
@@ -151,9 +157,6 @@ class TickerPageInfo {
   }
 
   Future<void> addPostPostLoadData(TickerPageModel preData) async {
-
-
-
     List<int> articleIndexToRemove = [];
     for (int index = 0; index < preData.articles.length; ++index) {
       ArticleModel article = preData.articles[index];
@@ -204,11 +207,11 @@ class TickerPageInfo {
     }
     await getNewsInfo(preData);
     //add comment data
-    List<Comment> firebaseComments = await FirebaseApi.getStockComment(preData.symbol);
+    List<Comment> firebaseComments =
+        await FirebaseApi.getStockComment(preData.symbol);
     print(firebaseComments);
     firebaseComments.forEach((element) {
-      if(!element.isNested)
-        preData.commentData.add(element);
+      if (!element.isNested) preData.commentData.add(element);
     });
   }
 

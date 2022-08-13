@@ -34,7 +34,6 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
             extendBodyBehindAppBar: true,
             appBar: AppBar(
               backgroundColor: Colors.transparent,
-              elevation: 0,
               centerTitle: true,
               title: Text('Reset Password',
                   style: Theme.of(context)

@@ -176,7 +176,7 @@ class NewsTile extends StatelessWidget {
       this.shortName,
       this.posturl}) {
     DateTime today = DateTime.now();
-    time = DateTime.parse(datePublished).toLocal().toUtc();
+    time = DateTime.parse(datePublished).toLocal();
     int month = time.month;
     int day = time.day;
     int year = time.year;

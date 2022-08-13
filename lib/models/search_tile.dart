@@ -1,3 +1,5 @@
+import 'package:enos/models/user.dart';
+
 class SearchTile {
   final String symbol;
   final String name;

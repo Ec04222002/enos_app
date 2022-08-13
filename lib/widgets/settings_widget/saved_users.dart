@@ -1,9 +1,11 @@
   import 'package:enos/constants.dart';
 import 'package:enos/models/user.dart';
 import 'package:enos/models/user_tile.dart';
+import 'package:enos/screens/account.dart';
 import 'package:enos/services/firebase_api.dart';
 import 'package:enos/services/ticker_provider.dart';
 import 'package:enos/services/util.dart';
+import 'package:enos/widgets/ticker_tile.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -27,7 +29,6 @@ class SavedUsers extends StatelessWidget {
     TickerTileProvider provider =
         Provider.of<TickerTileProvider>(context, listen: false);
     UserModel user = await FirebaseApi.getUser(provider.watchListUid);
-    print(user.userSaved);
     List<String> savedUserId = user.userSaved;
     List<UserSearchTile> userTiles = [];
     ValueNotifier<bool> toggleSave = ValueNotifier(false);
@@ -38,7 +39,6 @@ class SavedUsers extends StatelessWidget {
       userSearchTile.isSaved = true;
       userTiles.add(userSearchTile);
     }
-    print(savedUserId.length);
     Navigator.push(
         context,
         MaterialPageRoute(
@@ -70,6 +70,16 @@ class SavedUsers extends StatelessWidget {
                         return ListTile(
                             tileColor: kLightBackgroundColor,
                             leading: userTile.leadWidget,
+                            onTap: () async {
+                              Map<String, dynamic> response =
+                                  await Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: ((context) => AccountPage(
+                                                uid: userTile.uid,
+                                                provider: provider,
+                                              ))));
+                            },
                             title: Text(
                               "@" + userTile.userName,
                               maxLines: 1,
@@ -82,25 +92,25 @@ class SavedUsers extends StatelessWidget {
                             trailing: IconButton(
                                 onPressed: () {
                                   if (userTile.isSaved) {
-                                    // Utils.showAlertDialog(context,
-                                    //     "Are you sure you want to remove @${userTile.userName}?",
-                                    //     () {
-                                    //   Navigator.pop(context);
-                                    // }, () {
-                                    //   savedUserId.removeAt(
-                                    //       savedUserId.indexOf(userTile.uid));
-                                    //   user.userSaved = savedUserId;
-                                    //   userTile.isSaved = false;
-                                    //   FirebaseApi.updateUserData(user);
-                                    //   toggleSave.value = !toggleSave.value;
-                                    //   Navigator.pop(context);
-                                    // });
-                                    savedUserId.removeAt(
-                                        savedUserId.indexOf(userTile.uid));
-                                    user.userSaved = savedUserId;
-                                    userTile.isSaved = false;
-                                    FirebaseApi.updateUserData(user);
-                                    toggleSave.value = !toggleSave.value;
+                                    Utils.showAlertDialog(context,
+                                        "Are you sure you want to remove @${userTile.userName}?",
+                                        () {
+                                      Navigator.pop(context);
+                                    }, () {
+                                      savedUserId.removeAt(
+                                          savedUserId.indexOf(userTile.uid));
+                                      user.userSaved = savedUserId;
+                                      userTile.isSaved = false;
+                                      FirebaseApi.updateUserData(user);
+                                      toggleSave.value = !toggleSave.value;
+                                      Navigator.pop(context);
+                                    });
+                                    // savedUserId.removeAt(
+                                    //     savedUserId.indexOf(userTile.uid));
+                                    // user.userSaved = savedUserId;
+                                    // userTile.isSaved = false;
+                                    // FirebaseApi.updateUserData(user);
+                                    // toggleSave.value = !toggleSave.value;
                                   } else {
                                     if (user.userSaved.length > 15) {
                                       Utils.showAlertDialog(context,

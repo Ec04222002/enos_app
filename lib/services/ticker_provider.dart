@@ -65,6 +65,17 @@ class TickerTileProvider extends ChangeNotifier {
     _symbols.insert(endIndex, symbol);
   }
 
+  static Future<List<TickerTileModel>> getOtherTickers(String uid) async {
+    dynamic watchListDoc = await FirebaseApi.getWatchListDoc(uid);
+    List<String> otherSymbols =
+        FirebaseApi.tickerDataFromSnapshot(watchListDoc);
+    if (otherSymbols.isEmpty) return [];
+    print("got other users symbols ${otherSymbols}");
+    List<TickerTileModel> tickers =
+        await YahooApi().getWatchlistUpdates(otherSymbols, false);
+    return tickers;
+  }
+
   Future<void> removeTicker(int index, {BuildContext, context}) async {
     isLoading = true;
     lastUpdatedTime = DateTime.now();
@@ -76,16 +87,7 @@ class TickerTileProvider extends ChangeNotifier {
         updatedLast: lastUpdatedTime,
         isPublic: isPublic));
     isLoading = false;
-    print("calling loadended function");
-    loadEndedFunct();
-    loadEndedFunct = () {};
     notifyListeners();
-  }
-
-  Function loadEndedFunct = () {};
-  void onLoadEnded(Function loadEndedFunct) {
-    print("setting load ended function");
-    loadEndedFunct = loadEndedFunct;
   }
 
   Future<void> addTicker(String symbol, {BuildContext context}) async {
@@ -106,9 +108,7 @@ class TickerTileProvider extends ChangeNotifier {
         updatedLast: lastUpdatedTime,
         isPublic: isPublic));
     isLoading = false;
-    print("calling load end function");
-    loadEndedFunct();
-    loadEndedFunct = () {};
+
     notifyListeners();
   }
 
