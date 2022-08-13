@@ -112,6 +112,7 @@ class _SearchPageState extends State<SearchPage> {
 
   @override
   Widget build(BuildContext context) {
+    print('rebuilding searchtiles');
     if (isInit) {
       mainContext = context;
       if (!widget.isMainPage) {
@@ -162,7 +163,8 @@ class _SearchPageState extends State<SearchPage> {
                     if (market.toLowerCase() == "users") {
                       UserSearchTile tile =
                           UserSearchTile.modelToSearchTile(recommends[index]);
-
+                      print(user.userSaved);
+                      tile.isSaved = false;
                       if (user.userSaved.contains(tile.uid)) {
                         tile.isSaved = true;
                       }
@@ -417,6 +419,8 @@ class _SearchPageState extends State<SearchPage> {
                   provider: provider,
                 ))));
 
-    print('done');
+    setState(() {
+      user = response['new_user'];
+    });
   }
 }

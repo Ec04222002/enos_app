@@ -71,7 +71,7 @@ class SavedUsers extends StatelessWidget {
                             tileColor: kLightBackgroundColor,
                             leading: userTile.leadWidget,
                             onTap: () async {
-                              Map<String, dynamic> response =
+                              Map<String, UserModel> response =
                                   await Navigator.push(
                                       context,
                                       MaterialPageRoute(
@@ -79,6 +79,9 @@ class SavedUsers extends StatelessWidget {
                                                 uid: userTile.uid,
                                                 provider: provider,
                                               ))));
+
+                              savedUserId = response['new_user'].userSaved;
+                              toggleSave.value = !toggleSave.value;
                             },
                             title: Text(
                               "@" + userTile.userName,

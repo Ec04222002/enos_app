@@ -43,7 +43,7 @@ class _AccountPageState extends State<AccountPage>
   bool init = true;
   dynamic size;
   TabController _tabController;
-
+  UserModel self;
   List<Map<String, dynamic>> settingsList;
   //tickers used to show tiles
   List<TickerTileModel> _tickers;
@@ -52,6 +52,7 @@ class _AccountPageState extends State<AccountPage>
   Future<void> setInit() async {
     initCalled = true;
     user = await FirebaseApi.getUser(uid);
+    self = await FirebaseApi.getUser(provider.watchListUid);
     //settingsList[1]['onclick'] =
     name = user.username;
     setState(() {
@@ -146,6 +147,7 @@ class _AccountPageState extends State<AccountPage>
       provider = Provider.of<TickerTileProvider>(context, listen: false);
       uid = Provider.of<UserField>(context, listen: false).userUid;
       _tickers = provider.tickers;
+
       watchlistLoading = false;
     }
     //view other users watchlist
@@ -176,92 +178,155 @@ class _AccountPageState extends State<AccountPage>
   }
 
   Widget topProfile() {
-    return Container(
-      margin: EdgeInsets.zero,
-      padding: EdgeInsets.zero,
-      color: kLightBackgroundColor,
-      width: size.width,
-      height: size.height * 0.20,
-      child: Padding(
-        padding: EdgeInsets.fromLTRB(20, 25, 0, 13),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.end,
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: [
-            CircleAvatar(
-              backgroundColor: Utils.stringToColor(user.profileBorderColor),
-              radius: 30,
-              child: CircleAvatar(
-                  radius: 29,
-                  backgroundColor: Utils.stringToColor(user.profileBgColor),
-                  child: Center(
-                    child: Text(
-                      name.substring(0, 1).toUpperCase() +
-                          (name.length > 1 ? name.substring(1, 2) : ""),
+    ValueNotifier<bool> toggleTopProfile = ValueNotifier(false);
+    return ValueListenableBuilder(
+      valueListenable: toggleTopProfile,
+      builder: (context, value, child) => Container(
+        margin: EdgeInsets.zero,
+        padding: EdgeInsets.zero,
+        color: kLightBackgroundColor,
+        width: size.width,
+        height: size.height * 0.20,
+        child: Padding(
+          padding: EdgeInsets.fromLTRB(20, 25, 0, 13),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              CircleAvatar(
+                backgroundColor: Utils.stringToColor(user.profileBorderColor),
+                radius: 29,
+                child: CircleAvatar(
+                    radius: 28,
+                    backgroundColor: Utils.stringToColor(user.profileBgColor),
+                    child: Center(
+                      child: Text(
+                        name.substring(0, 1).toUpperCase() +
+                            (name.length > 1 ? name.substring(1, 2) : ""),
+                        style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 27),
+                      ),
+                    )),
+              ),
+              Padding(
+                padding: EdgeInsets.fromLTRB(10, 0, 0, 5),
+                child: RichText(
+                  overflow: TextOverflow.ellipsis,
+                  softWrap: true,
+                  maxLines: 2,
+                  text: TextSpan(
+                      text: name,
                       style: TextStyle(
                           color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 27),
-                    ),
-                  )),
-            ),
-            Padding(
-              padding: EdgeInsets.fromLTRB(10, 0, 0, 5),
-              child: RichText(
-                overflow: TextOverflow.ellipsis,
-                softWrap: true,
-                maxLines: 2,
-                text: TextSpan(
-                    text: name,
-                    style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w500,
-                        fontSize: 26),
-                    children: [
-                      TextSpan(
-                          text: "\t·\t",
-                          style: TextStyle(
-                              fontSize: 30,
-                              color: kDisabledColor,
-                              fontWeight: FontWeight.bold)),
-                      TextSpan(
-                        text: viewAccountIsSelf()
-                            ? "${Utils.getTimeFromToday(user.createdTime)} (You)"
-                            : "${Utils.getTimeFromToday(user.createdTime)}",
-                        style: TextStyle(
-                            color: kDisabledColor,
-                            fontSize: 21,
-                            fontWeight: FontWeight.w400),
-                      )
-                    ]),
-              ),
-            ),
-            isSelfView
-                ? Container(
-                    height: 0,
-                  )
-                : Expanded(
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
+                          fontWeight: FontWeight.w500,
+                          fontSize: 26),
                       children: [
-                        Column(
-                          children: [
-                            IconButton(
-                                onPressed: () {
-                                  Navigator.pop(context);
-                                },
-                                icon: Icon(
-                                  Icons.cancel_outlined,
-                                  size: 32,
-                                  color: Utils.lighten(
-                                      kLightBackgroundColor, 0.25),
-                                )),
-                          ],
+                        TextSpan(
+                            text: "\t·\t",
+                            style: TextStyle(
+                                fontSize: 28,
+                                color: kDisabledColor,
+                                fontWeight: FontWeight.bold)),
+                        TextSpan(
+                          text: viewAccountIsSelf()
+                              ? "${Utils.getTimeFromToday(user.createdTime)} (You)"
+                              : "${Utils.getTimeFromToday(user.createdTime)}",
+                          style: TextStyle(
+                              color: kDisabledColor,
+                              fontSize: 19,
+                              fontWeight: FontWeight.w400),
                         ),
-                      ],
+                      ]),
+                ),
+              ),
+              isSelfView
+                  ? Container(
+                      height: 0,
+                    )
+                  : Padding(
+                      padding: EdgeInsets.fromLTRB(5, 0, 0, 5),
+                      child: IconButton(
+                          onPressed: () {
+                            //removing
+                            if (self.userSaved.contains(uid)) {
+                              Utils.showAlertDialog(context,
+                                  "Are you sure you want to remove @${name}?",
+                                  () {
+                                Navigator.pop(
+                                  context,
+                                );
+                              }, () {
+                                self.userSaved
+                                    .removeAt(self.userSaved.indexOf(uid));
+                                FirebaseApi.updateUserData(self);
+                                toggleTopProfile.value =
+                                    !toggleTopProfile.value;
+                                Navigator.pop(context);
+                              });
+
+                              // user.userSaved
+                              //     .removeAt(user.userSaved.indexOf(searchTile.uid));
+                              // searchTile.isSaved = false;
+                              // FirebaseApi.updateUserData(user);
+                              // toggleSave.value = !toggleSave.value;
+                            } else {
+                              if (self.userSaved.length > 15) {
+                                Utils.showAlertDialog(context,
+                                    "You have reached your limit of 15 people added.",
+                                    () {
+                                  Navigator.pop(context);
+                                }, null);
+                              } else {
+                                self.userSaved.add(uid);
+
+                                FirebaseApi.updateUserData(self);
+                                toggleTopProfile.value =
+                                    !toggleTopProfile.value;
+                              }
+                            }
+                          },
+                          icon: self.userSaved.contains(uid)
+                              ? Icon(
+                                  Icons.bookmark_outlined,
+                                  color: kDisabledColor,
+                                  size: 32,
+                                )
+                              : Icon(
+                                  Icons.bookmark_border_outlined,
+                                  color: kDisabledColor,
+                                  size: 32,
+                                )),
                     ),
-                  ),
-          ],
+              //self view on account page
+              isSelfView
+                  ? Container(
+                      height: 0,
+                    )
+                  : Expanded(
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          Column(
+                            children: [
+                              IconButton(
+                                  onPressed: () {
+                                    Navigator.pop(context, {"new_user": self});
+                                  },
+                                  icon: Icon(
+                                    Icons.cancel_outlined,
+                                    size: 32,
+                                    color: Utils.lighten(
+                                        kLightBackgroundColor, 0.25),
+                                  )),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+            ],
+          ),
         ),
       ),
     );
@@ -371,48 +436,46 @@ class _AccountPageState extends State<AccountPage>
 
   ValueNotifier<bool> toggleStar = ValueNotifier(false);
 
-  Future<UserModel> getUser() async {
-    UserModel response = await FirebaseApi.getUser(uid);
-    return response;
-  }
-
   Widget requestWatchlist() {
     ValueNotifier<bool> toggleRequestBtn = ValueNotifier(false);
     String btnTxt = "Request View";
     Color btnColor = kActiveColor;
     return ValueListenableBuilder(
       valueListenable: toggleRequestBtn,
-      builder: (context, value, child) => Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              "$name turned on privacy",
-              maxLines: 2,
-              textAlign: TextAlign.center,
-              style: TextStyle(color: kDisabledColor, fontSize: 15),
-            ),
-            SizedBox(
-              height: 4,
-            ),
-            TextButton(
-                onPressed: () {
-                  btnColor = kDisabledColor;
-                  btnTxt = "Submitted";
-                  toggleRequestBtn.value = !toggleRequestBtn.value;
-                },
-                child: ClipRRect(
-                  borderRadius: BorderRadius.all(Radius.circular(3)),
-                  child: Container(
-                    padding: EdgeInsets.all(8),
-                    child: Text(
-                      btnTxt,
-                      style: TextStyle(color: kDarkTextColor),
+      builder: (context, value, child) => Padding(
+        padding: EdgeInsets.only(bottom: 20),
+        child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                "$name turned on privacy mode",
+                maxLines: 2,
+                textAlign: TextAlign.center,
+                style: TextStyle(color: kDisabledColor, fontSize: 15),
+              ),
+              SizedBox(
+                height: 4,
+              ),
+              TextButton(
+                  onPressed: () {
+                    btnColor = kDisabledColor;
+                    btnTxt = "Submitted";
+                    toggleRequestBtn.value = !toggleRequestBtn.value;
+                  },
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.all(Radius.circular(3)),
+                    child: Container(
+                      padding: EdgeInsets.all(8),
+                      child: Text(
+                        btnTxt,
+                        style: TextStyle(color: kDarkTextColor),
+                      ),
+                      color: btnColor,
                     ),
-                    color: btnColor,
-                  ),
-                ))
-          ]),
+                  ))
+            ]),
+      ),
     );
   }
 
