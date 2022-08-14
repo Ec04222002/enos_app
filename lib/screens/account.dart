@@ -47,7 +47,7 @@ class _AccountPageState extends State<AccountPage>
   List<Map<String, dynamic>> settingsList;
   //tickers used to show tiles
   List<TickerTileModel> _tickers;
-
+  ValueNotifier<bool> toggleSaveBtn = ValueNotifier(false);
   bool initCalled = false, setOtherCalled = false;
   Future<void> setInit() async {
     initCalled = true;
@@ -140,14 +140,13 @@ class _AccountPageState extends State<AccountPage>
   }
 
   Widget build(BuildContext context) {
-    print("building");
     size = MediaQuery.of(context).size;
     //viewing own accounts page
     if (widget.uid.isEmpty) {
       provider = Provider.of<TickerTileProvider>(context, listen: false);
       uid = Provider.of<UserField>(context, listen: false).userUid;
       _tickers = provider.tickers;
-
+      // popupHeight = size.height * 0.8;
       watchlistLoading = false;
     }
     //view other users watchlist
@@ -155,6 +154,7 @@ class _AccountPageState extends State<AccountPage>
       provider = widget.provider;
       uid = widget.uid;
       isSelfView = false;
+      // popupHeight = MediaQuery.of(context).size.height * 0.8;
       setOtherTickers();
     }
     if (!initCalled) {
@@ -164,6 +164,74 @@ class _AccountPageState extends State<AccountPage>
     return isLoading
         ? Loading()
         : Scaffold(
+            // appBar: isSelfView
+            //     ? null
+            //     : AppBar(
+            //         backgroundColor: kLightBackgroundColor,
+            //         centerTitle: true,
+            //         title: Text(name),
+            //         leading: IconButton(
+            //           onPressed: () {
+            //             Navigator.pop(context, {"new_user": self});
+            //           },
+            //           color: kDarkTextColor,
+            //           icon: Icon(Icons.arrow_back_ios),
+            //         ),
+            //         actions: [
+            //           ValueListenableBuilder(
+            //             valueListenable: toggleSaveBtn,
+            //             builder: (context, value, child) => IconButton(
+            //                 onPressed: () {
+            //                   //removing
+            //                   if (self.userSaved.contains(uid)) {
+            //                     Utils.showAlertDialog(context,
+            //                         "Are you sure you want to remove @${name}?",
+            //                         () {
+            //                       Navigator.pop(
+            //                         context,
+            //                       );
+            //                     }, () {
+            //                       self.userSaved
+            //                           .removeAt(self.userSaved.indexOf(uid));
+            //                       FirebaseApi.updateUserData(self);
+            //                       toggleSaveBtn.value = !toggleSaveBtn.value;
+            //                       Navigator.pop(context);
+            //                     });
+
+            //                     // user.userSaved
+            //                     //     .removeAt(user.userSaved.indexOf(searchTile.uid));
+            //                     // searchTile.isSaved = false;
+            //                     // FirebaseApi.updateUserData(user);
+            //                     // toggleSave.value = !toggleSave.value;
+            //                   } else {
+            //                     if (self.userSaved.length > 15) {
+            //                       Utils.showAlertDialog(context,
+            //                           "You have reached your limit of 15 people added.",
+            //                           () {
+            //                         Navigator.pop(context);
+            //                       }, null);
+            //                     } else {
+            //                       self.userSaved.add(uid);
+
+            //                       FirebaseApi.updateUserData(self);
+            //                       toggleSaveBtn.value = !toggleSaveBtn.value;
+            //                     }
+            //                   }
+            //                 },
+            //                 icon: self.userSaved.contains(uid)
+            //                     ? Icon(
+            //                         Icons.bookmark_outlined,
+            //                         color: kDisabledColor,
+            //                         size: 32,
+            //                       )
+            //                     : Icon(
+            //                         Icons.bookmark_border_outlined,
+            //                         color: kDisabledColor,
+            //                         size: 32,
+            //                       )),
+            //           )
+            //         ],
+            //       ),
             body: SingleChildScrollView(
               physics: BouncingScrollPhysics(),
               child: Container(
@@ -178,17 +246,15 @@ class _AccountPageState extends State<AccountPage>
   }
 
   Widget topProfile() {
-    ValueNotifier<bool> toggleTopProfile = ValueNotifier(false);
-    return ValueListenableBuilder(
-      valueListenable: toggleTopProfile,
-      builder: (context, value, child) => Container(
+    return SafeArea(
+      child: Container(
         margin: EdgeInsets.zero,
         padding: EdgeInsets.zero,
         color: kLightBackgroundColor,
         width: size.width,
-        height: size.height * 0.20,
+        height: size.height * 0.15,
         child: Padding(
-          padding: EdgeInsets.fromLTRB(20, 25, 0, 13),
+          padding: EdgeInsets.fromLTRB(20, 0, 0, 13),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.end,
             mainAxisAlignment: MainAxisAlignment.start,
@@ -241,90 +307,133 @@ class _AccountPageState extends State<AccountPage>
                       ]),
                 ),
               ),
-              isSelfView
-                  ? Container(
-                      height: 0,
-                    )
-                  : Padding(
-                      padding: EdgeInsets.fromLTRB(5, 0, 0, 5),
-                      child: IconButton(
-                          onPressed: () {
-                            //removing
-                            if (self.userSaved.contains(uid)) {
-                              Utils.showAlertDialog(context,
-                                  "Are you sure you want to remove @${name}?",
-                                  () {
-                                Navigator.pop(
-                                  context,
-                                );
-                              }, () {
-                                self.userSaved
-                                    .removeAt(self.userSaved.indexOf(uid));
-                                FirebaseApi.updateUserData(self);
-                                toggleTopProfile.value =
-                                    !toggleTopProfile.value;
-                                Navigator.pop(context);
-                              });
+              // isSelfView
+              //     ? Container(
+              //         height: 0,
+              //       )
+              //     : Padding(
+              //         padding: EdgeInsets.fromLTRB(5, 0, 0, 5),
+              //         child: IconButton(
+              //             onPressed: () {
+              //               //removing
+              //               if (self.userSaved.contains(uid)) {
+              //                 Utils.showAlertDialog(context,
+              //                     "Are you sure you want to remove @${name}?",
+              //                     () {
+              //                   Navigator.pop(
+              //                     context,
+              //                   );
+              //                 }, () {
+              //                   self.userSaved
+              //                       .removeAt(self.userSaved.indexOf(uid));
+              //                   FirebaseApi.updateUserData(self);
+              //                   toggleTopProfile.value =
+              //                       !toggleTopProfile.value;
+              //                   Navigator.pop(context);
+              //                 });
 
-                              // user.userSaved
-                              //     .removeAt(user.userSaved.indexOf(searchTile.uid));
-                              // searchTile.isSaved = false;
-                              // FirebaseApi.updateUserData(user);
-                              // toggleSave.value = !toggleSave.value;
-                            } else {
-                              if (self.userSaved.length > 15) {
-                                Utils.showAlertDialog(context,
-                                    "You have reached your limit of 15 people added.",
-                                    () {
-                                  Navigator.pop(context);
-                                }, null);
-                              } else {
-                                self.userSaved.add(uid);
+              //                 // user.userSaved
+              //                 //     .removeAt(user.userSaved.indexOf(searchTile.uid));
+              //                 // searchTile.isSaved = false;
+              //                 // FirebaseApi.updateUserData(user);
+              //                 // toggleSave.value = !toggleSave.value;
+              //               } else {
+              //                 if (self.userSaved.length > 15) {
+              //                   Utils.showAlertDialog(context,
+              //                       "You have reached your limit of 15 people added.",
+              //                       () {
+              //                     Navigator.pop(context);
+              //                   }, null);
+              //                 } else {
+              //                   self.userSaved.add(uid);
 
-                                FirebaseApi.updateUserData(self);
-                                toggleTopProfile.value =
-                                    !toggleTopProfile.value;
-                              }
-                            }
-                          },
-                          icon: self.userSaved.contains(uid)
-                              ? Icon(
-                                  Icons.bookmark_outlined,
-                                  color: kDisabledColor,
-                                  size: 32,
-                                )
-                              : Icon(
-                                  Icons.bookmark_border_outlined,
-                                  color: kDisabledColor,
-                                  size: 32,
-                                )),
-                    ),
+              //                   FirebaseApi.updateUserData(self);
+              //                   toggleTopProfile.value =
+              //                       !toggleTopProfile.value;
+              //                 }
+              //               }
+              //             },
+              //             icon: self.userSaved.contains(uid)
+              //                 ? Icon(
+              //                     Icons.bookmark_outlined,
+              //                     color: kDisabledColor,
+              //                     size: 32,
+              //                   )
+              //                 : Icon(
+              //                     Icons.bookmark_border_outlined,
+              //                     color: kDisabledColor,
+              //                     size: 32,
+              //                   )),
+              //       ),
               //self view on account page
-              isSelfView
-                  ? Container(
-                      height: 0,
-                    )
-                  : Expanded(
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          Column(
-                            children: [
-                              IconButton(
-                                  onPressed: () {
-                                    Navigator.pop(context, {"new_user": self});
-                                  },
-                                  icon: Icon(
-                                    Icons.cancel_outlined,
-                                    size: 32,
-                                    color: Utils.lighten(
-                                        kLightBackgroundColor, 0.25),
-                                  )),
-                            ],
+              Expanded(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    Column(
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: ValueListenableBuilder(
+                            valueListenable: toggleSaveBtn,
+                            builder: (context, value, child) => IconButton(
+                                onPressed: () {
+                                  //removing
+                                  if (self.userSaved.contains(uid)) {
+                                    Utils.showAlertDialog(context,
+                                        "Are you sure you want to remove @${name}?",
+                                        () {
+                                      Navigator.pop(
+                                        context,
+                                      );
+                                    }, () {
+                                      self.userSaved.removeAt(
+                                          self.userSaved.indexOf(uid));
+                                      FirebaseApi.updateUserData(self);
+                                      toggleSaveBtn.value =
+                                          !toggleSaveBtn.value;
+                                      Navigator.pop(context);
+                                    });
+
+                                    // user.userSaved
+                                    //     .removeAt(user.userSaved.indexOf(searchTile.uid));
+                                    // searchTile.isSaved = false;
+                                    // FirebaseApi.updateUserData(user);
+                                    // toggleSave.value = !toggleSave.value;
+                                  } else {
+                                    if (self.userSaved.length > 15) {
+                                      Utils.showAlertDialog(context,
+                                          "You have reached your limit of 15 people added.",
+                                          () {
+                                        Navigator.pop(context);
+                                      }, null);
+                                    } else {
+                                      self.userSaved.add(uid);
+
+                                      FirebaseApi.updateUserData(self);
+                                      toggleSaveBtn.value =
+                                          !toggleSaveBtn.value;
+                                    }
+                                  }
+                                },
+                                icon: self.userSaved.contains(uid)
+                                    ? Icon(
+                                        Icons.bookmark_outlined,
+                                        color: kDisabledColor,
+                                        size: 35,
+                                      )
+                                    : Icon(
+                                        Icons.bookmark_border_outlined,
+                                        color: kDisabledColor,
+                                        size: 35,
+                                      )),
                           ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
+                  ],
+                ),
+              ),
             ],
           ),
         ),
@@ -503,7 +612,7 @@ class _AccountPageState extends State<AccountPage>
       valueListenable: toggleStar,
       builder: (context, value, child) => ListView.separated(
           physics: BouncingScrollPhysics(),
-          // padding: EdgeInsets.only(top: 8),
+          padding: EdgeInsets.only(top: 20),
           itemBuilder: (context, index) {
             print("rebuilding");
             if (index == 0) {

@@ -63,6 +63,8 @@ class SavedUsers extends StatelessWidget {
                   body: ValueListenableBuilder(
                     valueListenable: toggleSave,
                     builder: (context, value, child) => ListView.separated(
+                      padding: EdgeInsets.only(top: 10),
+                      physics: BouncingScrollPhysics(),
                       itemCount: savedUserId.length,
                       itemBuilder: (context, index) {
                         UserSearchTile userTile = userTiles[index];
