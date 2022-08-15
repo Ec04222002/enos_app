@@ -17,8 +17,10 @@ class UserModel {
   List<String> likedComments;
   final String profileBgColor;
   final String profileBorderColor;
+  final String email;
   UserModel(
       {this.userUid,
+      this.email,
       this.createdTime,
       this.profilePic,
       this.username,
@@ -48,6 +50,7 @@ class UserModel {
     });
 
     return UserModel(
+      email: json['email'],
       comments: comments,
       likedComments: likedComments,
       userUid: json['user_uid'],
@@ -62,6 +65,7 @@ class UserModel {
   }
 
   Map<String, dynamic> toJson() => {
+        "email": email,
         'user_uid': userUid,
         'created_time': Utils.fromDateTimeToJson(createdTime),
         'profile_pic': profilePic,

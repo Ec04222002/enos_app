@@ -28,17 +28,35 @@ class SavedUsers extends StatelessWidget {
   static openSavedUsersPage(BuildContext context) async {
     TickerTileProvider provider =
         Provider.of<TickerTileProvider>(context, listen: false);
+
     UserModel user = await FirebaseApi.getUser(provider.watchListUid);
+
     List<String> savedUserId = user.userSaved;
     List<UserSearchTile> userTiles = [];
     ValueNotifier<bool> toggleSave = ValueNotifier(false);
+    List<int> removeIndexes = [];
+
+    //creating userTiles
+    //updating saved users
     for (int i = 0; i < savedUserId.length; ++i) {
-      UserModel userModel = await FirebaseApi.getUser(savedUserId[i]);
-      UserSearchTile userSearchTile =
-          UserSearchTile.modelToSearchTile(userModel);
-      userSearchTile.isSaved = true;
-      userTiles.add(userSearchTile);
+      bool exist = await FirebaseApi.checkExist("Usesr", savedUserId[i]);
+      if (exist) {
+        UserModel userModel = await FirebaseApi.getUser(savedUserId[i]);
+        UserSearchTile userSearchTile =
+            UserSearchTile.modelToSearchTile(userModel);
+        userSearchTile.isSaved = true;
+        userTiles.add(userSearchTile);
+        continue;
+      }
+      removeIndexes.add(i);
     }
+    //descending
+    removeIndexes.sort((b, a) => a.compareTo(b));
+    for (int j = 0; j < removeIndexes.length; ++j) {
+      savedUserId.removeAt(j);
+    }
+    user.userSaved = savedUserId;
+    FirebaseApi.updateUserData(user);
     Navigator.push(
         context,
         MaterialPageRoute(

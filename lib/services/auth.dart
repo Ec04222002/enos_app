@@ -68,6 +68,7 @@ class AuthService {
       // print("result: ${result}");
       // print("user: ${user}");
       _user = UserModel(
+        email: user.email,
         userUid: user.uid,
         createdTime: DateTime.now(),
         username: userName,
@@ -128,10 +129,15 @@ class GoogleSignInProvider extends ChangeNotifier {
         _user = await FirebaseApi.getUser(u.uid);
       } else {
         print('user does not exists');
+        String userName = u.email.substring(0, u.email.indexOf("@"));
+        if (userName.length > 14) {
+          userName = userName.substring(0, 14);
+        }
         _user = UserModel(
+          email: u.email,
           userUid: u.uid,
           createdTime: DateTime.now(),
-          username: u.email.substring(0, u.email.indexOf("@")),
+          username: userName,
           metrics: List.filled(11, true) + List.filled(12, false),
           comments: [],
           likedComments: [],
@@ -142,7 +148,7 @@ class GoogleSignInProvider extends ChangeNotifier {
         //default
         await FirebaseApi.updateUserData(_user);
         await FirebaseApi.updateWatchList(Watchlist(
-          isPublic: false,
+          isPublic: true,
           watchlistUid: _user.userUid,
           items: defaultTickerTileModels,
           updatedLast: DateTime.now(),

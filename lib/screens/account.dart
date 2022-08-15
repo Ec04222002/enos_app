@@ -7,6 +7,7 @@ import 'package:enos/models/user_tile.dart';
 import 'package:enos/models/watchlist.dart';
 import 'package:enos/screens/ticker_info.dart';
 import 'package:enos/services/auth.dart';
+import 'package:enos/services/email_sender.dart';
 import 'package:enos/services/firebase_api.dart';
 import 'package:enos/services/ticker_provider.dart';
 import 'package:enos/services/util.dart';
@@ -17,6 +18,7 @@ import 'package:enos/widgets/settings_widget/msg_request.dart';
 import 'package:enos/widgets/settings_widget/saved_users.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_email_sender/flutter_email_sender.dart';
 
 class AccountPage extends StatefulWidget {
   bool isSelf;
@@ -254,27 +256,29 @@ class _AccountPageState extends State<AccountPage>
         width: size.width,
         height: size.height * 0.15,
         child: Padding(
-          padding: EdgeInsets.fromLTRB(20, 0, 0, 13),
+          padding: EdgeInsets.fromLTRB(18, 0, 0, 13),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.end,
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
               CircleAvatar(
                 backgroundColor: Utils.stringToColor(user.profileBorderColor),
-                radius: 29,
-                child: CircleAvatar(
-                    radius: 28,
-                    backgroundColor: Utils.stringToColor(user.profileBgColor),
-                    child: Center(
-                      child: Text(
-                        name.substring(0, 1).toUpperCase() +
-                            (name.length > 1 ? name.substring(1, 2) : ""),
-                        style: TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 27),
-                      ),
-                    )),
+                radius: name.length > 12 ? 26 : 30,
+                child: Center(
+                  child: CircleAvatar(
+                      radius: name.length > 12 ? 24 : 28,
+                      backgroundColor: Utils.stringToColor(user.profileBgColor),
+                      child: Center(
+                        child: Text(
+                          name.substring(0, 1).toUpperCase() +
+                              (name.length > 1 ? name.substring(1, 2) : ""),
+                          style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 27),
+                        ),
+                      )),
+                ),
               ),
               Padding(
                 padding: EdgeInsets.fromLTRB(10, 0, 0, 5),
@@ -287,12 +291,12 @@ class _AccountPageState extends State<AccountPage>
                       style: TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.w500,
-                          fontSize: 26),
+                          fontSize: name.length > 12 ? 23 : 26),
                       children: [
                         TextSpan(
                             text: "\t·\t",
                             style: TextStyle(
-                                fontSize: 28,
+                                fontSize: name.length > 12 ? 24 : 28,
                                 color: kDisabledColor,
                                 fontWeight: FontWeight.bold)),
                         TextSpan(
@@ -301,7 +305,7 @@ class _AccountPageState extends State<AccountPage>
                               : "${Utils.getTimeFromToday(user.createdTime)}",
                           style: TextStyle(
                               color: kDisabledColor,
-                              fontSize: 19,
+                              fontSize: name.length > 12 ? 17 : 19,
                               fontWeight: FontWeight.w400),
                         ),
                       ]),
@@ -366,74 +370,81 @@ class _AccountPageState extends State<AccountPage>
               //                   )),
               //       ),
               //self view on account page
-              Expanded(
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    Column(
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: ValueListenableBuilder(
-                            valueListenable: toggleSaveBtn,
-                            builder: (context, value, child) => IconButton(
-                                onPressed: () {
-                                  //removing
-                                  if (self.userSaved.contains(uid)) {
-                                    Utils.showAlertDialog(context,
-                                        "Are you sure you want to remove @${name}?",
-                                        () {
-                                      Navigator.pop(
-                                        context,
-                                      );
-                                    }, () {
-                                      self.userSaved.removeAt(
-                                          self.userSaved.indexOf(uid));
-                                      FirebaseApi.updateUserData(self);
-                                      toggleSaveBtn.value =
-                                          !toggleSaveBtn.value;
-                                      Navigator.pop(context);
-                                    });
+              isSelfView
+                  ? Container(height: 0)
+                  : Expanded(
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          Column(
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: ValueListenableBuilder(
+                                  valueListenable: toggleSaveBtn,
+                                  builder: (context, value, child) =>
+                                      IconButton(
+                                          onPressed: () {
+                                            //removing
+                                            if (self.userSaved.contains(uid)) {
+                                              Utils.showAlertDialog(context,
+                                                  "Are you sure you want to remove @${name}?",
+                                                  () {
+                                                Navigator.pop(
+                                                  context,
+                                                );
+                                              }, () {
+                                                self.userSaved.removeAt(self
+                                                    .userSaved
+                                                    .indexOf(uid));
+                                                FirebaseApi.updateUserData(
+                                                    self);
+                                                toggleSaveBtn.value =
+                                                    !toggleSaveBtn.value;
+                                                Navigator.pop(context);
+                                              });
 
-                                    // user.userSaved
-                                    //     .removeAt(user.userSaved.indexOf(searchTile.uid));
-                                    // searchTile.isSaved = false;
-                                    // FirebaseApi.updateUserData(user);
-                                    // toggleSave.value = !toggleSave.value;
-                                  } else {
-                                    if (self.userSaved.length > 15) {
-                                      Utils.showAlertDialog(context,
-                                          "You have reached your limit of 15 people added.",
-                                          () {
-                                        Navigator.pop(context);
-                                      }, null);
-                                    } else {
-                                      self.userSaved.add(uid);
+                                              // user.userSaved
+                                              //     .removeAt(user.userSaved.indexOf(searchTile.uid));
+                                              // searchTile.isSaved = false;
+                                              // FirebaseApi.updateUserData(user);
+                                              // toggleSave.value = !toggleSave.value;
+                                            } else {
+                                              if (self.userSaved.length > 15) {
+                                                Utils.showAlertDialog(context,
+                                                    "You have reached your limit of 15 people added.",
+                                                    () {
+                                                  Navigator.pop(context);
+                                                }, null);
+                                              } else {
+                                                self.userSaved.add(uid);
 
-                                      FirebaseApi.updateUserData(self);
-                                      toggleSaveBtn.value =
-                                          !toggleSaveBtn.value;
-                                    }
-                                  }
-                                },
-                                icon: self.userSaved.contains(uid)
-                                    ? Icon(
-                                        Icons.bookmark_outlined,
-                                        color: kDisabledColor,
-                                        size: 35,
-                                      )
-                                    : Icon(
-                                        Icons.bookmark_border_outlined,
-                                        color: kDisabledColor,
-                                        size: 35,
-                                      )),
+                                                FirebaseApi.updateUserData(
+                                                    self);
+                                                toggleSaveBtn.value =
+                                                    !toggleSaveBtn.value;
+                                              }
+                                            }
+                                          },
+                                          icon: self.userSaved.contains(uid)
+                                              ? Icon(
+                                                  Icons.bookmark_outlined,
+                                                  color: kDisabledColor,
+                                                  size: 35,
+                                                )
+                                              : Icon(
+                                                  Icons
+                                                      .bookmark_border_outlined,
+                                                  color: kDisabledColor,
+                                                  size: 35,
+                                                )),
+                                ),
+                              ),
+                            ],
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                  ],
-                ),
-              ),
             ],
           ),
         ),
@@ -570,6 +581,12 @@ class _AccountPageState extends State<AccountPage>
                   onPressed: () {
                     btnColor = kDisabledColor;
                     btnTxt = "Submitted";
+                    EmailSender().sendRequestView(
+                        toName: name,
+                        toEmail: user.email,
+                        fromEmail: self.email,
+                        fromName: self.username,
+                        context: context);
                     toggleRequestBtn.value = !toggleRequestBtn.value;
                   },
                   child: ClipRRect(
@@ -804,8 +821,12 @@ class _AccountPageState extends State<AccountPage>
         context, "Are you sure you want to delete your account?", () {
       Navigator.pop(context);
     }, () {
-      FirebaseApi.deleteUser(uid);
       Navigator.pop(context);
+      try {
+        FirebaseApi.deleteUser(uid);
+      } catch (e) {
+        logout();
+      }
     });
   }
 

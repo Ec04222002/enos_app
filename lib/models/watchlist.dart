@@ -14,7 +14,7 @@ class Watchlist {
     this.watchlistUid,
     this.items,
     this.updatedLast,
-    this.isPublic = false,
+    this.isPublic = true,
   });
 
   static Watchlist fromJson(Map<String, dynamic> json) {

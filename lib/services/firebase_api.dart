@@ -2,17 +2,11 @@ import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:enos/models/comment.dart';
-import 'package:enos/models/ticker_page_info.dart';
-import 'package:enos/services/ticker_page_info.dart';
-import 'package:enos/services/yahoo_api.dart';
+
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'package:enos/models/ticker_tile.dart';
+
 import 'package:enos/models/user.dart';
 import 'package:enos/models/watchlist.dart';
-import 'package:enos/widgets/ticker_tile.dart';
-import 'package:enos/services/util.dart';
-import 'package:provider/provider.dart';
 
 //access data from yahoo data base
 //access data & stream from firestore
@@ -39,9 +33,10 @@ class FirebaseApi {
     }
   }
 
-  static Future<void> deleteUser(String uid) {
+  static void deleteUser(String uid) {
     FirebaseFirestore.instance.collection("Users").doc(uid).delete();
     FirebaseFirestore.instance.collection("Watchlists").doc(uid).delete();
+
     FirebaseAuth.instance.currentUser.delete();
   }
 
