@@ -41,9 +41,11 @@ class EmailSender {
             'user_email': email,
           }
         }));
-    Utils().showSnackBar(context, "Sent Successfully 🎉", false);
-    Timer(Duration(seconds: 2), () {
-      Utils().removeSnackBar();
+    Utils util = Utils();
+    util.showSnackBar(context, "Sent Successfully 🎉", false);
+    Timer(Duration(milliseconds: 1200), () {
+      print('sent');
+      util.removeSnackBar();
     });
     return "Success";
   }
@@ -74,9 +76,11 @@ class EmailSender {
             'from_email': fromEmail,
           }
         }));
-    Utils().showSnackBar(context, "Sent Successfully 🎉", false);
-    Timer(Duration(seconds: 2), () {
-      Utils().removeSnackBar();
+    Utils util = Utils();
+    util.showSnackBar(context, "Sent Successfully 🎉", false);
+    Timer(Duration(milliseconds: 1200), () {
+      print('sent');
+      util.removeSnackBar();
     });
     return "Success";
   }
