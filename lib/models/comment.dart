@@ -17,6 +17,7 @@ class Comment {
   bool apiComment;
   bool viewReply;
   String userName;
+  String replyUser;
   Comment(
       {this.commentUid,
       this.stockUid,

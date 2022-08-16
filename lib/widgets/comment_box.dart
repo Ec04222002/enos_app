@@ -43,6 +43,7 @@ class _CommentBoxState extends State<CommentBox> {
   }
 
   Widget box() {
+    print('gay');
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -109,7 +110,7 @@ class _CommentBoxState extends State<CommentBox> {
                           maxLines: null,
                           onChanged: (String s) {
                             setState(() {});
-                          },
+                           },
                           onEditingComplete: () async {},
                           style:
                               TextStyle(fontSize: 12, color: kBrightTextColor),
@@ -127,7 +128,7 @@ class _CommentBoxState extends State<CommentBox> {
                               UserModel user = widget.manager.user;
 
                               Comment com = Comment(
-                                  content: _controller.value.text,
+                                  content: "@${widget.data.userName} ${_controller.value.text}",
                                   userUid: user.userUid,
                                   stockUid: widget.data.stockUid,
                                   likes: 0,
@@ -174,22 +175,27 @@ class _CommentBoxState extends State<CommentBox> {
                             await FirebaseApi.updateComment(widget.data);
                             widget.notifyParent();
                           },
-                          icon: widget.manager.user.likedComments == null ||
+                          icon: Row(
+                            children: [
+                              widget.manager.user.likedComments == null ||
                                   widget.manager.user.likedComments
                                       .contains(widget.data.commentUid)
-                              ? Icon(
-                                  Icons.thumb_up,
-                                  size: 22,
-                                )
-                              : Icon(
-                                  Icons.thumb_up_alt_outlined,
-                                  size: 22,
-                                ),
+                                  ? Icon(
+                                Icons.thumb_up,
+                                size: 20,
+                              )
+                                  : Icon(
+                                Icons.thumb_up_alt_outlined,
+                                size: 20,
+                              ),
+                              SizedBox(width: 4,),
+                              Text(
+                                "${widget.data.likes}",
+                                style: TextStyle(fontSize: 13),
+                              )
+                            ],
+                          ),
                           color: kDarkTextColor),
-                      Text(
-                        "${widget.data.likes}",
-                        style: TextStyle(fontSize: 13),
-                      ),
                       // SizedBox(
                       //   width: 24,
                       // ),
@@ -202,12 +208,12 @@ class _CommentBoxState extends State<CommentBox> {
         ),
         Row(
           children: [
-            widget.data.viewReply
-                ? TextButton(
+          !widget.manager.isLoad && widget.data.viewReply? TextButton(
                     onPressed: () async {
+                      widget.manager.isLoad = true;
+                      setState((){});
                       await widget.manager.loadComments(4);
                       widget.notifyParent();
-                      setState(() {});
                     },
                     child: Text(
                       "View More Replies",
@@ -216,10 +222,20 @@ class _CommentBoxState extends State<CommentBox> {
                           fontWeight: FontWeight.bold,
                           fontSize: 12),
                     ))
+                : widget.data.viewReply? CircularProgressIndicator(color: Colors.white, strokeWidth: 10,)
                 : SizedBox.shrink()
           ],
         )
       ],
     );
+  }
+
+  void viewReply() async {
+    await widget.manager.loadComments(4);
+    Future.delayed(Duration(milliseconds: 100), () {
+      widget.notifyParent();
+      setState(() {});
+    });
+
   }
 }

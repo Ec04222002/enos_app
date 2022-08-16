@@ -24,7 +24,7 @@ class CommentManager extends StatefulWidget {
   Image rootProfilePic;
   Map<String, Color> color1, color2;
   Map<String, Image> profilePic;
-
+  bool isLoad = false;
   CommentManager(
       {this.root,
       this.user,
@@ -57,6 +57,7 @@ class CommentManager extends StatefulWidget {
   }
 
   void loadComments(int amt) async {
+    isLoad = true;
     root.viewReply = false;
     int pos = visibleReplies.length;
     if (pos != 0) {
@@ -91,6 +92,7 @@ class CommentManager extends StatefulWidget {
     if (pos != root.replies.length) {
       visibleReplies[pos - 1].viewReply = true;
     }
+    isLoad = false;
   }
 
   @override
@@ -109,7 +111,7 @@ class _CommentManagerState extends State<CommentManager> {
         widget.root,
         widget.visibleReplies,
         treeThemeData:
-            TreeThemeData(lineColor: Colors.green[500], lineWidth: 0),
+            TreeThemeData(lineColor: kDarkBackgroundColor, lineWidth: 0),
         avatarRoot: (context, data) => PreferredSize(
           child: widget.rootProfilePic != null
               ? ProfilePicture(
@@ -165,11 +167,9 @@ class _CommentManagerState extends State<CommentManager> {
 class CommentSection extends StatefulWidget {
   String userId;
   String symbol;
-  List<CommentManager> comments;
   CommentSection(String userId, String symbol) {
     this.symbol = symbol;
     this.userId = userId;
-    if (comments == null) comments = [];
   }
 
   @override
@@ -195,6 +195,7 @@ class _CommentSectionState extends State<CommentSection> {
   double height;
 
   void loadComments() async {
+    print('cloading');
     isLoad = true;
     UserModel user = await FirebaseApi.getUser(widget.userId);
     this.user = user;
@@ -237,9 +238,24 @@ class _CommentSectionState extends State<CommentSection> {
         ));
       }
     });
-    comments.sort((a, b) {
+   await comments.sort((a, b) {
       return b.root.likes - a.root.likes;
     });
+   List<CommentManager> first = [];
+    for(CommentManager c in comments) {
+      if(c.root.userUid == user.userUid) {
+        first.add(c);
+      }
+    }
+
+    first.sort((a,b) {
+      return a.root.likes-b.root.likes;
+    });
+    for(CommentManager c in first) {
+      comments.remove(c);
+      comments.insert(0, c);
+    }
+
     isLoad = false;
     setState(() {});
   }
