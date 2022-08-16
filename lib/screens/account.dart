@@ -79,7 +79,8 @@ class _AccountPageState extends State<AccountPage>
       {
         "icon": Icons.messenger_outline,
         "title": "Message Request",
-        "trail": MessageRequest()
+        "trail": MessageRequest(),
+        'onclick': openMessenger,
       },
       {
         "icon": Icons.edit_outlined,
@@ -311,64 +312,7 @@ class _AccountPageState extends State<AccountPage>
                       ]),
                 ),
               ),
-              // isSelfView
-              //     ? Container(
-              //         height: 0,
-              //       )
-              //     : Padding(
-              //         padding: EdgeInsets.fromLTRB(5, 0, 0, 5),
-              //         child: IconButton(
-              //             onPressed: () {
-              //               //removing
-              //               if (self.userSaved.contains(uid)) {
-              //                 Utils.showAlertDialog(context,
-              //                     "Are you sure you want to remove @${name}?",
-              //                     () {
-              //                   Navigator.pop(
-              //                     context,
-              //                   );
-              //                 }, () {
-              //                   self.userSaved
-              //                       .removeAt(self.userSaved.indexOf(uid));
-              //                   FirebaseApi.updateUserData(self);
-              //                   toggleTopProfile.value =
-              //                       !toggleTopProfile.value;
-              //                   Navigator.pop(context);
-              //                 });
 
-              //                 // user.userSaved
-              //                 //     .removeAt(user.userSaved.indexOf(searchTile.uid));
-              //                 // searchTile.isSaved = false;
-              //                 // FirebaseApi.updateUserData(user);
-              //                 // toggleSave.value = !toggleSave.value;
-              //               } else {
-              //                 if (self.userSaved.length > 15) {
-              //                   Utils.showAlertDialog(context,
-              //                       "You have reached your limit of 15 people added.",
-              //                       () {
-              //                     Navigator.pop(context);
-              //                   }, null);
-              //                 } else {
-              //                   self.userSaved.add(uid);
-
-              //                   FirebaseApi.updateUserData(self);
-              //                   toggleTopProfile.value =
-              //                       !toggleTopProfile.value;
-              //                 }
-              //               }
-              //             },
-              //             icon: self.userSaved.contains(uid)
-              //                 ? Icon(
-              //                     Icons.bookmark_outlined,
-              //                     color: kDisabledColor,
-              //                     size: 32,
-              //                   )
-              //                 : Icon(
-              //                     Icons.bookmark_border_outlined,
-              //                     color: kDisabledColor,
-              //                     size: 32,
-              //                   )),
-              //       ),
               //self view on account page
               isSelfView
                   ? Container(height: 0)
@@ -832,5 +776,9 @@ class _AccountPageState extends State<AccountPage>
 
   void openSavedUser() {
     SavedUsers.openSavedUsersPage(context);
+  }
+
+  void openMessenger() {
+    MessageRequest.openMessenger(context, user);
   }
 }

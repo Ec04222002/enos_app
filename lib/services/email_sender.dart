@@ -41,6 +41,7 @@ class EmailSender {
             'user_email': email,
           }
         }));
+    print(response.statusCode);
     Utils util = Utils();
     util.showSnackBar(context, "Sent Successfully 🎉", false);
     Timer(Duration(milliseconds: 1200), () {
