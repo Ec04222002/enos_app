@@ -9,14 +9,14 @@ class UserField {
 class UserModel {
   final String userUid;
   final DateTime createdTime;
-  final String profilePic;
-  final String username;
+  String profilePic;
+  String username;
   List<bool> metrics;
   List<String> userSaved;
   List<String> comments;
   List<String> likedComments;
-  final String profileBgColor;
-  final String profileBorderColor;
+  String profileBgColor;
+  String profileBorderColor;
   final String email;
   UserModel(
       {this.userUid,

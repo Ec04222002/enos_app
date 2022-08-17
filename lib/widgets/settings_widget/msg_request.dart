@@ -207,16 +207,16 @@ class MessageRequest extends StatelessWidget {
                                             // Validate returns true if the form is valid, or false otherwise.
                                             if (!_formKey.currentState
                                                 .validate()) {
-                                              util.showSnackBar(
-                                                  context,
-                                                  "Error - Message Invalid",
-                                                  false,
-                                                  color: kRedColor);
-                                              Timer(
-                                                  Duration(milliseconds: 1700),
-                                                  () {
-                                                util.removeSnackBar();
-                                              });
+                                              // util.showSnackBar(
+                                              //     context,
+                                              //     "Error - Message Invalid",
+                                              //     false,
+                                              //     color: kRedColor);
+                                              // Timer(
+                                              //     Duration(milliseconds: 1700),
+                                              //     () {
+                                              //   util.removeSnackBar();
+                                              // });
                                               return;
                                             }
                                             if (subjectBtns.every((element) =>

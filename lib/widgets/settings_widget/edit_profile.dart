@@ -1,7 +1,9 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:enos/constants.dart';
 import 'package:enos/models/user.dart';
+import 'package:enos/services/firebase_api.dart';
 import 'package:enos/services/util.dart';
 import 'package:enos/widgets/color_array.dart';
 import 'package:enos/widgets/profile_pic.dart';
@@ -26,23 +28,44 @@ class EditProfile extends StatelessWidget {
   static Future pickImg(ImageSource source) async {
     try {
       final image = await ImagePicker().pickImage(source: source);
-      if (image == null) return;
-      return File(image.path);
+      if (image == null) return null;
+      return image.path;
     } on PlatformException catch (e) {
       print('Image access not allowed');
+      return null;
     }
   }
 
-  static openImgPicker(BuildContext context, UserModel user) {
+  static openImgPicker(BuildContext context, UserModel user) async {
+    //general
+    bool backSpaceTrigger = false;
+    bool isUpdated = false;
+    bool containsImage = false;
+    Color saveBtnColor = kDisabledColor, undoBtnColor = kDisabledColor;
+    String saveBtnText = "Save All", undoBtnText = "Undo All";
+
+    //username input
+    String name = user.username;
     final _formKey = GlobalKey<FormState>();
     final myController = TextEditingController();
     ValueNotifier<bool> toggleProfile = ValueNotifier(false);
+
+    //edit mode selection
     bool isBorderMode = false, isImageMode = false;
-    //background border image
-    String name = user.username;
+
+    //background and border color
     Color color1 = Utils.stringToColor(user.profileBgColor);
     Color color2 = Utils.stringToColor(user.profileBorderColor);
     String imgUrl = null;
+    ColorArray colorArrBg = ColorArray(
+      colors: ProfilePicture.colors,
+      currentBg: color1,
+      currentBorder: color2,
+      crossCount: 5,
+    );
+
+    //must be in order
+    Widget editSect = colorArrBg;
     ProfilePicture topPic = ProfilePicture(
       name: user.username,
       color1: color1,
@@ -52,14 +75,9 @@ class EditProfile extends StatelessWidget {
       fontSize: 50,
     );
 
-    ColorArray colorArrBg = ColorArray(
-      colors: ProfilePicture.colors,
-      currentBg: color1,
-      currentBorder: color2,
-    );
-    Widget editSect = colorArrBg;
-
     Function updateProfile = () {
+      print(imgUrl);
+      //isupdating
       topPic = ProfilePicture(
         name: name,
         image: imgUrl == null ? null : Image.file(File(imgUrl)),
@@ -69,198 +87,319 @@ class EditProfile extends StatelessWidget {
         height: 105,
         fontSize: 50,
       );
+      if (!isUpdated) {
+        saveBtnColor = kActiveColor;
+        undoBtnColor = kRedColor;
+      }
+
+      isUpdated = true;
       //toggling color Array
       toggleProfile.value = !toggleProfile.value;
       //updating usermodel
     };
-    Function updateEditSect = () {
-      if (isImageMode) {
-        editSect = Container();
-        toggleProfile.value = !toggleProfile.value;
-        return;
+
+    Function _setCameraImage = () async {
+      String url = await EditProfile.pickImg(ImageSource.camera);
+      if (url != null) {
+        containsImage = true;
+        imgUrl = url;
+        updateProfile();
       }
+    };
+    Function _setLibraryImage = () async {
+      String url = await EditProfile.pickImg(ImageSource.gallery);
+      if (url != null) {
+        containsImage = true;
+        imgUrl = url;
+        updateProfile();
+      }
+    };
+
+    Function updateEditSect = () {
       colorArrBg = ColorArray(
-        colors: ProfilePicture.colors,
-        currentBg: colorArrBg.currentBg,
-        currentBorder: colorArrBg.currentBorder,
-        borderMode: isBorderMode,
-        updateFunct: updateProfile,
-      );
+          colors: isImageMode
+              ? [kLightBackgroundColor, kLightBackgroundColor]
+              : ProfilePicture.colors,
+          currentBg: colorArrBg.currentBg,
+          currentBorder: colorArrBg.currentBorder,
+          borderMode: isBorderMode,
+          crossCount: isImageMode ? 2 : 5,
+          updateFunct: isImageMode ? () {} : updateProfile,
+          dualMode: isImageMode,
+          iconList: isImageMode
+              ? [Icons.camera_alt_outlined, Icons.photo_library_outlined]
+              : null,
+          label: isImageMode ? ["Camera", "Photos"] : null,
+          onclicks: isImageMode ? [_setCameraImage, _setLibraryImage] : null);
+
       editSect = colorArrBg;
       toggleProfile.value = !toggleProfile.value;
     };
 
     colorArrBg.updateFunct = updateProfile;
-    if (user.profilePic != null)
+    if (user.profilePic != null) {
       topPic.image = Image.file(File(user.profilePic));
+      containsImage = true;
+    }
 
-    Navigator.push(
+    await Navigator.push(
         context,
         MaterialPageRoute(
-            builder: ((context) => Scaffold(
-                  appBar: AppBar(
-                      backgroundColor: kLightBackgroundColor,
-                      centerTitle: true,
-                      title: Text(
-                        "Edit Profile",
-                        style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold),
-                      ),
-                      leading: IconButton(
-                        color: kDarkTextColor.withOpacity(0.9),
-                        onPressed: () {
-                          Navigator.pop(context);
-                        },
-                        icon: Icon(Icons.arrow_back_ios),
-                      )),
-                  body: ValueListenableBuilder(
-                    valueListenable: toggleProfile,
-                    builder: (context, value, child) => Align(
-                      alignment: Alignment.center,
-                      child: Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Column(children: [
-                          topPic,
-                          Form(
-                            key: _formKey,
-                            child: Container(
-                              padding: EdgeInsets.only(top: 10),
-                              width: MediaQuery.of(context).size.width * 0.55,
-                              child: TextFormField(
-                                validator: (value) {
-                                  if (value.length == 1) {
-                                    return 'Please enter a minimium of 2 chars';
-                                  }
-                                  return null;
-                                },
-                                textAlign: TextAlign.center,
-                                controller: myController,
-                                decoration: InputDecoration(
-                                    counterStyle:
-                                        TextStyle(color: kDisabledColor),
-                                    labelStyle: TextStyle(
-                                      color: kDarkTextColor,
-                                    ),
-                                    label: Align(
-                                        alignment: Alignment.center,
-                                        child: Text(user.username)),
-                                    filled: true,
-                                    fillColor: kLightBackgroundColor,
-                                    contentPadding: const EdgeInsets.symmetric(
-                                        horizontal: 4, vertical: 5),
-                                    disabledBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(5),
-                                    )),
-                                style: TextStyle(color: kDarkTextColor),
-                                maxLines: 1,
-                                maxLength: 14,
+            builder: ((context) => GestureDetector(
+                  onTap: (() {
+                    FocusScopeNode currentFocus = FocusScope.of(context);
+
+                    if (!currentFocus.hasPrimaryFocus) {
+                      currentFocus.unfocus();
+                    }
+                  }),
+                  child: Scaffold(
+                    appBar: AppBar(
+                        backgroundColor: kLightBackgroundColor,
+                        centerTitle: true,
+                        title: Text(
+                          "Edit Profile",
+                          style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold),
+                        ),
+                        leading: IconButton(
+                          color: kDarkTextColor.withOpacity(0.9),
+                          onPressed: () {
+                            Navigator.pop(context);
+                          },
+                          icon: Icon(Icons.arrow_back_ios),
+                        )),
+                    body: ValueListenableBuilder(
+                      valueListenable: toggleProfile,
+                      builder: (context, value, child) => SingleChildScrollView(
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Column(children: [
+                            topPic,
+                            Form(
+                              key: _formKey,
+                              child: Container(
+                                padding: EdgeInsets.only(top: 10),
+                                width: MediaQuery.of(context).size.width * 0.55,
+                                child: TextFormField(
+                                  onChanged: (newName) {
+                                    if (newName.trim().length > 2) {
+                                      backSpaceTrigger = true;
+                                    }
+                                    if (newName.trim().length < 2) {
+                                      backSpaceTrigger = false;
+                                    }
+
+                                    if (newName.length == 2 &&
+                                        !backSpaceTrigger) {
+                                      name = newName;
+                                      updateProfile();
+                                    }
+                                  },
+                                  validator: (value) {
+                                    if (value.length == 1) {
+                                      return 'Please enter a minimium of 2 chars';
+                                    }
+                                    return null;
+                                  },
+                                  textAlign: TextAlign.center,
+                                  controller: myController,
+                                  decoration: InputDecoration(
+                                      counterStyle:
+                                          TextStyle(color: kDisabledColor),
+                                      labelStyle: TextStyle(
+                                        color: kDarkTextColor,
+                                      ),
+                                      label: Align(
+                                          alignment: Alignment.center,
+                                          child: Text(user.username)),
+                                      filled: true,
+                                      fillColor: kLightBackgroundColor,
+                                      contentPadding:
+                                          const EdgeInsets.symmetric(
+                                              horizontal: 4, vertical: 5),
+                                      disabledBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(5),
+                                      )),
+                                  style: TextStyle(color: kDarkTextColor),
+                                  maxLines: 1,
+                                  maxLength: 14,
+                                ),
                               ),
                             ),
-                          ),
-                          SizedBox(
-                            height: 15,
-                          ),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: TextButton(
-                                    style: ButtonStyle(
-                                        backgroundColor: !isBorderMode &&
-                                                !isImageMode
-                                            ? MaterialStateProperty.all<Color>(
-                                                kActiveColor)
-                                            : MaterialStateProperty.all<Color>(
-                                                kLightBackgroundColor),
-                                        shape: MaterialStateProperty.all<
-                                                RoundedRectangleBorder>(
-                                            RoundedRectangleBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(5.0),
-                                        ))),
+                            SizedBox(
+                              height: 15,
+                            ),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: TextButton(
+                                      style: ButtonStyle(
+                                          backgroundColor: !isBorderMode &&
+                                                  !isImageMode
+                                              ? MaterialStateProperty.all<
+                                                  Color>(kActiveColor)
+                                              : MaterialStateProperty.all<
+                                                  Color>(kLightBackgroundColor),
+                                          shape: MaterialStateProperty.all<
+                                                  RoundedRectangleBorder>(
+                                              RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(5.0),
+                                          ))),
+                                      onPressed: () {
+                                        print("pressed");
+                                        if (!isBorderMode && !isImageMode)
+                                          return;
+                                        isBorderMode = false;
+                                        isImageMode = false;
+                                        updateEditSect();
+                                      },
+                                      child: Text(
+                                        "Background Color",
+                                        style: TextStyle(
+                                            color: !isBorderMode && !isImageMode
+                                                ? kBrightTextColor
+                                                : Utils.lighten(kActiveColor)),
+                                      )),
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: TextButton(
+                                      style: ButtonStyle(
+                                          backgroundColor: isBorderMode
+                                              ? MaterialStateProperty.all<
+                                                  Color>(kActiveColor)
+                                              : MaterialStateProperty.all<
+                                                  Color>(kLightBackgroundColor),
+                                          shape: MaterialStateProperty.all<
+                                                  RoundedRectangleBorder>(
+                                              RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(5.0),
+                                          ))),
+                                      onPressed: () {
+                                        if (isBorderMode) return;
+                                        isBorderMode = true;
+                                        isImageMode = false;
+                                        updateEditSect();
+                                      },
+                                      child: Text(
+                                        "Border Color",
+                                        style: TextStyle(
+                                            color: isBorderMode
+                                                ? kBrightTextColor
+                                                : Utils.lighten(kActiveColor)),
+                                      )),
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: TextButton(
+                                      style: ButtonStyle(
+                                          backgroundColor: isImageMode
+                                              ? MaterialStateProperty.all<
+                                                  Color>(kActiveColor)
+                                              : MaterialStateProperty.all<
+                                                  Color>(kLightBackgroundColor),
+                                          shape: MaterialStateProperty.all<
+                                                  RoundedRectangleBorder>(
+                                              RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(5.0),
+                                          ))),
+                                      onPressed: () {
+                                        if (isImageMode) return;
+                                        isImageMode = true;
+                                        isBorderMode = false;
+                                        updateEditSect();
+                                      },
+                                      child: Text(
+                                        "Image",
+                                        style: TextStyle(
+                                            color: isImageMode
+                                                ? kBrightTextColor
+                                                : Utils.lighten(kActiveColor)),
+                                      )),
+                                ),
+                              ],
+                            ),
+                            editSect,
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceAround,
+                              children: [
+                                ElevatedButton(
+                                    style: ElevatedButton.styleFrom(
+                                        primary: undoBtnColor),
                                     onPressed: () {
-                                      print("pressed");
-                                      if (!isBorderMode && !isImageMode) return;
-                                      isBorderMode = false;
-                                      isImageMode = false;
+                                      //orig color index set
+                                      colorArrBg.currentBg = color1;
+                                      colorArrBg.currentBorder = color2;
+
+                                      //remove username text
+                                      myController.clear();
+                                      name = user.username;
+
+                                      //remove image
+                                      imgUrl = null;
+
+                                      updateProfile();
+
+                                      //change buttons
+                                      isUpdated = false;
+                                      saveBtnColor = kDisabledColor;
+                                      undoBtnColor = kDisabledColor;
+
+                                      //set orig colors
                                       updateEditSect();
                                     },
-                                    child: Text(
-                                      "Background Color",
-                                      style: TextStyle(
-                                          color: !isBorderMode && !isImageMode
-                                              ? kBrightTextColor
-                                              : Utils.lighten(kActiveColor)),
-                                    )),
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: TextButton(
-                                    style: ButtonStyle(
-                                        backgroundColor: isBorderMode
-                                            ? MaterialStateProperty.all<Color>(
-                                                kActiveColor)
-                                            : MaterialStateProperty.all<Color>(
-                                                kLightBackgroundColor),
-                                        shape: MaterialStateProperty.all<
-                                                RoundedRectangleBorder>(
-                                            RoundedRectangleBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(5.0),
-                                        ))),
+                                    child: Text(undoBtnText)),
+                                ElevatedButton(
+                                    style: ElevatedButton.styleFrom(
+                                        primary: saveBtnColor),
                                     onPressed: () {
-                                      if (isBorderMode) return;
-                                      isBorderMode = true;
-                                      isImageMode = false;
-                                      updateEditSect();
+                                      if (saveBtnColor == kDisabledColor ||
+                                          !_formKey.currentState.validate())
+                                        return;
+                                      Utils util = Utils();
+                                      saveBtnText = "Save All";
+                                      saveBtnColor = kDisabledColor;
+                                      undoBtnColor = kDisabledColor;
+                                      name = myController.text;
+                                      isUpdated = false;
+                                      toggleProfile.value =
+                                          !toggleProfile.value;
+
+                                      //update database
+                                      user.profileBgColor =
+                                          Utils.colorToHexString(
+                                              colorArrBg.currentBg);
+                                      user.profileBorderColor =
+                                          Utils.colorToHexString(
+                                              colorArrBg.currentBorder);
+                                      user.username = myController.text;
+                                      user.profilePic = imgUrl;
+
+                                      FirebaseApi.updateUserData(user);
+                                      util.showSnackBar(
+                                          context, "Profile Updated", false);
+                                      Timer(Duration(milliseconds: 1200), () {
+                                        util.removeSnackBar();
+                                      });
                                     },
-                                    child: Text(
-                                      "Border Color",
-                                      style: TextStyle(
-                                          color: isBorderMode
-                                              ? kBrightTextColor
-                                              : Utils.lighten(kActiveColor)),
-                                    )),
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: TextButton(
-                                    style: ButtonStyle(
-                                        backgroundColor: isImageMode
-                                            ? MaterialStateProperty.all<Color>(
-                                                kActiveColor)
-                                            : MaterialStateProperty.all<Color>(
-                                                kLightBackgroundColor),
-                                        shape: MaterialStateProperty.all<
-                                                RoundedRectangleBorder>(
-                                            RoundedRectangleBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(5.0),
-                                        ))),
-                                    onPressed: () {
-                                      if (isImageMode) return;
-                                      isImageMode = true;
-                                      isBorderMode = false;
-                                      updateEditSect();
-                                    },
-                                    child: Text(
-                                      "Image",
-                                      style: TextStyle(
-                                          color: isImageMode
-                                              ? kBrightTextColor
-                                              : Utils.lighten(kActiveColor)),
-                                    )),
-                              ),
-                            ],
-                          ),
-                          editSect
-                        ]),
+                                    child: Text(saveBtnText))
+                              ],
+                            )
+                          ]),
+                        ),
                       ),
                     ),
                   ),
                 ))));
+    print("complet");
+    return user;
   }
 }
