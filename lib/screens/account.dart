@@ -18,7 +18,6 @@ import 'package:enos/widgets/settings_widget/msg_request.dart';
 import 'package:enos/widgets/settings_widget/saved_users.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:flutter_email_sender/flutter_email_sender.dart';
 
 class AccountPage extends StatefulWidget {
   bool isSelf;
@@ -85,7 +84,8 @@ class _AccountPageState extends State<AccountPage>
       {
         "icon": Icons.edit_outlined,
         "title": "Edit Profile",
-        "trail": EditProfile()
+        "trail": EditProfile(),
+        'onclick': openImgPicker
       },
       {
         "icon": Icons.logout_outlined,
@@ -780,5 +780,9 @@ class _AccountPageState extends State<AccountPage>
 
   void openMessenger() {
     MessageRequest.openMessenger(context, user);
+  }
+
+  void openImgPicker() {
+    EditProfile.openImgPicker(context, user);
   }
 }

@@ -59,11 +59,6 @@ class MessageRequest extends StatelessWidget {
     Color btnColor = kActiveColor;
     String activeBtnValue = '';
     final myController = TextEditingController();
-    // @override
-    // void dispose(){
-    //   myController.dispose();
-
-    // }
 
     Navigator.push(
         context,
@@ -97,180 +92,169 @@ class MessageRequest extends StatelessWidget {
                     body: ValueListenableBuilder(
                       valueListenable: toggleBtns,
                       builder: (context, value, child) => SingleChildScrollView(
-                        child: GestureDetector(
-                          onTap: () {
-                            print("tapped");
-                          },
-                          child: Column(
-                            // crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              Align(
-                                alignment: Alignment.center,
-                                child: Wrap(
-                                  children: List.generate(
-                                      subjectBtns.length,
-                                      (index) => Container(
-                                            padding: EdgeInsets.zero,
-                                            margin: EdgeInsets.fromLTRB(
-                                                8, 10, 0, 0),
-                                            // color: subjectBtns[index]['active']
-                                            //     ? kActiveColor
-                                            //     : kLightBackgroundColor,
-                                            child: TextButton.icon(
-                                              style: ButtonStyle(
-                                                  backgroundColor: subjectBtns[
-                                                          index]['active']
-                                                      ? MaterialStateProperty
-                                                          .all<Color>(
-                                                              kActiveColor)
-                                                      : MaterialStateProperty.all<
-                                                              Color>(
-                                                          kLightBackgroundColor),
-                                                  shape: MaterialStateProperty
-                                                      .all<RoundedRectangleBorder>(
-                                                          RoundedRectangleBorder(
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            5.0),
-                                                  ))),
-                                              onPressed: () {
-                                                if (!subjectBtns[index]
-                                                    ['active']) {
-                                                  subjectBtns
-                                                      .forEach((element) {
-                                                    element['active'] = false;
-                                                  });
-                                                  subjectBtns[index]['active'] =
-                                                      true;
-                                                  activeBtnValue =
-                                                      subjectBtns[index]
-                                                          ['value'];
-                                                  toggleBtns.value =
-                                                      !toggleBtns.value;
-                                                }
-                                              },
-                                              label: Text(
-                                                subjectBtns[index]['text'],
-                                                style: TextStyle(
-                                                    fontWeight: FontWeight.w500,
-                                                    color: subjectBtns[index]
-                                                            ['active']
-                                                        ? kDarkBackgroundColor
-                                                        : Utils.lighten(
-                                                            kActiveColor)),
-                                              ),
-                                              icon: Icon(
-                                                  subjectBtns[index]['icon'],
+                        child: Column(
+                          // crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Align(
+                              alignment: Alignment.center,
+                              child: Wrap(
+                                children: List.generate(
+                                    subjectBtns.length,
+                                    (index) => Container(
+                                          padding: EdgeInsets.zero,
+                                          margin:
+                                              EdgeInsets.fromLTRB(8, 10, 0, 0),
+                                          // color: subjectBtns[index]['active']
+                                          //     ? kActiveColor
+                                          //     : kLightBackgroundColor,
+                                          child: TextButton.icon(
+                                            style: ButtonStyle(
+                                                backgroundColor: subjectBtns[
+                                                        index]['active']
+                                                    ? MaterialStateProperty.all<
+                                                        Color>(kActiveColor)
+                                                    : MaterialStateProperty.all<
+                                                            Color>(
+                                                        kLightBackgroundColor),
+                                                shape: MaterialStateProperty.all<
+                                                        RoundedRectangleBorder>(
+                                                    RoundedRectangleBorder(
+                                                  borderRadius:
+                                                      BorderRadius.circular(
+                                                          5.0),
+                                                ))),
+                                            onPressed: () {
+                                              if (!subjectBtns[index]
+                                                  ['active']) {
+                                                subjectBtns.forEach((element) {
+                                                  element['active'] = false;
+                                                });
+                                                subjectBtns[index]['active'] =
+                                                    true;
+                                                activeBtnValue =
+                                                    subjectBtns[index]['value'];
+                                                toggleBtns.value =
+                                                    !toggleBtns.value;
+                                              }
+                                            },
+                                            label: Text(
+                                              subjectBtns[index]['text'],
+                                              style: TextStyle(
+                                                  fontWeight: FontWeight.w500,
                                                   color: subjectBtns[index]
                                                           ['active']
                                                       ? kDarkBackgroundColor
                                                       : Utils.lighten(
                                                           kActiveColor)),
                                             ),
-                                          )),
-                                ),
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.all(18.0),
-                                child: Form(
-                                    key: _formKey,
-                                    child: Column(
-                                      children: [
-                                        TextFormField(
-                                          controller: myController,
-                                          decoration: InputDecoration(
-                                              filled: true,
-                                              fillColor: kLightBackgroundColor,
-                                              hintStyle: TextStyle(
-                                                  color: kDisabledColor),
-                                              hintText: 'Your message here',
-                                              contentPadding:
-                                                  const EdgeInsets.symmetric(
-                                                      horizontal: 16,
-                                                      vertical: 12),
-                                              disabledBorder:
-                                                  OutlineInputBorder(
-                                                borderRadius:
-                                                    BorderRadius.circular(5),
-                                              )),
-                                          style:
-                                              TextStyle(color: kDarkTextColor),
-                                          maxLines: 14,
-                                          // The validator receives the text that the user has entered.
-                                          validator: (value) {
-                                            if (value == null ||
-                                                value.trim().isEmpty ||
-                                                value.trim().split(" ").length <
-                                                    3) {
-                                              return 'Please enter a minimium of 2 words';
-                                            }
-                                            return null;
-                                          },
-                                        ),
-                                        Padding(
-                                          padding: const EdgeInsets.symmetric(
-                                              vertical: 10.0),
-                                          child: ElevatedButton(
-                                            style: ElevatedButton.styleFrom(
-                                                primary: btnColor),
-                                            onPressed: () {
-                                              Utils util = Utils();
-
-                                              // Validate returns true if the form is valid, or false otherwise.
-                                              if (!_formKey.currentState
-                                                  .validate()) {
-                                                util.showSnackBar(
-                                                    context,
-                                                    "Error - Message Invalid",
-                                                    false,
-                                                    color: kRedColor);
-                                                Timer(
-                                                    Duration(
-                                                        milliseconds: 1700),
-                                                    () {
-                                                  util.removeSnackBar();
-                                                });
-                                                return;
-                                              }
-                                              if (subjectBtns.every((element) =>
-                                                  element['active'] == false)) {
-                                                util.showSnackBar(
-                                                    context,
-                                                    "Error - Please select a subject button",
-                                                    false,
-                                                    color: kRedColor);
-                                                Timer(
-                                                    Duration(
-                                                        milliseconds: 2500),
-                                                    () {
-                                                  util.removeSnackBar();
-                                                });
-                                                return;
-                                              }
-
-                                              if (btnText == "Submitted")
-                                                return;
-                                              // If the form is valid, display a snackbar. In the real world,
-                                              // you'd often call a server or save the information in a database.
-                                              EmailSender().sendServiceRequest(
-                                                  name: self.username,
-                                                  email: self.email,
-                                                  subject: activeBtnValue,
-                                                  message: myController.text,
-                                                  context: context);
-                                              btnText = "Submitted";
-                                              btnColor = kDisabledColor;
-                                              toggleBtns.value =
-                                                  !toggleBtns.value;
-                                            },
-                                            child: Text(btnText),
+                                            icon: Icon(
+                                                subjectBtns[index]['icon'],
+                                                color: subjectBtns[index]
+                                                        ['active']
+                                                    ? kDarkBackgroundColor
+                                                    : Utils.lighten(
+                                                        kActiveColor)),
                                           ),
+                                        )),
+                              ),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.all(18.0),
+                              child: Form(
+                                  key: _formKey,
+                                  child: Column(
+                                    children: [
+                                      TextFormField(
+                                        controller: myController,
+                                        decoration: InputDecoration(
+                                            counterStyle: TextStyle(
+                                                color: kBrightTextColor),
+                                            filled: true,
+                                            fillColor: kLightBackgroundColor,
+                                            hintStyle: TextStyle(
+                                                color: kDisabledColor),
+                                            hintText: 'Your message here',
+                                            contentPadding:
+                                                const EdgeInsets.symmetric(
+                                                    horizontal: 16,
+                                                    vertical: 12),
+                                            disabledBorder: OutlineInputBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(5),
+                                            )),
+                                        style: TextStyle(color: kDarkTextColor),
+                                        maxLines: 14,
+                                        // The validator receives the text that the user has entered.
+                                        validator: (value) {
+                                          if (value == null ||
+                                              value.trim().isEmpty ||
+                                              value.trim().split(" ").length <
+                                                  3) {
+                                            return 'Please enter a minimium of 2 words';
+                                          }
+                                          return null;
+                                        },
+                                      ),
+                                      Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                            vertical: 10.0),
+                                        child: ElevatedButton(
+                                          style: ElevatedButton.styleFrom(
+                                              primary: btnColor),
+                                          onPressed: () {
+                                            Utils util = Utils();
+
+                                            // Validate returns true if the form is valid, or false otherwise.
+                                            if (!_formKey.currentState
+                                                .validate()) {
+                                              util.showSnackBar(
+                                                  context,
+                                                  "Error - Message Invalid",
+                                                  false,
+                                                  color: kRedColor);
+                                              Timer(
+                                                  Duration(milliseconds: 1700),
+                                                  () {
+                                                util.removeSnackBar();
+                                              });
+                                              return;
+                                            }
+                                            if (subjectBtns.every((element) =>
+                                                element['active'] == false)) {
+                                              util.showSnackBar(
+                                                  context,
+                                                  "Error - Please select a subject button",
+                                                  false,
+                                                  color: kRedColor);
+                                              Timer(
+                                                  Duration(milliseconds: 2500),
+                                                  () {
+                                                util.removeSnackBar();
+                                              });
+                                              return;
+                                            }
+
+                                            if (btnText == "Submitted") return;
+                                            // If the form is valid, display a snackbar. In the real world,
+                                            // you'd often call a server or save the information in a database.
+                                            EmailSender().sendServiceRequest(
+                                                name: self.username,
+                                                email: self.email,
+                                                subject: activeBtnValue,
+                                                message: myController.text,
+                                                context: context);
+                                            btnText = "Submitted";
+                                            btnColor = kDisabledColor;
+                                            toggleBtns.value =
+                                                !toggleBtns.value;
+                                          },
+                                          child: Text(btnText),
                                         ),
-                                      ],
-                                    )),
-                              )
-                            ],
-                          ),
+                                      ),
+                                    ],
+                                  )),
+                            )
+                          ],
                         ),
                       ),
                     ),

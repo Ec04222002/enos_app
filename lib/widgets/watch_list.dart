@@ -4,7 +4,6 @@ import 'package:enos/services/firebase_api.dart';
 import 'package:enos/services/ticker_provider.dart';
 import 'package:enos/services/yahoo_api.dart';
 import 'package:enos/widgets/loading.dart';
-import 'package:enos/widgets/loading_tile.dart';
 import 'package:enos/widgets/ticker_tile.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
