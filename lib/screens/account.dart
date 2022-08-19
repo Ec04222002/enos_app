@@ -72,6 +72,7 @@ class _AccountPageState extends State<AccountPage>
         "icon": Icons.comment_outlined,
         "title": "Comments and Replies",
         "trail": CommentReply(),
+        "onclick": commentReply
       },
       {
         "icon": Icons.messenger_outline,
@@ -647,6 +648,11 @@ class _AccountPageState extends State<AccountPage>
         context,
         MaterialPageRoute(
             builder: (context) => MessageRequest()));
+  }
+
+  void commentReply() {
+   Navigator.push(context,
+       MaterialPageRoute(builder: (context) => CommentReplyPage(user, uid)));
   }
 
 }

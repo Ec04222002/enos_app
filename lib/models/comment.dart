@@ -7,6 +7,7 @@ class CommentField {
 
 class Comment {
   String commentUid;
+  String parentUid;
   final String stockUid;
   final String userUid;
   final DateTime createdTime;
@@ -29,7 +30,7 @@ class Comment {
       this.isNested,
       this.apiComment,
       this.viewReply = false,
-      this.userName = ""});
+      this.userName = "", parentUid});
 
   static Comment fromJson(Map<String, dynamic> json) => Comment(
       commentUid: json['comment_uid'],
@@ -41,7 +42,9 @@ class Comment {
       replies: json['replies'],
       isNested: json['isNested'],
       apiComment: json['apiComment'],
-      userName: json['userName']);
+      userName: json['userName'],
+      parentUid: json['parentUid']
+  );
 
   @override
   String toString() {
@@ -58,6 +61,7 @@ class Comment {
         'replies': replies,
         'isNested': isNested,
         'apiComment': apiComment,
-        'userName': userName
+        'userName': userName,
+        'parentUid' : parentUid
       };
 }

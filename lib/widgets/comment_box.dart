@@ -43,7 +43,6 @@ class _CommentBoxState extends State<CommentBox> {
   }
 
   Widget box() {
-    print('gay');
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -136,12 +135,16 @@ class _CommentBoxState extends State<CommentBox> {
                                   apiComment: false,
                                   createdTime: DateTime.now(),
                                   replies: [],
-                                  userName: user.username);
+                                  userName: user.username,
+                                  parentUid: widget.manager.root.commentUid
+                              );
 
                               String id = await FirebaseApi.updateComment(com);
                               widget.manager.root.replies.add(id);
+                              widget.data.replies.add(id);
                               await FirebaseApi.updateComment(
                                   widget.manager.root);
+                              await FirebaseApi.updateComment(widget.data);
                               await widget.manager.loadComments(1);
                               user.comments.add(id);
                               await FirebaseApi.updateUserData(user);
