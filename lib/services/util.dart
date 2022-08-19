@@ -110,7 +110,8 @@ class Utils {
   }
 
   AnimationController localAnimationController;
-  void showSnackBar(BuildContext context, String text, bool showLoader) {
+  void showSnackBar(BuildContext context, String text, bool showLoader,
+      {Color color}) {
     showTopSnackBar(
       context,
 
@@ -118,7 +119,7 @@ class Utils {
         borderRadius: BorderRadius.circular(5.0), //or 15.0
         child: Container(
           height: 54.0,
-          color: kLightBackgroundColor,
+          color: color == null ? kLightBackgroundColor : color,
           padding: EdgeInsets.zero,
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,

@@ -39,13 +39,13 @@ class _RegisterPageState extends State<RegisterPage> {
         : Scaffold(
             extendBodyBehindAppBar: true,
             appBar: AppBar(
-              backgroundColor: Colors.transparent,
+              backgroundColor: kLightBackgroundColor,
               centerTitle: true,
               title: Text('Sign Up',
                   style: Theme.of(context)
                       .textTheme
                       .headline1
-                      .copyWith(fontSize: 22.0)),
+                      .copyWith(fontSize: 20.0)),
             ),
             body: SingleChildScrollView(
               child: Padding(
@@ -59,8 +59,9 @@ class _RegisterPageState extends State<RegisterPage> {
                           text: "Enter username",
                           icon: Icons.person_outline,
                           isPassword: false,
-                          validatorFunct: (val) => val.length < 6
-                              ? 'Please enter an username 6+ chars long'
+                          validatorFunct: (val) => val.length < 6 ||
+                                  val.length > 14
+                              ? 'Please enter an username between 6-14 characters long'
                               : null,
                           obscureText: false,
                           controller: _userNameTextController),

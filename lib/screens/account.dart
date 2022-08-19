@@ -7,6 +7,7 @@ import 'package:enos/models/user_tile.dart';
 import 'package:enos/models/watchlist.dart';
 import 'package:enos/screens/ticker_info.dart';
 import 'package:enos/services/auth.dart';
+import 'package:enos/services/email_sender.dart';
 import 'package:enos/services/firebase_api.dart';
 import 'package:enos/services/ticker_provider.dart';
 import 'package:enos/services/util.dart';
@@ -43,15 +44,17 @@ class _AccountPageState extends State<AccountPage>
   bool init = true;
   dynamic size;
   TabController _tabController;
-
+  UserModel self;
   List<Map<String, dynamic>> settingsList;
   //tickers used to show tiles
   List<TickerTileModel> _tickers;
-
+  ValueNotifier<bool> toggleSaveBtn = ValueNotifier(false);
+  ValueNotifier<bool> toggleTopProfile = ValueNotifier(false);
   bool initCalled = false, setOtherCalled = false;
   Future<void> setInit() async {
     initCalled = true;
     user = await FirebaseApi.getUser(uid);
+    self = await FirebaseApi.getUser(provider.watchListUid);
     //settingsList[1]['onclick'] =
     name = user.username;
     setState(() {
@@ -78,12 +81,13 @@ class _AccountPageState extends State<AccountPage>
         "icon": Icons.messenger_outline,
         "title": "Message Request",
         "trail": MessageRequest(),
-        "onclick": messageRequest
+        'onclick': openMessenger,
       },
       {
         "icon": Icons.edit_outlined,
         "title": "Edit Profile",
-        "trail": EditProfile()
+        "trail": EditProfile(),
+        'onclick': openImgPicker
       },
       {
         "icon": Icons.logout_outlined,
@@ -141,13 +145,13 @@ class _AccountPageState extends State<AccountPage>
   }
 
   Widget build(BuildContext context) {
-    print("building");
     size = MediaQuery.of(context).size;
     //viewing own accounts page
     if (widget.uid.isEmpty) {
       provider = Provider.of<TickerTileProvider>(context, listen: false);
       uid = Provider.of<UserField>(context, listen: false).userUid;
       _tickers = provider.tickers;
+      // popupHeight = size.height * 0.8;
       watchlistLoading = false;
     }
     //view other users watchlist
@@ -155,6 +159,7 @@ class _AccountPageState extends State<AccountPage>
       provider = widget.provider;
       uid = widget.uid;
       isSelfView = false;
+      // popupHeight = MediaQuery.of(context).size.height * 0.8;
       setOtherTickers();
     }
     if (!initCalled) {
@@ -164,6 +169,74 @@ class _AccountPageState extends State<AccountPage>
     return isLoading
         ? Loading()
         : Scaffold(
+            // appBar: isSelfView
+            //     ? null
+            //     : AppBar(
+            //         backgroundColor: kLightBackgroundColor,
+            //         centerTitle: true,
+            //         title: Text(name),
+            //         leading: IconButton(
+            //           onPressed: () {
+            //             Navigator.pop(context, {"new_user": self});
+            //           },
+            //           color: kDarkTextColor,
+            //           icon: Icon(Icons.arrow_back_ios),
+            //         ),
+            //         actions: [
+            //           ValueListenableBuilder(
+            //             valueListenable: toggleSaveBtn,
+            //             builder: (context, value, child) => IconButton(
+            //                 onPressed: () {
+            //                   //removing
+            //                   if (self.userSaved.contains(uid)) {
+            //                     Utils.showAlertDialog(context,
+            //                         "Are you sure you want to remove @${name}?",
+            //                         () {
+            //                       Navigator.pop(
+            //                         context,
+            //                       );
+            //                     }, () {
+            //                       self.userSaved
+            //                           .removeAt(self.userSaved.indexOf(uid));
+            //                       FirebaseApi.updateUserData(self);
+            //                       toggleSaveBtn.value = !toggleSaveBtn.value;
+            //                       Navigator.pop(context);
+            //                     });
+
+            //                     // user.userSaved
+            //                     //     .removeAt(user.userSaved.indexOf(searchTile.uid));
+            //                     // searchTile.isSaved = false;
+            //                     // FirebaseApi.updateUserData(user);
+            //                     // toggleSave.value = !toggleSave.value;
+            //                   } else {
+            //                     if (self.userSaved.length > 15) {
+            //                       Utils.showAlertDialog(context,
+            //                           "You have reached your limit of 15 people added.",
+            //                           () {
+            //                         Navigator.pop(context);
+            //                       }, null);
+            //                     } else {
+            //                       self.userSaved.add(uid);
+
+            //                       FirebaseApi.updateUserData(self);
+            //                       toggleSaveBtn.value = !toggleSaveBtn.value;
+            //                     }
+            //                   }
+            //                 },
+            //                 icon: self.userSaved.contains(uid)
+            //                     ? Icon(
+            //                         Icons.bookmark_outlined,
+            //                         color: kDisabledColor,
+            //                         size: 32,
+            //                       )
+            //                     : Icon(
+            //                         Icons.bookmark_border_outlined,
+            //                         color: kDisabledColor,
+            //                         size: 32,
+            //                       )),
+            //           )
+            //         ],
+            //       ),
             body: SingleChildScrollView(
               physics: BouncingScrollPhysics(),
               child: Container(
@@ -178,92 +251,154 @@ class _AccountPageState extends State<AccountPage>
   }
 
   Widget topProfile() {
-    return Container(
-      margin: EdgeInsets.zero,
-      padding: EdgeInsets.zero,
-      color: kLightBackgroundColor,
-      width: size.width,
-      height: size.height * 0.20,
-      child: Padding(
-        padding: EdgeInsets.fromLTRB(20, 25, 0, 13),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.end,
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: [
-            CircleAvatar(
-              backgroundColor: Utils.stringToColor(user.profileBorderColor),
-              radius: 30,
-              child: CircleAvatar(
-                  radius: 29,
-                  backgroundColor: Utils.stringToColor(user.profileBgColor),
+    return ValueListenableBuilder(
+      valueListenable: toggleTopProfile,
+      builder: (context, value, child) => SafeArea(
+        child: Container(
+          margin: EdgeInsets.zero,
+          padding: EdgeInsets.zero,
+          color: kLightBackgroundColor,
+          width: size.width,
+          height: size.height * 0.15,
+          child: Padding(
+            padding: EdgeInsets.fromLTRB(18, 0, 0, 13),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                CircleAvatar(
+                  backgroundColor: Utils.stringToColor(user.profileBorderColor),
+                  radius: name.length > 12 ? 26 : 30,
                   child: Center(
-                    child: Text(
-                      name.substring(0, 1).toUpperCase() +
-                          (name.length > 1 ? name.substring(1, 2) : ""),
-                      style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 27),
-                    ),
-                  )),
-            ),
-            Padding(
-              padding: EdgeInsets.fromLTRB(10, 0, 0, 5),
-              child: RichText(
-                overflow: TextOverflow.ellipsis,
-                softWrap: true,
-                maxLines: 2,
-                text: TextSpan(
-                    text: name,
-                    style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w500,
-                        fontSize: 26),
-                    children: [
-                      TextSpan(
-                          text: "\t·\t",
-                          style: TextStyle(
-                              fontSize: 30,
-                              color: kDisabledColor,
-                              fontWeight: FontWeight.bold)),
-                      TextSpan(
-                        text: viewAccountIsSelf()
-                            ? "${Utils.getTimeFromToday(user.createdTime)} (You)"
-                            : "${Utils.getTimeFromToday(user.createdTime)}",
+                    child: CircleAvatar(
+                        radius: name.length > 12 ? 24 : 28,
+                        backgroundColor:
+                            Utils.stringToColor(user.profileBgColor),
+                        child: Center(
+                          child: Text(
+                            name.substring(0, 1).toUpperCase() +
+                                (name.length > 1 ? name.substring(1, 2) : ""),
+                            style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 27),
+                          ),
+                        )),
+                  ),
+                ),
+                Padding(
+                  padding: EdgeInsets.fromLTRB(10, 0, 0, 5),
+                  child: RichText(
+                    overflow: TextOverflow.ellipsis,
+                    softWrap: true,
+                    maxLines: 2,
+                    text: TextSpan(
+                        text: name,
                         style: TextStyle(
-                            color: kDisabledColor,
-                            fontSize: 21,
-                            fontWeight: FontWeight.w400),
-                      )
-                    ]),
-              ),
-            ),
-            isSelfView
-                ? Container(
-                    height: 0,
-                  )
-                : Expanded(
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        Column(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w500,
+                            fontSize: name.length > 12 ? 23 : 26),
+                        children: [
+                          TextSpan(
+                              text: "\t·\t",
+                              style: TextStyle(
+                                  fontSize: name.length > 12 ? 24 : 28,
+                                  color: kDisabledColor,
+                                  fontWeight: FontWeight.bold)),
+                          TextSpan(
+                            text: viewAccountIsSelf()
+                                ? "${Utils.getTimeFromToday(user.createdTime)} (You)"
+                                : "${Utils.getTimeFromToday(user.createdTime)}",
+                            style: TextStyle(
+                                color: kDisabledColor,
+                                fontSize: name.length > 12 ? 17 : 19,
+                                fontWeight: FontWeight.w400),
+                          ),
+                        ]),
+                  ),
+                ),
+
+                //self view on account page
+                isSelfView
+                    ? Container(height: 0)
+                    : Expanded(
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
                           children: [
-                            IconButton(
-                                onPressed: () {
-                                  Navigator.pop(context);
-                                },
-                                icon: Icon(
-                                  Icons.cancel_outlined,
-                                  size: 32,
-                                  color: Utils.lighten(
-                                      kLightBackgroundColor, 0.25),
-                                )),
+                            Column(
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: ValueListenableBuilder(
+                                    valueListenable: toggleSaveBtn,
+                                    builder: (context, value, child) =>
+                                        IconButton(
+                                            onPressed: () {
+                                              //removing
+                                              if (self.userSaved
+                                                  .contains(uid)) {
+                                                Utils.showAlertDialog(context,
+                                                    "Are you sure you want to remove @${name}?",
+                                                    () {
+                                                  Navigator.pop(
+                                                    context,
+                                                  );
+                                                }, () {
+                                                  self.userSaved.removeAt(self
+                                                      .userSaved
+                                                      .indexOf(uid));
+                                                  FirebaseApi.updateUserData(
+                                                      self);
+                                                  toggleSaveBtn.value =
+                                                      !toggleSaveBtn.value;
+                                                  Navigator.pop(context);
+                                                });
+
+                                                // user.userSaved
+                                                //     .removeAt(user.userSaved.indexOf(searchTile.uid));
+                                                // searchTile.isSaved = false;
+                                                // FirebaseApi.updateUserData(user);
+                                                // toggleSave.value = !toggleSave.value;
+                                              } else {
+                                                if (self.userSaved.length >
+                                                    15) {
+                                                  Utils.showAlertDialog(context,
+                                                      "You have reached your limit of 15 people added.",
+                                                      () {
+                                                    Navigator.pop(context);
+                                                  }, null);
+                                                } else {
+                                                  self.userSaved.add(uid);
+
+                                                  FirebaseApi.updateUserData(
+                                                      self);
+                                                  toggleSaveBtn.value =
+                                                      !toggleSaveBtn.value;
+                                                }
+                                              }
+                                            },
+                                            icon: self.userSaved.contains(uid)
+                                                ? Icon(
+                                                    Icons.bookmark_outlined,
+                                                    color: kDisabledColor,
+                                                    size: 35,
+                                                  )
+                                                : Icon(
+                                                    Icons
+                                                        .bookmark_border_outlined,
+                                                    color: kDisabledColor,
+                                                    size: 35,
+                                                  )),
+                                  ),
+                                ),
+                              ],
+                            ),
                           ],
                         ),
-                      ],
-                    ),
-                  ),
-          ],
+                      ),
+              ],
+            ),
+          ),
         ),
       ),
     );
@@ -373,48 +508,52 @@ class _AccountPageState extends State<AccountPage>
 
   ValueNotifier<bool> toggleStar = ValueNotifier(false);
 
-  Future<UserModel> getUser() async {
-    UserModel response = await FirebaseApi.getUser(uid);
-    return response;
-  }
-
   Widget requestWatchlist() {
     ValueNotifier<bool> toggleRequestBtn = ValueNotifier(false);
     String btnTxt = "Request View";
     Color btnColor = kActiveColor;
     return ValueListenableBuilder(
       valueListenable: toggleRequestBtn,
-      builder: (context, value, child) => Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              "$name turned on privacy",
-              maxLines: 2,
-              textAlign: TextAlign.center,
-              style: TextStyle(color: kDisabledColor, fontSize: 15),
-            ),
-            SizedBox(
-              height: 4,
-            ),
-            TextButton(
-                onPressed: () {
-                  btnColor = kDisabledColor;
-                  btnTxt = "Submitted";
-                  toggleRequestBtn.value = !toggleRequestBtn.value;
-                },
-                child: ClipRRect(
-                  borderRadius: BorderRadius.all(Radius.circular(3)),
-                  child: Container(
-                    padding: EdgeInsets.all(8),
-                    child: Text(
-                      btnTxt,
-                      style: TextStyle(color: kDarkTextColor),
+      builder: (context, value, child) => Padding(
+        padding: EdgeInsets.only(bottom: 20),
+        child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                "$name turned on privacy mode",
+                maxLines: 2,
+                textAlign: TextAlign.center,
+                style: TextStyle(color: kDisabledColor, fontSize: 15),
+              ),
+              SizedBox(
+                height: 4,
+              ),
+              TextButton(
+                  onPressed: () {
+                    btnColor = kDisabledColor;
+                    btnTxt = "Submitted";
+                    EmailSender().sendRequestView(
+                        toName: name,
+                        toEmail: user.email,
+                        fromEmail: self.email,
+                        fromName: self.username,
+                        context: context);
+                    toggleRequestBtn.value = !toggleRequestBtn.value;
+                  },
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.all(Radius.circular(3)),
+                    child: Container(
+                      padding: EdgeInsets.all(8),
+                      child: Text(
+                        btnTxt,
+                        style: TextStyle(color: kDarkTextColor),
+                      ),
+                      color: btnColor,
                     ),
-                    color: btnColor,
-                  ),
-                ))
-          ]),
+                  ))
+            ]),
+      ),
     );
   }
 
@@ -442,7 +581,7 @@ class _AccountPageState extends State<AccountPage>
       valueListenable: toggleStar,
       builder: (context, value, child) => ListView.separated(
           physics: BouncingScrollPhysics(),
-          // padding: EdgeInsets.only(top: 8),
+          padding: EdgeInsets.only(top: 20),
           itemBuilder: (context, index) {
             print("rebuilding");
             if (index == 0) {
@@ -634,8 +773,12 @@ class _AccountPageState extends State<AccountPage>
         context, "Are you sure you want to delete your account?", () {
       Navigator.pop(context);
     }, () {
-      FirebaseApi.deleteUser(uid);
       Navigator.pop(context);
+      try {
+        FirebaseApi.deleteUser(uid);
+      } catch (e) {
+        logout();
+      }
     });
   }
 
@@ -643,16 +786,16 @@ class _AccountPageState extends State<AccountPage>
     SavedUsers.openSavedUsersPage(context);
   }
 
-  void messageRequest() {
-    Navigator.push(
-        context,
-        MaterialPageRoute(
-            builder: (context) => MessageRequest()));
+  void openMessenger() {
+    MessageRequest.openMessenger(context, user);
   }
 
-  void commentReply() {
-   Navigator.push(context,
-       MaterialPageRoute(builder: (context) => CommentReplyPage(user, uid)));
+  Future<void> openImgPicker() async {
+    UserModel newUser = await EditProfile.openImgPicker(context, user);
+    name = newUser.username;
+    print(newUser.username);
+    print("*** complet");
+    user = newUser;
+    toggleTopProfile.value = !toggleTopProfile.value;
   }
-
 }

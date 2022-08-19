@@ -17,6 +17,7 @@ import 'package:enos/services/util.dart';
 import 'package:enos/services/yahoo_api.dart';
 import 'package:enos/widgets/loading.dart';
 import 'package:enos/widgets/search_input.dart';
+import 'package:firebase_core/firebase_core.dart';
 import "package:flutter/material.dart";
 import "package:enos/constants.dart";
 import 'package:provider/provider.dart';
@@ -112,6 +113,7 @@ class _SearchPageState extends State<SearchPage> {
 
   @override
   Widget build(BuildContext context) {
+    print('rebuilding searchtiles');
     if (isInit) {
       mainContext = context;
       if (!widget.isMainPage) {
@@ -162,7 +164,8 @@ class _SearchPageState extends State<SearchPage> {
                     if (market.toLowerCase() == "users") {
                       UserSearchTile tile =
                           UserSearchTile.modelToSearchTile(recommends[index]);
-
+                      print(user.userSaved);
+                      tile.isSaved = false;
                       if (user.userSaved.contains(tile.uid)) {
                         tile.isSaved = true;
                       }
@@ -409,14 +412,31 @@ class _SearchPageState extends State<SearchPage> {
   }
 
   void _showUserInfo(String uid) async {
-    Map<String, dynamic> response = await Navigator.push(
-        mainContext,
-        MaterialPageRoute(
-            builder: ((context) => AccountPage(
-                  uid: uid,
-                  provider: provider,
-                ))));
+    // Map<String, dynamic> response = await Navigator.push(
+    //     mainContext,
+    //     MaterialPageRoute(
+    //         builder: ((context) => AccountPage(
+    //               uid: uid,
+    //               provider: provider,
+    //             ))));
 
-    print('done');
+    // setState(() {
+    //   user = response['new_user'];
+    // });
+    await showModalBottomSheet(
+        context: context,
+        isScrollControlled: true,
+        builder: (_) {
+          return Wrap(children: [
+            Container(
+              height: MediaQuery.of(context).size.height * 0.80,
+              child: AccountPage(
+                uid: uid,
+                provider: provider,
+              ),
+            ),
+          ]);
+        });
+    await setUser();
   }
 }

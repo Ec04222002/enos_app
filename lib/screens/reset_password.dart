@@ -33,13 +33,13 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
         : Scaffold(
             extendBodyBehindAppBar: true,
             appBar: AppBar(
-              backgroundColor: Colors.transparent,
+              backgroundColor: kLightBackgroundColor,
               centerTitle: true,
               title: Text('Reset Password',
                   style: Theme.of(context)
                       .textTheme
                       .headline1
-                      .copyWith(fontSize: 22.0)),
+                      .copyWith(fontSize: 20.0)),
             ),
             body: SingleChildScrollView(
               child: Padding(

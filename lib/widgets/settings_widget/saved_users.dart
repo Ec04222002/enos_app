@@ -28,17 +28,35 @@ class SavedUsers extends StatelessWidget {
   static openSavedUsersPage(BuildContext context) async {
     TickerTileProvider provider =
         Provider.of<TickerTileProvider>(context, listen: false);
+
     UserModel user = await FirebaseApi.getUser(provider.watchListUid);
+
     List<String> savedUserId = user.userSaved;
     List<UserSearchTile> userTiles = [];
     ValueNotifier<bool> toggleSave = ValueNotifier(false);
+    List<int> removeIndexes = [];
+
+    //creating userTiles
+    //updating saved users
     for (int i = 0; i < savedUserId.length; ++i) {
-      UserModel userModel = await FirebaseApi.getUser(savedUserId[i]);
-      UserSearchTile userSearchTile =
-          UserSearchTile.modelToSearchTile(userModel);
-      userSearchTile.isSaved = true;
-      userTiles.add(userSearchTile);
+      bool exist = await FirebaseApi.checkExist("Usesr", savedUserId[i]);
+      if (exist) {
+        UserModel userModel = await FirebaseApi.getUser(savedUserId[i]);
+        UserSearchTile userSearchTile =
+            UserSearchTile.modelToSearchTile(userModel);
+        userSearchTile.isSaved = true;
+        userTiles.add(userSearchTile);
+        continue;
+      }
+      removeIndexes.add(i);
     }
+    //descending
+    removeIndexes.sort((b, a) => a.compareTo(b));
+    for (int j = 0; j < removeIndexes.length; ++j) {
+      savedUserId.removeAt(j);
+    }
+    user.userSaved = savedUserId;
+    FirebaseApi.updateUserData(user);
     Navigator.push(
         context,
         MaterialPageRoute(
@@ -63,6 +81,8 @@ class SavedUsers extends StatelessWidget {
                   body: ValueListenableBuilder(
                     valueListenable: toggleSave,
                     builder: (context, value, child) => ListView.separated(
+                      padding: EdgeInsets.only(top: 10),
+                      physics: BouncingScrollPhysics(),
                       itemCount: savedUserId.length,
                       itemBuilder: (context, index) {
                         UserSearchTile userTile = userTiles[index];
@@ -71,7 +91,7 @@ class SavedUsers extends StatelessWidget {
                             tileColor: kLightBackgroundColor,
                             leading: userTile.leadWidget,
                             onTap: () async {
-                              Map<String, dynamic> response =
+                              Map<String, UserModel> response =
                                   await Navigator.push(
                                       context,
                                       MaterialPageRoute(
@@ -79,6 +99,9 @@ class SavedUsers extends StatelessWidget {
                                                 uid: userTile.uid,
                                                 provider: provider,
                                               ))));
+
+                              savedUserId = response['new_user'].userSaved;
+                              toggleSave.value = !toggleSave.value;
                             },
                             title: Text(
                               "@" + userTile.userName,

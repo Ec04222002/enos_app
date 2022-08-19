@@ -12,9 +12,6 @@ class UserSearchTile {
 
   static UserSearchTile modelToSearchTile(UserModel model) {
     String searchUserName = model.username;
-    if (searchUserName.length > 10) {
-      searchUserName = searchUserName.substring(0, 10);
-    }
 
     // var leadWidget = model.profilePic != null
     //     ? ProfilePicture(image: model.profilePic, name: searchUserName)
