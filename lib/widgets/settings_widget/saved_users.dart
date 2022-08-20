@@ -39,7 +39,7 @@ class SavedUsers extends StatelessWidget {
     //creating userTiles
     //updating saved users
     for (int i = 0; i < savedUserId.length; ++i) {
-      bool exist = await FirebaseApi.checkExist("Usesr", savedUserId[i]);
+      bool exist = await FirebaseApi.checkExist("Users", savedUserId[i]);
       if (exist) {
         UserModel userModel = await FirebaseApi.getUser(savedUserId[i]);
         UserSearchTile userSearchTile =
@@ -57,6 +57,27 @@ class SavedUsers extends StatelessWidget {
     }
     user.userSaved = savedUserId;
     FirebaseApi.updateUserData(user);
+
+    void _showUserInfo(String uid) async {
+      await showModalBottomSheet(
+          context: context,
+          isScrollControlled: true,
+          builder: (_) {
+            return Wrap(children: [
+              Container(
+                height: MediaQuery.of(context).size.height * 0.80,
+                child: AccountPage(
+                  uid: uid,
+                  provider: provider,
+                ),
+              ),
+            ]);
+          });
+      user = await FirebaseApi.getUser(user.userUid);
+      savedUserId = user.userSaved;
+      toggleSave.value = !toggleSave.value;
+    }
+
     Navigator.push(
         context,
         MaterialPageRoute(
@@ -91,17 +112,7 @@ class SavedUsers extends StatelessWidget {
                             tileColor: kLightBackgroundColor,
                             leading: userTile.leadWidget,
                             onTap: () async {
-                              Map<String, UserModel> response =
-                                  await Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                          builder: ((context) => AccountPage(
-                                                uid: userTile.uid,
-                                                provider: provider,
-                                              ))));
-
-                              savedUserId = response['new_user'].userSaved;
-                              toggleSave.value = !toggleSave.value;
+                              _showUserInfo(userTile.uid);
                             },
                             title: Text(
                               "@" + userTile.userName,

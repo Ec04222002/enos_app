@@ -19,7 +19,7 @@ class ProfilePicture extends StatelessWidget {
     Colors.orange,
     Colors.purple,
     Colors.black,
-    Colors.redAccent,
+    Colors.red[300],
     Colors.lightBlue,
     Colors.amber,
     Colors.blueGrey,
@@ -44,9 +44,9 @@ class ProfilePicture extends StatelessWidget {
       this.name,
       this.color1,
       this.color2,
-      this.width = 35,
-      this.height = 35,
-      this.fontSize = 18}) {
+      this.width = 37,
+      this.height = 37,
+      this.fontSize = 16}) {
     if (color1 == null) color1 = Utils.stringToColor(getRandomColor());
     if (color2 == null) color2 = Utils.stringToColor(getRandomColor());
   }

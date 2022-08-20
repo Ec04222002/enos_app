@@ -88,6 +88,7 @@ class _SearchPageState extends State<SearchPage> {
   Future<void> setUser() async {
     uid = mainContext.read<UserField>().userUid;
     user = await FirebaseApi.getUser(uid);
+    print(uid);
   }
 
   @override
@@ -412,17 +413,6 @@ class _SearchPageState extends State<SearchPage> {
   }
 
   void _showUserInfo(String uid) async {
-    // Map<String, dynamic> response = await Navigator.push(
-    //     mainContext,
-    //     MaterialPageRoute(
-    //         builder: ((context) => AccountPage(
-    //               uid: uid,
-    //               provider: provider,
-    //             ))));
-
-    // setState(() {
-    //   user = response['new_user'];
-    // });
     await showModalBottomSheet(
         context: context,
         isScrollControlled: true,
@@ -437,6 +427,8 @@ class _SearchPageState extends State<SearchPage> {
             ),
           ]);
         });
+    print("dismissed");
     await setUser();
+    setState(() {});
   }
 }
