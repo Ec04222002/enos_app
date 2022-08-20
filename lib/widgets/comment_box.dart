@@ -141,6 +141,7 @@ class _CommentBoxState extends State<CommentBox> {
 
                               String id = await FirebaseApi.updateComment(com);
                               widget.manager.root.replies.add(id);
+                              widget.manager.cReplies.add(id);
                               widget.data.replies.add(id);
                               await FirebaseApi.updateComment(
                                   widget.manager.root);

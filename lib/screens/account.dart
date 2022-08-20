@@ -782,6 +782,12 @@ class _AccountPageState extends State<AccountPage>
     });
   }
 
+  void commentReply() {
+    Navigator.push(context,
+        MaterialPageRoute(builder: (context) => CommentReplyPage(user, uid)));
+  }
+
+
   void openSavedUser() {
     SavedUsers.openSavedUsersPage(context);
   }

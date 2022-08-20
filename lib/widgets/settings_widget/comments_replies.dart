@@ -1,6 +1,7 @@
 
 import 'package:enos/constants.dart';
 import 'package:enos/models/comment.dart';
+import 'package:enos/screens/ticker_info.dart';
 import 'package:enos/services/firebase_api.dart';
 import 'package:enos/services/util.dart';
 import 'package:enos/widgets/loading.dart';
@@ -53,7 +54,6 @@ class _CommentReplyPageState extends State<CommentReplyPage> {
   void loadComments() async {
     isLoad = true;
     if(widget.user == null) {
-      print(widget.uid);
       widget.user = await FirebaseApi.getUser(widget.uid);
     }
     for(String com in widget.user.comments) {
@@ -87,13 +87,16 @@ class _CommentReplyPageState extends State<CommentReplyPage> {
           ),
         ),
 
-      body: Container(
+      body:  Container(
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.end,
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             SizedBox(height: 7,),
-            Text('Edit'),
+            TextButton(
+              onPressed: showBottom,
+              child: Text("Edit", style: TextStyle(color: kActiveColor),),
+            ),
             SizedBox(height: 7,),
             Expanded(
                 child: isLoad? Loading():ListView.builder(
@@ -108,66 +111,72 @@ class _CommentReplyPageState extends State<CommentReplyPage> {
                     }
                 )
             ),
-            Container(
-              width: 400,
-              height: 100,
-              color: kLightBackgroundColor,
-              child: Column(
-                children: [
-                  Row(
-                    children: [
-                      Icon(Icons.expand, color: kDisabledColor),
-                      Text(
-                        " Sort: ",
-                        style: Theme.of(context).textTheme.caption.copyWith(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: kBrightTextColor),
-                      )
-                    ],
-                  ),
-                  SizedBox(height: 10),
-                  DefaultTabController(
-                      length: 3,
-                      child: Row(
-                        children: [
-                          Expanded(child: TabBar(
-                            onTap: (int index) {
-                                sort(index);
-                                setState((){});
-                            },
-                            labelPadding: EdgeInsets.zero,
-                            padding: EdgeInsets.zero,
-                            indicator: BoxDecoration(
-                              // Creates border
-                              borderRadius: BorderRadius.circular(10),
-                                color: kActiveColor,),
-                            tabs: [
-                              Tab(
-                                text: "Most Recent",
-                                height: 30,
-                              ),
-                              Tab(
-                                text: "Most Liked",
-                                height: 30,
-                              ),
-                              Tab(
-                                text: "Most Replied",
-                                height: 30,
-                              ),
-                            ],
-                          ))
 
-                        ],
-                      )
-                  )
-                ],
-              ),
-            )
           ],
         ),
       ),
     );
+  }
+
+  void showBottom() {
+    showModalBottomSheet(context: context, builder: (_) {
+      return  Container(
+        width: 400,
+        height: 75,
+        color: kLightBackgroundColor,
+        child: Column(
+          children: [
+            Row(
+              children: [
+                Icon(Icons.expand, color: kDisabledColor),
+                Text(
+                  " Sort: ",
+                  style: Theme.of(context).textTheme.caption.copyWith(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: kBrightTextColor),
+                )
+              ],
+            ),
+            SizedBox(height: 10),
+            DefaultTabController(
+                length: 3,
+                child: Row(
+                  children: [
+                    Expanded(child: TabBar(
+                      onTap: (int index) {
+                        sort(index);
+                        setState((){});
+                      },
+                      labelPadding: EdgeInsets.zero,
+                      padding: EdgeInsets.zero,
+                      indicator: BoxDecoration(
+                        // Creates border
+                        borderRadius: BorderRadius.circular(10),
+                        color: kActiveColor,),
+                      tabs: [
+                        Tab(
+                          text: "Most Recent",
+                          height: 30,
+                        ),
+                        Tab(
+                          text: "Most Liked",
+                          height: 30,
+                        ),
+                        Tab(
+                          text: "Most Replied",
+                          height: 30,
+                        ),
+                      ],
+                    ))
+
+                  ],
+                )
+            )
+          ],
+        ),
+      );
+    });
   }
 
   void sort(int index) async{
@@ -209,8 +218,9 @@ class _CommentReplyPageState extends State<CommentReplyPage> {
             ),
 
             GestureDetector(
-                onTap: (){
-
+                onTap: () {
+                Navigator.push(context,
+                   MaterialPageRoute(builder: (context) => TickerInfo(symbol: comment.stockUid,)));
                 },
                 child: Container(
                   width: 350,

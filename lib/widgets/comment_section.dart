@@ -16,6 +16,7 @@ import 'package:flutter/material.dart';
 class CommentManager extends StatefulWidget {
   Comment root;
   List<Comment> visibleReplies = [];
+  List<String> cReplies = [];
   CommentTreeWidget<Comment, Comment> tree;
   String userId;
   UserModel user;
@@ -32,13 +33,14 @@ class CommentManager extends StatefulWidget {
       this.rootColor2,
       this.rootProfilePic,
       this.userProfilePic}) {
+    cReplies = [...root.replies];
     color1 = {root.userUid: rootColor1};
     color2 = {root.userUid: rootColor2};
     profilePic = {};
     if (rootProfilePic != null) {
       profilePic[root.userUid] = rootProfilePic;
     }
-    if (root.replies.length > 0) root.viewReply = true;
+    if (cReplies.length > 0) root.viewReply = true;
 
     if (root.apiComment == null) {
       root.apiComment = true;
@@ -51,7 +53,7 @@ class CommentManager extends StatefulWidget {
   // }
 
   void refresh() {
-    if (visibleReplies.length == root.replies.length) {
+    if (visibleReplies.length == cReplies.length) {
       loadComments(1);
     } else {}
   }
@@ -63,11 +65,9 @@ class CommentManager extends StatefulWidget {
     if (pos != 0) {
       visibleReplies[pos - 1].viewReply = false;
     }
-    if (pos < root.replies.length) {
-      for (int i = 0; i < amt && pos < root.replies.length; i++, pos++) {
-        Comment com = await FirebaseApi.getComment(root.replies[pos]);
-        print(com.content);
-        print(com.commentUid);
+    if (pos < cReplies.length) {
+      for (int i = 0; i < amt && pos < cReplies.length; i++, pos++) {
+        Comment com = await FirebaseApi.getComment(cReplies[pos]);
         visibleReplies.add(com);
         UserModel user2;
         Color c1, c2;
@@ -167,7 +167,8 @@ class _CommentManagerState extends State<CommentManager> {
 class CommentSection extends StatefulWidget {
   String userId;
   String symbol;
-  CommentSection(String userId, String symbol) {
+  String parentId, childId;
+  CommentSection(String userId, String symbol, {this.parentId="",this.childId=""}) {
     this.symbol = symbol;
     this.userId = userId;
   }
@@ -195,7 +196,6 @@ class _CommentSectionState extends State<CommentSection> {
   double height;
 
   void loadComments() async {
-    print('cloading');
     isLoad = true;
     UserModel user = await FirebaseApi.getUser(widget.userId);
     this.user = user;
@@ -239,7 +239,9 @@ class _CommentSectionState extends State<CommentSection> {
       }
     });
    await comments.sort((a, b) {
-      return b.root.likes - a.root.likes;
+      if(a.root.likes != b.root.likes)
+        return b.root.likes - a.root.likes;
+      return b.root.createdTime.compareTo(a.root.createdTime);
     });
    List<CommentManager> first = [];
     for(CommentManager c in comments) {
@@ -249,11 +251,25 @@ class _CommentSectionState extends State<CommentSection> {
     }
 
     first.sort((a,b) {
-      return a.root.likes-b.root.likes;
+      if(a.root.likes != b.root.likes)
+        return a.root.likes-b.root.likes;
+      return a.root.createdTime.compareTo(b.root.createdTime);
     });
     for(CommentManager c in first) {
       comments.remove(c);
       comments.insert(0, c);
+    }
+
+    for(int i = 0; i < comments.length; i++) {
+      CommentManager c = comments[i];
+      if(c.root.commentUid == widget.parentId) {
+          comments.remove(c);
+          comments.insert(0, c);
+          if(widget.childId != "") {
+            c.cReplies.remove(widget.childId);
+            c.cReplies.insert(0, widget.childId);
+          }
+      }
     }
 
     isLoad = false;
