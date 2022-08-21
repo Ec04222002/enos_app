@@ -54,6 +54,7 @@ dependencies:
   cool_dropdown: ^1.4.1
   intl: ^0.17.0
   top_snackbar_flutter: ^2.1.1
+  image_picker: ^0.8.5+3
   
 dev_dependencies:
   flutter_test:

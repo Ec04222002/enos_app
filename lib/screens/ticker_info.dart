@@ -412,105 +412,113 @@ class _TickerInfoState extends State<TickerInfo>
   Widget TickerPage() {
     setSectHeight();
 
-    return SingleChildScrollView(
-        controller: pageScrollController,
-        child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-              child: PreTickerInfo(
-                  data: pageData,
-                  tickerProvider: widget.provider,
-                  isStream: isStream,
-                  isGreenAnime: isGreenAnime,
-                  isChangePost: isChangePost,
-                  indexOfChange: indexOfChange),
-            ),
-            Padding(
-              padding: EdgeInsets.fromLTRB(6, 8, 6, 0),
-              child: LineChartWidget(
-                symbol: pageData.symbol,
-                pageData: pageData,
-                range: range,
-                isPreview: false,
-                previousClose: previousClose,
-                chartLoading: chartLoading,
-                triggerNewChart: triggerNewChart,
+    return GestureDetector(
+      onTap: () {
+        FocusScope.of(context).unfocus();
+      },
+      child: SingleChildScrollView(
+          controller: pageScrollController,
+          child: Column(
+            children: [
+              Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                child: PreTickerInfo(
+                    data: pageData,
+                    tickerProvider: widget.provider,
+                    isStream: isStream,
+                    isGreenAnime: isGreenAnime,
+                    isChangePost: isChangePost,
+                    indexOfChange: indexOfChange),
               ),
-            ),
-            Padding(
-              padding: EdgeInsets.symmetric(vertical: 16),
-              child: DatesBar(onTap: (index) {
-                String localRange = TickerPageInfo.chartRangeAndInt[index][0];
-                // chartLoading = false;
-                setState(() {
-                  triggerNewChart = true;
-                  range = localRange;
-                  previousClose = pageData.previousClose;
-                  if (pageData.priceData[localRange] == null) {
-                    chartLoading = true;
-                    print("loading charts");
-                    return;
-                  }
-                  if (range != '1d') {
-                    dynamic closePrice =
-                        pageData.priceData[localRange]['closePrices'];
+              Padding(
+                padding: EdgeInsets.fromLTRB(6, 8, 6, 0),
+                child: LineChartWidget(
+                  symbol: pageData.symbol,
+                  pageData: pageData,
+                  range: range,
+                  isPreview: false,
+                  previousClose: previousClose,
+                  chartLoading: chartLoading,
+                  triggerNewChart: triggerNewChart,
+                ),
+              ),
+              Padding(
+                padding: EdgeInsets.symmetric(vertical: 16),
+                child: DatesBar(onTap: (index) {
+                  String localRange = TickerPageInfo.chartRangeAndInt[index][0];
+                  // chartLoading = false;
+                  setState(() {
+                    triggerNewChart = true;
+                    range = localRange;
+                    previousClose = pageData.previousClose;
+                    if (pageData.priceData[localRange] == null) {
+                      chartLoading = true;
+                      print("loading charts");
+                      return;
+                    }
+                    if (range != '1d') {
+                      dynamic closePrice =
+                          pageData.priceData[localRange]['closePrices'];
 
-                    previousClose =
-                        closePrice == null ? null : closePrice.first;
-                  }
-                });
-                //return 'Success';
-              }),
-            ),
-            Padding(
-              padding: EdgeInsets.all(8),
-              child: ClipRRect(
-                borderRadius: BorderRadius.all(Radius.circular(8)),
-                child: Container(
-                  height: sectHeight,
-                  child: Scaffold(
-                    appBar: AppBar(
-                      elevation: 0,
-                      automaticallyImplyLeading: false,
-                      titleSpacing: 0,
-                      toolbarHeight: toolBarHeight,
-                      backgroundColor: kLightBackgroundColor,
-                      leading: Container(height: 0),
-                      flexibleSpace: Column(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          TabBar(
-                            controller: _tabController,
-                            labelPadding: EdgeInsets.zero,
-                            padding: EdgeInsets.zero,
-                            indicator: BoxDecoration(
-                                // Creates border
-                                color: kActiveColor),
-                            tabs: myTabs,
-                          )
-                        ],
+                      previousClose =
+                          closePrice == null ? null : closePrice.first;
+                    }
+                  });
+                  //return 'Success';
+                }),
+              ),
+              Padding(
+                padding: EdgeInsets.all(8),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.all(Radius.circular(8)),
+                  child: Container(
+                    height: sectHeight,
+                    child: Scaffold(
+                      appBar: AppBar(
+                        elevation: 0,
+                        automaticallyImplyLeading: false,
+                        titleSpacing: 0,
+                        toolbarHeight: toolBarHeight,
+                        backgroundColor: kLightBackgroundColor,
+                        leading: Container(height: 0),
+                        flexibleSpace: Column(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            TabBar(
+                              controller: _tabController,
+                              labelPadding: EdgeInsets.zero,
+                              padding: EdgeInsets.zero,
+                              indicator: BoxDecoration(
+                                  // Creates border
+                                  color: kActiveColor),
+                              tabs: myTabs,
+                            )
+                          ],
+                        ),
                       ),
-                    ),
-                    body: Padding(
-                      padding: EdgeInsets.only(top: 8),
-                      child: new TabBarView(
-                        controller: _tabController,
-                        physics: NeverScrollableScrollPhysics(),
-                        children: [
-                          specSection(),
-                          CommentSection(
-                              widget.provider.watchListUid, pageData.symbol),
-                          newSection(),
-                        ],
+                      body: Padding(
+                        padding: EdgeInsets.only(top: 8),
+                        child: new TabBarView(
+                          controller: _tabController,
+                          physics: NeverScrollableScrollPhysics(),
+                          children: [
+                            specSection(),
+                            _addNotifer(CommentSection(
+                                widget.provider.watchListUid,
+                                pageData.symbol,
+                                isSelfScroll)),
+                            newSection(),
+                          ],
+                        ),
                       ),
                     ),
                   ),
                 ),
               ),
-            ),
-          ],
-        ));
+            ],
+          )),
+    );
   }
 
   Widget _addNotifer(Widget child) {

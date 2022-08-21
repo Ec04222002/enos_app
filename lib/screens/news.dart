@@ -136,6 +136,12 @@ class _NewsPageState extends State<NewsPage> {
   List<Widget> slideShow = [];
   int tabPos = 0;
 
+  @override
+  void dispose() {
+    controller.dispose();
+    super.dispose();
+  }
+
   Widget Tag(String title, String provider) {
     return Container(
       margin: EdgeInsets.only(bottom: 22),

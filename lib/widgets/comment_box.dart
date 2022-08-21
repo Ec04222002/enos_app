@@ -3,6 +3,7 @@ import 'package:enos/models/user.dart';
 import 'package:enos/services/firebase_api.dart';
 import 'package:enos/services/util.dart';
 import 'package:enos/widgets/comment_section.dart';
+import 'package:flutter/cupertino.dart';
 
 import 'package:flutter/material.dart';
 
@@ -12,10 +13,15 @@ class CommentBox extends StatefulWidget {
   final BuildContext context;
   final Comment data;
   final CommentManager manager;
-  final Function() notifyParent;
+  final Function notifyParent;
+  final Function replyClicked;
   String time;
   CommentBox(
-      {this.context, this.data, this.manager, @required this.notifyParent}) {
+      {this.context,
+      this.data,
+      this.manager,
+      @required this.notifyParent,
+      @required this.replyClicked}) {
     time = Utils.getTimeFromToday(data.createdTime);
   }
 
@@ -26,9 +32,16 @@ class CommentBox extends StatefulWidget {
 class _CommentBoxState extends State<CommentBox> {
   TextEditingController _controller;
 
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
   void initState() {
-    super.initState();
     _controller = TextEditingController();
+    super.initState();
   }
 
   double width;
@@ -97,68 +110,111 @@ class _CommentBoxState extends State<CommentBox> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: [
-                      widget.manager.userProfilePic,
-                      Container(
-                        width: 90,
-                        color: kLightBackgroundColor,
-                        //             padding: EdgeInsets.symmetric(horizontal: 10, vertical: 1),
-                        child: TextField(
-                          controller: _controller,
-                          minLines: 1,
-                          maxLines: null,
-                          onChanged: (String s) {
-                            setState(() {});
-                          },
-                          onEditingComplete: () async {},
-                          style:
-                              TextStyle(fontSize: 12, color: kBrightTextColor),
-                          decoration: InputDecoration(
-                              hintText: "Reply ... ",
-                              hintStyle: TextStyle(color: Colors.grey)),
-                        ),
-                      ),
-                      Container(
-                        width: 100,
-                        // height: 40,
-                        child: TextButton(
-                          onPressed: () async {
-                            if (_controller.text != "") {
-                              UserModel user = widget.manager.user;
+                      // widget.manager.userProfilePic,
+                      // Container(
+                      //   width: 90,
+                      //   color: kLightBackgroundColor,
+                      //   //             padding: EdgeInsets.symmetric(horizontal: 10, vertical: 1),
+                      //   child: TextField(
+                      //     controller: _controller,
+                      //     minLines: 1,
+                      //     maxLines: null,
+                      //     onChanged: (String s) {
+                      //       setState(() {});
+                      //     },
+                      //     onEditingComplete: () async {},
+                      //     style:
+                      //         TextStyle(fontSize: 12, color: kBrightTextColor),
+                      //     decoration: InputDecoration(
+                      //         hintText: "Reply ... ",
+                      //         hintStyle: TextStyle(color: Colors.grey)),
+                      //   ),
+                      // ),
+                      // Container(
+                      //   width: 100,
+                      //   // height: 40,
+                      //   child: TextButton(
+                      //     onPressed: () async {
+                      //       if (_controller.text != "") {
+                      //         UserModel user = widget.manager.user;
 
-                              Comment com = Comment(
-                                  content: _controller.value.text,
-                                  userUid: user.userUid,
-                                  stockUid: widget.data.stockUid,
-                                  likes: 0,
-                                  isNested: true,
-                                  apiComment: false,
-                                  createdTime: DateTime.now(),
-                                  replies: [],
-                                  userName: user.username);
+                      //         Comment com = Comment(
+                      //             content:
+                      //                 "@${widget.data.userName} ${_controller.value.text}",
+                      //             userUid: user.userUid,
+                      //             stockUid: widget.data.stockUid,
+                      //             likes: 0,
+                      //             isNested: true,
+                      //             apiComment: false,
+                      //             createdTime: DateTime.now(),
+                      //             replies: [],
+                      //             userName: user.username,
+                      //             parentUid: widget.manager.root.commentUid);
 
-                              String id = await FirebaseApi.updateComment(com);
-                              widget.manager.root.replies.add(id);
-                              await FirebaseApi.updateComment(
-                                  widget.manager.root);
-                              await widget.manager.loadComments(1);
-                              user.comments.add(id);
-                              await FirebaseApi.updateUserData(user);
-                              _controller.clear();
-                              widget.notifyParent();
-                              setState(() {});
-                            }
-                          },
-                          child: Text(
-                            "POST",
-                            style: TextStyle(
-                                color: _controller.text == ""
-                                    ? kDisabledColor
-                                    : kActiveColor,
-                                fontSize: 12),
-                          ),
-                        ),
-                      ),
-                      IconButton(
+                      //         String id = await FirebaseApi.updateComment(com);
+                      //         widget.manager.root.replies.add(id);
+                      //         widget.manager.cReplies.add(id);
+                      //         widget.data.replies.add(id);
+                      //         await FirebaseApi.updateComment(
+                      //             widget.manager.root);
+                      //         await FirebaseApi.updateComment(widget.data);
+                      //         await widget.manager.loadComments(1);
+                      //         user.comments.add(id);
+                      //         await FirebaseApi.updateUserData(user);
+                      //         _controller.clear();
+                      //         widget.notifyParent();
+                      //         setState(() {});
+                      //       }
+                      //     },
+                      //     child: Text(
+                      //       "POST",
+                      //       style: TextStyle(
+                      //           color: _controller.text == ""
+                      //               ? kDisabledColor
+                      //               : kActiveColor,
+                      //           fontSize: 12),
+                      //     ),
+                      //   ),
+                      // ),
+                      // IconButton(
+                      //     onPressed: () async {
+                      //       UserModel user = widget.manager.user;
+                      //       if (user.likedComments
+                      //           .contains(widget.data.commentUid)) {
+                      //         user.likedComments.remove(widget.data.commentUid);
+                      //         widget.data.likes--;
+                      //       } else {
+                      //         user.likedComments.add(widget.data.commentUid);
+                      //         widget.data.likes++;
+                      //       }
+                      //       await FirebaseApi.updateUserData(user);
+                      //       await FirebaseApi.updateComment(widget.data);
+                      //       widget.notifyParent();
+                      //     },
+                      //     icon: Column(
+                      //       children: [
+                      //         widget.manager.user.likedComments == null ||
+                      //                 widget.manager.user.likedComments
+                      //                     .contains(widget.data.commentUid)
+                      //             ? Icon(
+                      //                 Icons.thumb_up,
+                      //                 size: 20,
+                      //               )
+                      //             : Icon(
+                      //                 Icons.thumb_up_alt_outlined,
+                      //                 size: 20,
+                      //               ),
+                      //         // SizedBox(
+                      //         //   width: 4,
+                      //         // ),
+                      //         Text(
+                      //           "${widget.data.likes}",
+                      //           style: TextStyle(fontSize: 13),
+                      //         )
+                      //       ],
+                      //     ),
+                      // color: kDarkTextColor),
+                      TextButton.icon(
                           onPressed: () async {
                             UserModel user = widget.manager.user;
                             if (user.likedComments
@@ -178,20 +234,26 @@ class _CommentBoxState extends State<CommentBox> {
                                       .contains(widget.data.commentUid)
                               ? Icon(
                                   Icons.thumb_up,
-                                  size: 22,
+                                  size: 20,
                                 )
                               : Icon(
                                   Icons.thumb_up_alt_outlined,
-                                  size: 22,
+                                  size: 20,
                                 ),
-                          color: kDarkTextColor),
-                      Text(
-                        "${widget.data.likes}",
-                        style: TextStyle(fontSize: 13),
+                          label: Text(
+                            "${widget.data.likes}",
+                            style: TextStyle(fontSize: 13),
+                          )),
+                      SizedBox(
+                        width: 5,
                       ),
-                      // SizedBox(
-                      //   width: 24,
-                      // ),
+                      TextButton.icon(
+                          onPressed: widget.replyClicked,
+                          icon: Icon(Icons.reply),
+                          label: Text(
+                            "Reply",
+                            style: TextStyle(fontSize: 13),
+                          ))
                     ],
                   ),
                 ),
@@ -201,12 +263,13 @@ class _CommentBoxState extends State<CommentBox> {
         ),
         Row(
           children: [
-            widget.data.viewReply
+            !widget.manager.isLoad && widget.data.viewReply
                 ? TextButton(
                     onPressed: () async {
+                      widget.manager.isLoad = true;
+                      setState(() {});
                       await widget.manager.loadComments(4);
                       widget.notifyParent();
-                      setState(() {});
                     },
                     child: Text(
                       "View More Replies",
@@ -215,10 +278,23 @@ class _CommentBoxState extends State<CommentBox> {
                           fontWeight: FontWeight.bold,
                           fontSize: 12),
                     ))
-                : SizedBox.shrink()
+                : widget.data.viewReply
+                    ? CircularProgressIndicator(
+                        color: Colors.white,
+                        strokeWidth: 10,
+                      )
+                    : SizedBox.shrink()
           ],
         )
       ],
     );
+  }
+
+  void viewReply() async {
+    await widget.manager.loadComments(4);
+    Future.delayed(Duration(milliseconds: 100), () {
+      widget.notifyParent();
+      setState(() {});
+    });
   }
 }

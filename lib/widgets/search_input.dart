@@ -34,9 +34,15 @@ class _SearchInputState extends State<SearchInput> {
   ];
 
   @override
+  void dispose() {
+    controller.dispose();
+    super.dispose();
+  }
+
+  @override
   void initState() {
-    super.initState();
     isMainPage = widget.hintText == "Search Stocks or Users";
+    super.initState();
   }
 
   @override

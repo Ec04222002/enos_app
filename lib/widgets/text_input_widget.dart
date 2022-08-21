@@ -22,6 +22,12 @@ class TextInputWidget extends StatefulWidget {
 }
 
 class _TextInputWidgetState extends State<TextInputWidget> {
+  @override
+  void dispose() {
+    widget.controller.dispose();
+    super.dispose();
+  }
+
   void toggle() {
     setState(() {
       widget.obscureText = !widget.obscureText;

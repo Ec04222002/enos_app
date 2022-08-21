@@ -62,9 +62,15 @@ class ArticleViewer extends StatefulWidget {
 class _ArticleViewerState extends State<ArticleViewer> {
   final _controller = ScrollController();
   bool isScrollUp = true;
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
   @override
   void initState() {
-    super.initState();
     // Setup the listener.
     _controller.addListener(() {
       if (_controller.position.userScrollDirection == ScrollDirection.reverse) {
@@ -79,6 +85,7 @@ class _ArticleViewerState extends State<ArticleViewer> {
       //   widget.atTop = false;
       // });
     });
+    super.initState();
   }
 
   Widget build(BuildContext context) {

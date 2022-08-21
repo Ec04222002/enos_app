@@ -23,12 +23,12 @@ class _SignInPageState extends State<SignInPage> {
   String error = '';
   final _formKey = GlobalKey<FormState>();
   //final AuthService _auth = AuthService();
-  @override
-  void dispose() {
-    super.dispose();
-    _emailTextController.dispose();
-    _passwordTextController.dispose();
-  }
+  // @override
+  // void dispose() {
+  //   _emailTextController.dispose();
+  //   _passwordTextController.dispose();
+  //   super.dispose();
+  // }
 
   @override
   Widget build(BuildContext context) {
