@@ -203,15 +203,15 @@ class _CommentSectionState extends State<CommentSection> {
   void loadComments() async {
     isLoad = true;
     UserModel user = await FirebaseApi.getUser(widget.userId);
-    for(String id in user.comments) {
-      Comment com = await FirebaseApi.getComment(id);
-   //    print(com.stockUid);
-      // print(widget.symbol);
-      // print('kino');
-      if(com.stockUid == widget.symbol) {
-        this.numComments++;
-      }
-    }
+   //  for(String id in user.comments) {
+   //    Comment com = await FirebaseApi.getComment(id);
+   // //    print(com.stockUid);
+   //    // print(widget.symbol);
+   //    // print('kino');
+   //    if(com.stockUid == widget.symbol) {
+   //      this.numComments++;
+   //    }
+   //  }
     this.user = user;
     Image img = null;
     List<Comment> com = await FirebaseApi.getStockComment(widget.symbol);
@@ -230,6 +230,8 @@ class _CommentSectionState extends State<CommentSection> {
 
     for(int i = 0; i < com.length; i++) {
       Comment element = com[i];
+      if(element.userUid == user.userUid)
+        this.numComments++;
       if (!element.isNested) {
         Color color1, color2;
         Image profilePic = null;
