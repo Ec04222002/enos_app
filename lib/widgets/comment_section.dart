@@ -205,7 +205,7 @@ class _CommentSectionState extends State<CommentSection> {
     UserModel user = await FirebaseApi.getUser(widget.userId);
     for(String id in user.comments) {
       Comment com = await FirebaseApi.getComment(id);
-       print(com.stockUid);
+   //    print(com.stockUid);
       // print(widget.symbol);
       // print('kino');
       if(com.stockUid == widget.symbol) {
@@ -255,31 +255,36 @@ class _CommentSectionState extends State<CommentSection> {
       }
     }
    await comments.sort((a, b) {
-      if(a.root.likes != b.root.likes)
-        return b.root.likes - a.root.likes;
-      return b.root.createdTime.compareTo(a.root.createdTime);
-    });
-   List<CommentManager> first = [];
-    for(CommentManager c in comments) {
-      if(c.root.userUid == user.userUid) {
-        first.add(c);
+
+      bool one = a.root.userUid == user.userUid;
+      bool two = b.root.userUid == user.userUid;
+
+      if(one == two) {
+        if(a.root.likes != b.root.likes)
+          return b.root.likes - a.root.likes;
+        return b.root.createdTime.compareTo(a.root.createdTime);
       }
-    }
-   await first.sort((a,b) {
-      if(a.root.likes != b.root.likes)
-        return a.root.likes-b.root.likes;
-      return a.root.createdTime.compareTo(b.root.createdTime);
+      if(two)
+        return 1;
+      return -1;
     });
-    for(CommentManager c in first) {
-      comments.remove(c);
-      comments.insert(0, c);
-    }
-   // print(comments.length);
+   // List<CommentManager> first = [];
+   //  for(CommentManager c in comments) {
+   //    if(c.root.userUid == user.userUid) {
+   //      first.add(c);
+   //    }
+   //  }
+   // await first.sort((a,b) {
+   //    if(a.root.likes != b.root.likes)
+   //      return a.root.likes-b.root.likes;
+   //    return a.root.createdTime.compareTo(b.root.createdTime);
+   //  });
+   //  for(CommentManager c in first) {
+   //    comments.remove(c);
+   //    comments.insert(0, c);
+   //  }
     for(int i = 0; i < comments.length; i++) {
       CommentManager c = comments[i];
-      if(c.root.userUid == user.userUid) {
-        numComments++;
-      }
       if(c.root.commentUid == widget.parentId) {
           comments.remove(c);
           comments.insert(0, c);
@@ -288,9 +293,6 @@ class _CommentSectionState extends State<CommentSection> {
             c.cReplies.insert(0, widget.childId);
           }
       }
-    }
-    if(numComments > 5) {
-      widget.overLimit = true;
     }
     isLoad = false;
     setState(() {});
