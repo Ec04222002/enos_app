@@ -168,9 +168,13 @@ class CommentSection extends StatefulWidget {
   String userId;
   String symbol;
   String parentId, childId;
+  bool overLimit = false;
+  int numComments;
   CommentSection(String userId, String symbol, {this.parentId="",this.childId=""}) {
     this.symbol = symbol;
     this.userId = userId;
+    this.numComments = 0;
+
   }
 
   @override
@@ -182,6 +186,7 @@ class _CommentSectionState extends State<CommentSection> {
   TextEditingController _controller;
   List<CommentManager> comments;
   UserModel user;
+  int numComments = 0;
   void initState() {
     super.initState();
     comments = [];
@@ -198,6 +203,15 @@ class _CommentSectionState extends State<CommentSection> {
   void loadComments() async {
     isLoad = true;
     UserModel user = await FirebaseApi.getUser(widget.userId);
+    for(String id in user.comments) {
+      Comment com = await FirebaseApi.getComment(id);
+       print(com.stockUid);
+      // print(widget.symbol);
+      // print('kino');
+      if(com.stockUid == widget.symbol) {
+        this.numComments++;
+      }
+    }
     this.user = user;
     Image img = null;
     List<Comment> com = await FirebaseApi.getStockComment(widget.symbol);
@@ -213,7 +227,9 @@ class _CommentSectionState extends State<CommentSection> {
       height: 25,
       fontSize: 15,
     );
-    com.forEach((element) async {
+
+    for(int i = 0; i < com.length; i++) {
+      Comment element = com[i];
       if (!element.isNested) {
         Color color1, color2;
         Image profilePic = null;
@@ -237,7 +253,7 @@ class _CommentSectionState extends State<CommentSection> {
           rootProfilePic: profilePic,
         ));
       }
-    });
+    }
    await comments.sort((a, b) {
       if(a.root.likes != b.root.likes)
         return b.root.likes - a.root.likes;
@@ -249,8 +265,7 @@ class _CommentSectionState extends State<CommentSection> {
         first.add(c);
       }
     }
-
-    first.sort((a,b) {
+   await first.sort((a,b) {
       if(a.root.likes != b.root.likes)
         return a.root.likes-b.root.likes;
       return a.root.createdTime.compareTo(b.root.createdTime);
@@ -259,9 +274,12 @@ class _CommentSectionState extends State<CommentSection> {
       comments.remove(c);
       comments.insert(0, c);
     }
-
+   // print(comments.length);
     for(int i = 0; i < comments.length; i++) {
       CommentManager c = comments[i];
+      if(c.root.userUid == user.userUid) {
+        numComments++;
+      }
       if(c.root.commentUid == widget.parentId) {
           comments.remove(c);
           comments.insert(0, c);
@@ -271,7 +289,9 @@ class _CommentSectionState extends State<CommentSection> {
           }
       }
     }
-
+    if(numComments > 5) {
+      widget.overLimit = true;
+    }
     isLoad = false;
     setState(() {});
   }
@@ -292,7 +312,7 @@ class _CommentSectionState extends State<CommentSection> {
                 );
               }
               if (index == 1) {
-                if (this.user == null) {
+                if (this.user == null || this.numComments >= 5) {
                   return SizedBox.shrink();
                 }
                 return Container(
@@ -390,6 +410,7 @@ class _CommentSectionState extends State<CommentSection> {
                                         : null,
                                     userProfilePic: pic,
                                   ));
+                              this.numComments++;
                               _controller.clear();
                               setState(() {});
                             }
