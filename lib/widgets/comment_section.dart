@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:comment_tree/widgets/comment_tree_widget.dart';
 import 'package:comment_tree/widgets/tree_theme_data.dart';
 import 'package:enos/constants.dart';
@@ -10,7 +8,6 @@ import 'package:enos/services/util.dart';
 import 'package:enos/widgets/comment_box.dart';
 import 'package:enos/widgets/loading.dart';
 import 'package:enos/widgets/profile_pic.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class CommentManager extends StatefulWidget {

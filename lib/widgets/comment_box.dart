@@ -3,10 +3,9 @@ import 'package:enos/models/user.dart';
 import 'package:enos/services/firebase_api.dart';
 import 'package:enos/services/util.dart';
 import 'package:enos/widgets/comment_section.dart';
-import 'package:flutter/cupertino.dart';
+
 import 'package:flutter/material.dart';
 
-import '../models/comment.dart';
 import '../models/comment.dart';
 
 class CommentBox extends StatefulWidget {

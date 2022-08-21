@@ -2,19 +2,6 @@ import 'package:enos/constants.dart';
 import 'package:flutter/material.dart';
 
 class DatesBar extends StatelessWidget {
-  // int _tabIndex = 0;
-  // int _previousIndex = 0;
-  // var tab;
-  // @override
-  // void initState() {
-  //   // TODO: implement initState
-  //   super.initState();
-  //   tab = TabController(initialIndex: 0, length: 7, vsync: this);
-
-  //   tab.addListener(() => setState(() {
-  //         tab.index = _tabIndex;
-  //       }));
-  // }
   final Function onTap;
 
   const DatesBar({

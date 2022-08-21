@@ -1,10 +1,6 @@
-import 'dart:io';
-
 import 'package:enos/models/search_tile.dart';
 import 'package:enos/models/ticker_tile.dart';
-import 'package:enos/services/ticker_provider.dart';
 import 'package:enos/services/util.dart';
-import 'package:flutter/scheduler.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';

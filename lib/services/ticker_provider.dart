@@ -3,13 +3,12 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:enos/constants.dart';
 import 'package:enos/models/search_tile.dart';
-import 'package:enos/models/user.dart';
 import 'package:enos/models/watchlist.dart';
-import 'package:enos/screens/home.dart';
+
 import 'package:enos/services/firebase_api.dart';
 import 'package:enos/services/util.dart';
 import 'package:enos/services/yahoo_api.dart';
-import 'package:firebase_core/firebase_core.dart';
+
 import 'package:enos/models/ticker_tile.dart';
 import 'package:flutter/material.dart';
 

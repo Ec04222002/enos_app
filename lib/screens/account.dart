@@ -1,12 +1,10 @@
 // account page
 import 'dart:async';
-import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:enos/constants.dart';
 import 'package:enos/models/ticker_tile.dart';
 import 'package:enos/models/user.dart';
-import 'package:enos/models/user_tile.dart';
 import 'package:enos/models/watchlist.dart';
 import 'package:enos/screens/ticker_info.dart';
 import 'package:enos/services/auth.dart';
@@ -24,10 +22,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 class AccountPage extends StatefulWidget {
-  bool isSelf;
-  TickerTileProvider provider;
+  final TickerTileProvider provider;
   //if uid passed in then its not self profile
-  String uid;
+  final String uid;
   AccountPage({Key key, this.uid = "", this.provider}) : super(key: key);
 
   @override
@@ -70,7 +67,6 @@ class _AccountPageState extends State<AccountPage>
     //     await FirebaseApi.updateUserData(self);
     //   }
     // }
-    //settingsList[1]['onclick'] =
     name = user.username;
     setState(() {
       isLoading = false;
@@ -230,13 +226,16 @@ class _AccountPageState extends State<AccountPage>
                   image: null,
                   color1: Utils.stringToColor(user.profileBgColor),
                   color2: Utils.stringToColor(user.profileBorderColor),
-                  width: user.username.length > 8 ? 64 : 73,
-                  height: user.username.length > 8 ? 64 : 73,
-                  fontSize: user.username.length > 8 ? 27 : 35,
+                  width:
+                      user.username.length > 6 && _isWideWord(name) ? 64 : 72,
+                  height:
+                      user.username.length > 6 && _isWideWord(name) ? 64 : 72,
+                  fontSize:
+                      user.username.length > 6 && _isWideWord(name) ? 27 : 35,
                 ),
 
                 Padding(
-                  padding: EdgeInsets.only(bottom: 10),
+                  padding: EdgeInsets.fromLTRB(2, 0, 0, 9),
                   child: RichText(
                     overflow: TextOverflow.ellipsis,
                     softWrap: true,
@@ -264,12 +263,18 @@ class _AccountPageState extends State<AccountPage>
                         style: TextStyle(
                             color: Colors.white,
                             fontWeight: FontWeight.w500,
-                            fontSize: name.length > 8 ? 22 : 27),
+                            fontSize:
+                                user.username.length > 6 && _isWideWord(name)
+                                    ? 22
+                                    : 27),
                         children: [
                           TextSpan(
                               text: "\t·\t",
                               style: TextStyle(
-                                  fontSize: name.length > 8 ? 24 : 26,
+                                  fontSize: user.username.length > 6 &&
+                                          _isWideWord(name)
+                                      ? 24
+                                      : 26,
                                   color: kDisabledColor,
                                   fontWeight: FontWeight.bold)),
                           TextSpan(
@@ -278,7 +283,10 @@ class _AccountPageState extends State<AccountPage>
                                 : "${Utils.getTimeFromToday(user.createdTime)}",
                             style: TextStyle(
                                 color: kDisabledColor,
-                                fontSize: name.length > 8 ? 17 : 19,
+                                fontSize: user.username.length > 6 &&
+                                        _isWideWord(name)
+                                    ? 17
+                                    : 19,
                                 fontWeight: FontWeight.w400),
                           ),
                         ]),
@@ -550,7 +558,7 @@ class _AccountPageState extends State<AccountPage>
       valueListenable: toggleStar,
       builder: (context, value, child) => ListView.separated(
           physics: BouncingScrollPhysics(),
-          padding: EdgeInsets.only(top: 20),
+          padding: EdgeInsets.only(top: 10),
           itemBuilder: (context, index) {
             print("rebuilding");
             if (index == 0) {

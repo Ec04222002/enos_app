@@ -1,12 +1,9 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:enos/models/ticker_tile.dart';
 import 'package:enos/models/watchlist.dart';
-import 'package:enos/models/comment.dart';
+
 import 'package:enos/models/user.dart';
 import 'package:enos/services/firebase_api.dart';
-import 'package:enos/widgets/loading.dart';
+
 import 'package:enos/widgets/profile_pic.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:enos/constants.dart';

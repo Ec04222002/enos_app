@@ -280,6 +280,7 @@ class _TickerInfoState extends State<TickerInfo>
                 });
               },
               child: FloatingActionButton(
+                onPressed: () {},
                 child: Icon(
                   Icons.keyboard_double_arrow_up_outlined,
                   size: 50,
@@ -336,15 +337,6 @@ class _TickerInfoState extends State<TickerInfo>
               }
             }
           }
-          // //prevent not-toggling due to quick scroll
-          // if (scrollNotification is ScrollEndNotification) {
-          //   print("scroll end");
-          //   showBtn = pageScrollController.position.extentBefore < 85;
-          //   setState(() {
-          //     print("setting state 5");
-          //     showBtn = pageScrollController.position.extentBefore < 85;
-          //   });
-          // }
           lastScrollOffset = pageScrollController.offset;
           return true;
         },

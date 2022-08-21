@@ -22,15 +22,6 @@ class _WatchListWidgetState extends State<WatchListWidget> {
   int loadingTilesCount = 0;
 
   @override
-  void initState() {
-    // TODO: implement initState
-
-    super.initState();
-    // WidgetsBinding.instance.addPostFrameCallback(
-    //     (_) => tickerProvider.setLoadingFunct = addLoadingTiles);
-  }
-
-  @override
   Widget build(BuildContext context) {
     print("**in watchlist widget");
     tickerProvider = Provider.of<TickerTileProvider>(context);

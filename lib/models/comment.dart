@@ -1,4 +1,3 @@
-import 'package:enos/models/user.dart';
 import 'package:enos/services/util.dart';
 
 class CommentField {

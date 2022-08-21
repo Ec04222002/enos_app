@@ -9,14 +9,13 @@ class TextInputWidget extends StatefulWidget {
   final Function validatorFunct;
   bool obscureText;
   TextInputWidget({
-    Key key,
     this.text,
     this.icon,
     this.isPassword,
     this.controller,
     this.validatorFunct,
     this.obscureText = true,
-  }) : super(key: key);
+  });
 
   @override
   State<TextInputWidget> createState() => _TextInputWidgetState();

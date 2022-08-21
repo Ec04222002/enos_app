@@ -1,5 +1,4 @@
 import 'package:enos/constants.dart';
-import 'package:enos/services/util.dart';
 import 'package:flutter/material.dart';
 
 class SliderWidget extends StatelessWidget {

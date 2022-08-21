@@ -1,11 +1,8 @@
-import 'dart:io';
-
 import 'package:enos/models/article.dart';
 import 'package:enos/models/comment.dart';
 import 'package:enos/models/ticker_page_info.dart';
 import 'package:enos/models/ticker_spec.dart';
 import 'package:enos/models/ticker_tile.dart';
-import 'package:enos/screens/news.dart';
 import 'package:enos/services/news_api.dart';
 import 'package:enos/services/yahoo_api.dart';
 
