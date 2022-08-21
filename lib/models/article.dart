@@ -5,7 +5,6 @@ import 'package:webview_flutter/webview_flutter.dart';
 import 'package:intl/intl.dart';
 
 import '../constants.dart';
-import '../screens/search.dart';
 import '../services/news_api.dart';
 import '../widgets/loading.dart';
 
@@ -63,9 +62,15 @@ class ArticleViewer extends StatefulWidget {
 class _ArticleViewerState extends State<ArticleViewer> {
   final _controller = ScrollController();
   bool isScrollUp = true;
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
   @override
   void initState() {
-    super.initState();
     // Setup the listener.
     _controller.addListener(() {
       if (_controller.position.userScrollDirection == ScrollDirection.reverse) {
@@ -80,6 +85,7 @@ class _ArticleViewerState extends State<ArticleViewer> {
       //   widget.atTop = false;
       // });
     });
+    super.initState();
   }
 
   Widget build(BuildContext context) {
@@ -180,8 +186,8 @@ class NewsTile extends StatelessWidget {
     int month = time.month;
     int day = time.day;
     int year = time.year;
-    int hour = time.hour;
-    int minute = time.minute;
+    // int hour = time.hour;
+    // int minute = time.minute;
     desc = DateFormat('E, MMM d, h:mm aaa').format(time);
     if (today.month == month && today.day == day && today.year == year) {
       desc = "Today " + DateFormat('h:mm aaa').format(time);

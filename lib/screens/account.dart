@@ -1,9 +1,10 @@
 // account page
+import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:enos/constants.dart';
 import 'package:enos/models/ticker_tile.dart';
 import 'package:enos/models/user.dart';
-import 'package:enos/models/user_tile.dart';
 import 'package:enos/models/watchlist.dart';
 import 'package:enos/screens/ticker_info.dart';
 import 'package:enos/services/auth.dart';
@@ -12,6 +13,7 @@ import 'package:enos/services/firebase_api.dart';
 import 'package:enos/services/ticker_provider.dart';
 import 'package:enos/services/util.dart';
 import 'package:enos/widgets/loading.dart';
+import 'package:enos/widgets/profile_pic.dart';
 import 'package:enos/widgets/settings_widget/comments_replies.dart';
 import 'package:enos/widgets/settings_widget/edit_profile.dart';
 import 'package:enos/widgets/settings_widget/msg_request.dart';
@@ -20,10 +22,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 class AccountPage extends StatefulWidget {
-  bool isSelf;
-  TickerTileProvider provider;
+  final TickerTileProvider provider;
   //if uid passed in then its not self profile
-  String uid;
+  final String uid;
   AccountPage({Key key, this.uid = "", this.provider}) : super(key: key);
 
   @override
@@ -51,11 +52,27 @@ class _AccountPageState extends State<AccountPage>
   ValueNotifier<bool> toggleSaveBtn = ValueNotifier(false);
   ValueNotifier<bool> toggleTopProfile = ValueNotifier(false);
   bool initCalled = false, setOtherCalled = false;
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
+
+  // bool profilePicValid;
   Future<void> setInit() async {
     initCalled = true;
     user = await FirebaseApi.getUser(uid);
     self = await FirebaseApi.getUser(provider.watchListUid);
-    //settingsList[1]['onclick'] =
+    // if (self.profilePic == null) {
+    //   profilePicValid = false;
+    // } else {
+    //   profilePicValid = await File(self.profilePic).exists();
+    //   if (!profilePicValid) {
+    //     self.profilePic = null;
+    //     await FirebaseApi.updateUserData(self);
+    //   }
+    // }
     name = user.username;
     setState(() {
       isLoading = false;
@@ -169,74 +186,6 @@ class _AccountPageState extends State<AccountPage>
     return isLoading
         ? Loading()
         : Scaffold(
-            // appBar: isSelfView
-            //     ? null
-            //     : AppBar(
-            //         backgroundColor: kLightBackgroundColor,
-            //         centerTitle: true,
-            //         title: Text(name),
-            //         leading: IconButton(
-            //           onPressed: () {
-            //             Navigator.pop(context, {"new_user": self});
-            //           },
-            //           color: kDarkTextColor,
-            //           icon: Icon(Icons.arrow_back_ios),
-            //         ),
-            //         actions: [
-            //           ValueListenableBuilder(
-            //             valueListenable: toggleSaveBtn,
-            //             builder: (context, value, child) => IconButton(
-            //                 onPressed: () {
-            //                   //removing
-            //                   if (self.userSaved.contains(uid)) {
-            //                     Utils.showAlertDialog(context,
-            //                         "Are you sure you want to remove @${name}?",
-            //                         () {
-            //                       Navigator.pop(
-            //                         context,
-            //                       );
-            //                     }, () {
-            //                       self.userSaved
-            //                           .removeAt(self.userSaved.indexOf(uid));
-            //                       FirebaseApi.updateUserData(self);
-            //                       toggleSaveBtn.value = !toggleSaveBtn.value;
-            //                       Navigator.pop(context);
-            //                     });
-
-            //                     // user.userSaved
-            //                     //     .removeAt(user.userSaved.indexOf(searchTile.uid));
-            //                     // searchTile.isSaved = false;
-            //                     // FirebaseApi.updateUserData(user);
-            //                     // toggleSave.value = !toggleSave.value;
-            //                   } else {
-            //                     if (self.userSaved.length > 15) {
-            //                       Utils.showAlertDialog(context,
-            //                           "You have reached your limit of 15 people added.",
-            //                           () {
-            //                         Navigator.pop(context);
-            //                       }, null);
-            //                     } else {
-            //                       self.userSaved.add(uid);
-
-            //                       FirebaseApi.updateUserData(self);
-            //                       toggleSaveBtn.value = !toggleSaveBtn.value;
-            //                     }
-            //                   }
-            //                 },
-            //                 icon: self.userSaved.contains(uid)
-            //                     ? Icon(
-            //                         Icons.bookmark_outlined,
-            //                         color: kDisabledColor,
-            //                         size: 32,
-            //                       )
-            //                     : Icon(
-            //                         Icons.bookmark_border_outlined,
-            //                         color: kDisabledColor,
-            //                         size: 32,
-            //                       )),
-            //           )
-            //         ],
-            //       ),
             body: SingleChildScrollView(
               physics: BouncingScrollPhysics(),
               child: Container(
@@ -250,6 +199,16 @@ class _AccountPageState extends State<AccountPage>
     return Provider.of<UserField>(context, listen: false).userUid == uid;
   }
 
+  bool _isWideWord(String word) {
+    const wideChars = ['m', 'w', 'M', 'W', 'O', 'N', 'Q', 'H', 'D', 'G'];
+    double thresHold = 0.5;
+    int wideCharInWord = 0;
+    for (String char in wideChars) {
+      wideCharInWord += char.allMatches(word).length;
+    }
+    return wideCharInWord >= thresHold * word.length;
+  }
+
   Widget topProfile() {
     return ValueListenableBuilder(
       valueListenable: toggleTopProfile,
@@ -261,48 +220,68 @@ class _AccountPageState extends State<AccountPage>
           width: size.width,
           height: size.height * 0.15,
           child: Padding(
-            padding: EdgeInsets.fromLTRB(18, 0, 0, 13),
+            padding: EdgeInsets.fromLTRB(10, 0, 0, 8),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.end,
               mainAxisAlignment: MainAxisAlignment.start,
               children: [
-                CircleAvatar(
-                  backgroundColor: Utils.stringToColor(user.profileBorderColor),
-                  radius: name.length > 12 ? 26 : 30,
-                  child: Center(
-                    child: CircleAvatar(
-                        radius: name.length > 12 ? 24 : 28,
-                        backgroundColor:
-                            Utils.stringToColor(user.profileBgColor),
-                        child: Center(
-                          child: Text(
-                            name.substring(0, 1).toUpperCase() +
-                                (name.length > 1 ? name.substring(1, 2) : ""),
-                            style: TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 27),
-                          ),
-                        )),
-                  ),
+                ProfilePicture(
+                  name: user.username,
+                  // image: profilePicValid
+                  //     ? Image.file(File(user.profilePic))
+                  //     : null,
+                  image: null,
+                  color1: Utils.stringToColor(user.profileBgColor),
+                  color2: Utils.stringToColor(user.profileBorderColor),
+                  width:
+                      user.username.length > 6 && _isWideWord(name) ? 64 : 72,
+                  height:
+                      user.username.length > 6 && _isWideWord(name) ? 64 : 72,
+                  fontSize:
+                      user.username.length > 6 && _isWideWord(name) ? 27 : 35,
                 ),
+
                 Padding(
-                  padding: EdgeInsets.fromLTRB(10, 0, 0, 5),
+                  padding: EdgeInsets.fromLTRB(2, 0, 0, 9),
                   child: RichText(
                     overflow: TextOverflow.ellipsis,
                     softWrap: true,
                     maxLines: 2,
                     text: TextSpan(
-                        text: name,
+                        text: (() {
+                          if (isSelfView) {
+                            // viewing own account page
+                            // added (you) text
+                            if ((_isWideWord(name) && name.length > 9)) {
+                              return name.substring(0, 8) + "...";
+                            }
+                          }
+
+                          if (!isSelfView) {
+                            //viewing popup page
+                            //added (you) text
+                            //added save icon
+                            if ((_isWideWord(name) && name.length > 7)) {
+                              return name.substring(0, 7) + "...";
+                            }
+                          }
+                          return name;
+                        }()),
                         style: TextStyle(
                             color: Colors.white,
                             fontWeight: FontWeight.w500,
-                            fontSize: name.length > 12 ? 23 : 26),
+                            fontSize:
+                                user.username.length > 6 && _isWideWord(name)
+                                    ? 22
+                                    : 27),
                         children: [
                           TextSpan(
                               text: "\t·\t",
                               style: TextStyle(
-                                  fontSize: name.length > 12 ? 24 : 28,
+                                  fontSize: user.username.length > 6 &&
+                                          _isWideWord(name)
+                                      ? 24
+                                      : 26,
                                   color: kDisabledColor,
                                   fontWeight: FontWeight.bold)),
                           TextSpan(
@@ -311,7 +290,10 @@ class _AccountPageState extends State<AccountPage>
                                 : "${Utils.getTimeFromToday(user.createdTime)}",
                             style: TextStyle(
                                 color: kDisabledColor,
-                                fontSize: name.length > 12 ? 17 : 19,
+                                fontSize: user.username.length > 6 &&
+                                        _isWideWord(name)
+                                    ? 17
+                                    : 19,
                                 fontWeight: FontWeight.w400),
                           ),
                         ]),
@@ -328,7 +310,7 @@ class _AccountPageState extends State<AccountPage>
                             Column(
                               children: [
                                 Padding(
-                                  padding: const EdgeInsets.all(8.0),
+                                  padding: EdgeInsets.zero,
                                   child: ValueListenableBuilder(
                                     valueListenable: toggleSaveBtn,
                                     builder: (context, value, child) =>
@@ -368,6 +350,8 @@ class _AccountPageState extends State<AccountPage>
                                                     Navigator.pop(context);
                                                   }, null);
                                                 } else {
+                                                  print("saving uid: $uid");
+
                                                   self.userSaved.add(uid);
 
                                                   FirebaseApi.updateUserData(
@@ -407,7 +391,7 @@ class _AccountPageState extends State<AccountPage>
   Widget bottomSect() {
     return Padding(
       padding:
-          EdgeInsets.symmetric(vertical: isSelfView ? 15 : 0, horizontal: 8),
+          EdgeInsets.symmetric(vertical: isSelfView ? 10 : 0, horizontal: 8),
       child: ClipRRect(
         borderRadius: BorderRadius.all(Radius.circular(8)),
         child: Container(
@@ -425,7 +409,7 @@ class _AccountPageState extends State<AccountPage>
         automaticallyImplyLeading: false,
         titleSpacing: 0,
         backgroundColor: kLightBackgroundColor,
-        toolbarHeight: 25,
+        toolbarHeight: 24,
         leading: Container(height: 0),
         flexibleSpace: Column(
           mainAxisAlignment: MainAxisAlignment.end,
@@ -581,7 +565,7 @@ class _AccountPageState extends State<AccountPage>
       valueListenable: toggleStar,
       builder: (context, value, child) => ListView.separated(
           physics: BouncingScrollPhysics(),
-          padding: EdgeInsets.only(top: 20),
+          padding: EdgeInsets.only(top: 10),
           itemBuilder: (context, index) {
             print("rebuilding");
             if (index == 0) {
@@ -787,7 +771,6 @@ class _AccountPageState extends State<AccountPage>
         MaterialPageRoute(builder: (context) => CommentReplyPage(user, uid)));
   }
 
-
   void openSavedUser() {
     SavedUsers.openSavedUsersPage(context);
   }
@@ -799,8 +782,6 @@ class _AccountPageState extends State<AccountPage>
   Future<void> openImgPicker() async {
     UserModel newUser = await EditProfile.openImgPicker(context, user);
     name = newUser.username;
-    print(newUser.username);
-    print("*** complet");
     user = newUser;
     toggleTopProfile.value = !toggleTopProfile.value;
   }

@@ -22,8 +22,8 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
 
   @override
   void dispose() {
-    super.dispose();
     _emailTextController.dispose();
+    super.dispose();
   }
 
   @override

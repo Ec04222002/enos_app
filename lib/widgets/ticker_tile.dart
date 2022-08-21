@@ -1,15 +1,12 @@
-import 'dart:async';
-
-import 'package:enos/services/ticker_page_info.dart';
 import 'package:enos/models/ticker_tile.dart';
 import 'package:enos/models/user.dart';
-import 'package:enos/models/watchlist.dart';
+
 import 'package:enos/screens/ticker_info.dart';
-import 'package:enos/services/firebase_api.dart';
+
 import 'package:enos/services/ticker_provider.dart';
 import 'package:enos/services/util.dart';
 import 'package:enos/services/yahoo_api.dart';
-import 'package:enos/widgets/line_chart.dart';
+
 import 'package:enos/widgets/loading.dart';
 import 'package:enos/widgets/preview_line_chart.dart';
 import 'package:flutter/material.dart';
@@ -37,16 +34,35 @@ class _TickerState extends State<TickerTile> {
   int indexOfChange;
   String lastPriceStr;
   double lastPrice;
+  bool init = false;
   @override
   void initState() {
-    // TODO: implement initState
     tickerProvider = Provider.of<TickerTileProvider>(widget.context);
-
+    print("in init");
     super.initState();
+  }
+
+  // at least one update when clicked
+  Future<void> getInitModel() async {
+    //if (init) return;
+    print("gettting init ticker");
+    TickerTileModel current = tickerProvider.tickerAt(widget.index);
+    TickerTileModel newModel = await YahooApi().get(
+        symbol: current.symbol, lastData: current, requestChartData: false);
+    print("got data");
+    // newModel.price = "boboboob";
+    tickerProvider.tickers[widget.index] = newModel;
+
+    //init = true;
   }
 
   @override
   Widget build(BuildContext context) {
+    //always get update when clicked
+    if (tickerProvider.isLive) {
+      getInitModel();
+    }
+
     tickerTileData = tickerProvider.tickerAt(widget.index);
     lastPrice = tickerTileData.priceNum;
     lastPriceStr = tickerTileData.price;

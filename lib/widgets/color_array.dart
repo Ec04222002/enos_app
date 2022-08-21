@@ -12,14 +12,9 @@ class ColorArray extends StatefulWidget {
   //selections are border
   Color currentBorder;
   bool borderMode;
-  final Color commonBg;
 
-  //selections are for images
+  List<Map<String, dynamic>> additionalBtns;
   int crossCount;
-  final List<IconData> iconList;
-  final List<String> label;
-  bool dualMode;
-  final List<dynamic> onclicks;
 
   ColorArray(
       {Key key,
@@ -28,13 +23,9 @@ class ColorArray extends StatefulWidget {
       @required this.currentBorder,
       @required this.updateFunct,
       @required this.crossCount,
-      this.iconList,
-      this.onclicks,
-      this.label,
+      this.additionalBtns,
       this.bg,
       this.borderMode = false,
-      this.dualMode = false,
-      this.commonBg,
       this.isCircle = true})
       : super(key: key);
 
@@ -60,17 +51,14 @@ class _ColorArrayState extends State<ColorArray> {
     }
   }
 
+  // @override
+  // void initState() {
+  //   _findColorIndex();
+  //   super.initState();
+  // }
   // Widget addLabelWrap(Widget child, int index) {
-  //   return Row(
-  //     children: [
-  //       Expanded(
-  //         flex: 2,
-  //         child: Column(
-  //           crossAxisAlignment: CrossAxisAlignment.stretch,
-  //           children: [child, Text(widget.label[index])],
-  //         ),
-  //       ),
-  //     ],
+  //   return Column(
+  //     children: [child, Text(widget.label[index])],
   //   );
   // }
 
@@ -78,38 +66,47 @@ class _ColorArrayState extends State<ColorArray> {
   Widget build(BuildContext context) {
     _findColorIndex();
     return Container(
-      padding: EdgeInsets.only(top: 8),
-      height: MediaQuery.of(context).size.height * 0.31,
+      padding: EdgeInsets.only(top: 5),
+      height: MediaQuery.of(context).size.height * 0.30,
       width: MediaQuery.of(context).size.width * 0.8,
       // height: 100,
       color: widget.bg == null ? Colors.transparent : widget.bg,
       child: GridView.count(
-        childAspectRatio: widget.dualMode ? 1.4 : 1.6,
+        childAspectRatio: 1.6,
         // Create a grid with 2 columns. If you change the scrollDirection to
         // horizontal, this produces 2 rows.
         crossAxisCount: widget.crossCount,
         mainAxisSpacing: 5,
         // Generate 100 widgets that display their index in the List.
-        children: List.generate(widget.colors.length, (index) {
-          Widget btn = GestureDetector(
-            onTap: () {
-              if (widget.onclicks != null && widget.onclicks.isNotEmpty) {
-                widget.onclicks[index]();
-                return;
-              }
-
-              //for borders and background
+        children: List.generate(
+            widget.colors.length + widget.additionalBtns.length, (index) {
+          return GestureDetector(
+            onTap: () async {
               if (widget.borderMode) {
                 if (index != borderActiveIndex) {
                   setState(() {
                     widget.currentBorder = widget.colors[index];
+                    //borderActiveIndex = index;
                     widget.updateFunct();
                   });
                 }
               } else {
+                if (index >= widget.colors.length) {
+                  dynamic response =
+                      await widget.additionalBtns[index - widget.colors.length]
+                          ['onclick']();
+                  if (response != null) {
+                    setState(() {
+                      //bgActiveIndex = index;
+                    });
+                  }
+                  return;
+                }
                 if (index != bgActiveIndex) {
+                  print("clicked on just color");
                   setState(() {
                     widget.currentBg = widget.colors[index];
+                    //bgActiveIndex = index;
                     widget.updateFunct();
                   });
                 }
@@ -119,9 +116,9 @@ class _ColorArrayState extends State<ColorArray> {
               //setState(() {});
             },
             child: CircleAvatar(
-              radius: widget.crossCount < 4 ? 37 : 17,
+              radius: 20,
               backgroundColor: (() {
-                if (widget.borderMode || widget.dualMode) {
+                if (widget.borderMode) {
                   return widget.colors[index];
                 }
                 //background mode
@@ -129,20 +126,29 @@ class _ColorArrayState extends State<ColorArray> {
                   return kActiveColor;
                 }
                 return kDarkBackgroundColor;
-                // your code here
               }()),
               child: CircleAvatar(
-                child: widget.iconList != null && widget.iconList.isNotEmpty
-                    ? Icon(
-                        widget.iconList[index],
-                        size: 48,
-                      )
-                    : Container(
-                        height: 0,
-                      ),
-                radius: widget.crossCount < 4 ? 37 : 15,
+                child: (() {
+                  if (index >= widget.colors.length) {
+                    return Icon(
+                      widget.additionalBtns[index - widget.colors.length]
+                          ['icon'],
+                      size: 20,
+                    );
+                  }
+
+                  return Container(
+                    height: 0,
+                  );
+                }()),
+                radius: 17,
                 backgroundColor: (() {
-                  if (!widget.borderMode || widget.dualMode) {
+                  //addtional btn background
+                  if (index >= widget.colors.length) {
+                    return Utils.lighten(kLightBackgroundColor);
+                  }
+
+                  if (!widget.borderMode) {
                     return widget.colors[index];
                   }
 
@@ -155,12 +161,6 @@ class _ColorArrayState extends State<ColorArray> {
               ),
             ),
           );
-
-          // if (widget.dualMode) {
-          //   Widget sizedBtn = Container(width: 500, child: btn);
-          //   return addLabelWrap(btn, index);
-          // }
-          return btn;
         }),
       ),
     );

@@ -1,30 +1,26 @@
 import 'dart:async';
-import 'dart:convert';
 
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:enos/models/search_tile.dart';
 import 'package:enos/screens/account.dart';
-import 'package:enos/services/ticker_page_info.dart';
-import 'package:enos/models/ticker_tile.dart';
+
 import 'package:enos/models/user.dart';
 import 'package:enos/models/user_tile.dart';
 import 'package:enos/screens/ticker_info.dart';
-import 'package:enos/services/auth.dart';
+
 import 'package:enos/services/firebase_api.dart';
 import 'package:enos/services/stock_name_api.dart';
 import 'package:enos/services/ticker_provider.dart';
 import 'package:enos/services/util.dart';
-import 'package:enos/services/yahoo_api.dart';
-import 'package:enos/widgets/loading.dart';
+
 import 'package:enos/widgets/search_input.dart';
-import 'package:firebase_core/firebase_core.dart';
+
 import "package:flutter/material.dart";
 import "package:enos/constants.dart";
 import 'package:provider/provider.dart';
 
 class SearchPage extends StatefulWidget {
-  bool isMainPage;
-  BuildContext context;
+  final bool isMainPage;
+  final BuildContext context;
   SearchPage({this.isMainPage = true, this.context, Key key}) : super(key: key);
 
   @override
@@ -88,6 +84,7 @@ class _SearchPageState extends State<SearchPage> {
   Future<void> setUser() async {
     uid = mainContext.read<UserField>().userUid;
     user = await FirebaseApi.getUser(uid);
+    print(uid);
   }
 
   @override
@@ -412,17 +409,6 @@ class _SearchPageState extends State<SearchPage> {
   }
 
   void _showUserInfo(String uid) async {
-    // Map<String, dynamic> response = await Navigator.push(
-    //     mainContext,
-    //     MaterialPageRoute(
-    //         builder: ((context) => AccountPage(
-    //               uid: uid,
-    //               provider: provider,
-    //             ))));
-
-    // setState(() {
-    //   user = response['new_user'];
-    // });
     await showModalBottomSheet(
         context: context,
         isScrollControlled: true,
@@ -437,6 +423,8 @@ class _SearchPageState extends State<SearchPage> {
             ),
           ]);
         });
+    print("dismissed");
     await setUser();
+    setState(() {});
   }
 }

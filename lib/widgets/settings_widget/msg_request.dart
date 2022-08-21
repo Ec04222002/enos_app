@@ -30,7 +30,7 @@ class MessageRequest extends StatelessWidget {
       },
       {
         "text": "Recommend Features",
-        "icon": Icons.stars_outlined,
+        "icon": Icons.auto_awesome_outlined,
         "email_subject": "Recommending features",
         'active': false
       },

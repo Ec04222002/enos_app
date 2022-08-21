@@ -1,5 +1,3 @@
-import 'dart:ffi';
-
 import 'package:flutter/material.dart';
 import 'package:enos/constants.dart';
 import 'package:cool_dropdown/cool_dropdown.dart';
@@ -36,9 +34,15 @@ class _SearchInputState extends State<SearchInput> {
   ];
 
   @override
+  void dispose() {
+    controller.dispose();
+    super.dispose();
+  }
+
+  @override
   void initState() {
-    super.initState();
     isMainPage = widget.hintText == "Search Stocks or Users";
+    super.initState();
   }
 
   @override

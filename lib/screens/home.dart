@@ -1,22 +1,13 @@
 //watchlist page
-import 'dart:convert';
-
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:enos/constants.dart';
-import 'package:enos/models/search_tile.dart';
-import 'package:enos/models/ticker_tile.dart';
-import 'package:enos/models/user.dart';
-import 'package:enos/models/watchlist.dart';
-import 'package:enos/services/firebase_api.dart';
+
 import 'package:enos/services/ticker_provider.dart';
-import 'package:enos/services/auth.dart';
 import 'package:enos/services/util.dart';
-import 'package:enos/services/yahoo_api.dart';
-import 'package:enos/widgets/loading.dart';
+
 import 'package:enos/screens/search.dart';
-import 'package:enos/widgets/ticker_tile.dart';
+
 import 'package:enos/widgets/watch_list.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -106,6 +97,7 @@ class _HomePageState extends State<HomePage> {
           //print("double tap end");
         },
         child: FloatingActionButton(
+          onPressed: () {},
           child: Icon(
             Icons.keyboard_double_arrow_up_outlined,
             size: 50,
@@ -125,7 +117,6 @@ class _HomePageState extends State<HomePage> {
   }
 
   void showSearch(BuildContext buildContext) {
-    print('buildContext: $buildContext');
     Navigator.push(
         context,
         MaterialPageRoute(

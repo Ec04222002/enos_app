@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'package:enos/constants.dart';
 import 'package:enos/services/util.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:http/http.dart' as http;
@@ -43,12 +44,16 @@ class EmailSender {
         }));
     print(response.statusCode);
     Utils util = Utils();
-    util.showSnackBar(context, "Sent Successfully 🎉", false);
-    Timer(Duration(milliseconds: 1200), () {
-      print('sent');
+    if (response.statusCode == 200) {
+      util.showSnackBar(context, "Sent Successfully 🎉", false);
+    } else {
+      util.showSnackBar(context, "Failed to Send", false, color: kRedColor);
+    }
+
+    Timer(Duration(milliseconds: 1500), () {
       util.removeSnackBar();
     });
-    return "Success";
+    return;
   }
 
   Future sendRequestView(
@@ -78,11 +83,16 @@ class EmailSender {
           }
         }));
     Utils util = Utils();
-    util.showSnackBar(context, "Sent Successfully 🎉", false);
-    Timer(Duration(milliseconds: 1200), () {
-      print('sent');
+    if (response.statusCode == 200) {
+      util.showSnackBar(context, "Sent Successfully 🎉", false);
+    } else {
+      util.showSnackBar(context, "Failed to Send", false, color: kRedColor);
+    }
+
+    Timer(Duration(milliseconds: 1500), () {
       util.removeSnackBar();
     });
-    return "Success";
+
+    return;
   }
 }

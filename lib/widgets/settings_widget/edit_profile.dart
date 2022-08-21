@@ -40,7 +40,7 @@ class EditProfile extends StatelessWidget {
     //general
     bool backSpaceTrigger = false;
     bool isUpdated = false;
-    bool containsImage = false;
+    //bool containsImage = false;
     Color saveBtnColor = kDisabledColor, undoBtnColor = kDisabledColor;
     String saveBtnText = "Save All", undoBtnText = "Undo All";
 
@@ -51,7 +51,8 @@ class EditProfile extends StatelessWidget {
     ValueNotifier<bool> toggleProfile = ValueNotifier(false);
 
     //edit mode selection
-    bool isBorderMode = false, isImageMode = false;
+    bool isBorderMode = false;
+    //bool isImageMode = false;
 
     //background and border color
     Color color1 = Utils.stringToColor(user.profileBgColor);
@@ -62,6 +63,7 @@ class EditProfile extends StatelessWidget {
       currentBg: color1,
       currentBorder: color2,
       crossCount: 5,
+      additionalBtns: [],
     );
 
     //must be in order
@@ -76,7 +78,6 @@ class EditProfile extends StatelessWidget {
     );
 
     Function updateProfile = () {
-      print(imgUrl);
       //isupdating
       topPic = ProfilePicture(
         name: name,
@@ -101,46 +102,72 @@ class EditProfile extends StatelessWidget {
     Function _setCameraImage = () async {
       String url = await EditProfile.pickImg(ImageSource.camera);
       if (url != null) {
-        containsImage = true;
+        //containsImage = true;
         imgUrl = url;
         updateProfile();
+        return "Success";
       }
+      return null;
     };
     Function _setLibraryImage = () async {
       String url = await EditProfile.pickImg(ImageSource.gallery);
       if (url != null) {
-        containsImage = true;
+        // containsImage = true;
         imgUrl = url;
         updateProfile();
+        return "Success";
       }
+      return null;
+    };
+    //for just background color click
+    Function _removeImage = () {
+      imgUrl = null;
+      updateProfile();
     };
 
     Function updateEditSect = () {
       colorArrBg = ColorArray(
-          colors: isImageMode
-              ? [kLightBackgroundColor, kLightBackgroundColor]
-              : ProfilePicture.colors,
-          currentBg: colorArrBg.currentBg,
-          currentBorder: colorArrBg.currentBorder,
-          borderMode: isBorderMode,
-          crossCount: isImageMode ? 2 : 5,
-          updateFunct: isImageMode ? () {} : updateProfile,
-          dualMode: isImageMode,
-          iconList: isImageMode
-              ? [Icons.camera_alt_outlined, Icons.photo_library_outlined]
-              : null,
-          label: isImageMode ? ["Camera", "Photos"] : null,
-          onclicks: isImageMode ? [_setCameraImage, _setLibraryImage] : null);
+        colors: ProfilePicture.colors,
+        currentBg: colorArrBg.currentBg,
+        currentBorder: colorArrBg.currentBorder,
+        borderMode: isBorderMode,
+        crossCount: 5,
+        updateFunct: isBorderMode ? updateProfile : _removeImage,
+        additionalBtns: !isBorderMode
+            ? [
+                // {
+                //   "icon": Icons.camera_alt_outlined,
+                //   "onclick": _setCameraImage,
+                // },
+                // {
+                //   "icon": Icons.photo_library_outlined,
+                //   "onclick": _setLibraryImage,
+                // }
+              ]
+            : [],
+      );
 
       editSect = colorArrBg;
       toggleProfile.value = !toggleProfile.value;
     };
 
-    colorArrBg.updateFunct = updateProfile;
+    //add init parameters for color array
+    colorArrBg.updateFunct = _removeImage;
     if (user.profilePic != null) {
       topPic.image = Image.file(File(user.profilePic));
-      containsImage = true;
     }
+    // if (!isBorderMode) {
+    //   colorArrBg.additionalBtns = [
+    //     {
+    //       "icon": Icons.camera_alt_outlined,
+    //       "onclick": _setCameraImage,
+    //     },
+    //     {
+    //       "icon": Icons.photo_library_outlined,
+    //       "onclick": _setLibraryImage,
+    //     }
+    //   ];
+    // }
 
     await Navigator.push(
         context,
@@ -233,14 +260,13 @@ class EditProfile extends StatelessWidget {
                               height: 15,
                             ),
                             Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
+                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                               children: [
                                 Padding(
                                   padding: const EdgeInsets.all(8.0),
                                   child: TextButton(
                                       style: ButtonStyle(
-                                          backgroundColor: !isBorderMode &&
-                                                  !isImageMode
+                                          backgroundColor: !isBorderMode
                                               ? MaterialStateProperty.all<
                                                   Color>(kActiveColor)
                                               : MaterialStateProperty.all<
@@ -253,16 +279,15 @@ class EditProfile extends StatelessWidget {
                                           ))),
                                       onPressed: () {
                                         print("pressed");
-                                        if (!isBorderMode && !isImageMode)
-                                          return;
+                                        if (!isBorderMode) return;
                                         isBorderMode = false;
-                                        isImageMode = false;
+
                                         updateEditSect();
                                       },
                                       child: Text(
-                                        "Background Color",
+                                        "Background",
                                         style: TextStyle(
-                                            color: !isBorderMode && !isImageMode
+                                            color: !isBorderMode
                                                 ? kBrightTextColor
                                                 : Utils.lighten(kActiveColor)),
                                       )),
@@ -285,46 +310,45 @@ class EditProfile extends StatelessWidget {
                                       onPressed: () {
                                         if (isBorderMode) return;
                                         isBorderMode = true;
-                                        isImageMode = false;
                                         updateEditSect();
                                       },
                                       child: Text(
-                                        "Border Color",
+                                        "Border",
                                         style: TextStyle(
                                             color: isBorderMode
                                                 ? kBrightTextColor
                                                 : Utils.lighten(kActiveColor)),
                                       )),
                                 ),
-                                Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: TextButton(
-                                      style: ButtonStyle(
-                                          backgroundColor: isImageMode
-                                              ? MaterialStateProperty.all<
-                                                  Color>(kActiveColor)
-                                              : MaterialStateProperty.all<
-                                                  Color>(kLightBackgroundColor),
-                                          shape: MaterialStateProperty.all<
-                                                  RoundedRectangleBorder>(
-                                              RoundedRectangleBorder(
-                                            borderRadius:
-                                                BorderRadius.circular(5.0),
-                                          ))),
-                                      onPressed: () {
-                                        if (isImageMode) return;
-                                        isImageMode = true;
-                                        isBorderMode = false;
-                                        updateEditSect();
-                                      },
-                                      child: Text(
-                                        "Image",
-                                        style: TextStyle(
-                                            color: isImageMode
-                                                ? kBrightTextColor
-                                                : Utils.lighten(kActiveColor)),
-                                      )),
-                                ),
+                                // Padding(
+                                //   padding: const EdgeInsets.all(8.0),
+                                //   child: TextButton(
+                                //       style: ButtonStyle(
+                                //           backgroundColor: isImageMode
+                                //               ? MaterialStateProperty.all<
+                                //                   Color>(kActiveColor)
+                                //               : MaterialStateProperty.all<
+                                //                   Color>(kLightBackgroundColor),
+                                //           shape: MaterialStateProperty.all<
+                                //                   RoundedRectangleBorder>(
+                                //               RoundedRectangleBorder(
+                                //             borderRadius:
+                                //                 BorderRadius.circular(5.0),
+                                //           ))),
+                                //       onPressed: () {
+                                //         if (isImageMode) return;
+                                //         isImageMode = true;
+                                //         isBorderMode = false;
+                                //         updateEditSect();
+                                //       },
+                                //       child: Text(
+                                //         "Image",
+                                //         style: TextStyle(
+                                //             color: isImageMode
+                                //                 ? kBrightTextColor
+                                //                 : Utils.lighten(kActiveColor)),
+                                //       )),
+                                // ),
                               ],
                             ),
                             editSect,
@@ -335,6 +359,8 @@ class EditProfile extends StatelessWidget {
                                     style: ElevatedButton.styleFrom(
                                         primary: undoBtnColor),
                                     onPressed: () {
+                                      if (undoBtnColor == kDisabledColor)
+                                        return;
                                       //orig color index set
                                       colorArrBg.currentBg = color1;
                                       colorArrBg.currentBorder = color2;
@@ -344,7 +370,7 @@ class EditProfile extends StatelessWidget {
                                       name = user.username;
 
                                       //remove image
-                                      imgUrl = null;
+                                      imgUrl = user.profilePic;
 
                                       updateProfile();
 
@@ -356,7 +382,16 @@ class EditProfile extends StatelessWidget {
                                       //set orig colors
                                       updateEditSect();
                                     },
-                                    child: Text(undoBtnText)),
+                                    child: Row(children: [
+                                      Icon(
+                                        Icons.undo,
+                                        size: 17,
+                                      ),
+                                      SizedBox(
+                                        width: 4,
+                                      ),
+                                      Text(undoBtnText)
+                                    ])),
                                 ElevatedButton(
                                     style: ElevatedButton.styleFrom(
                                         primary: saveBtnColor),
@@ -369,6 +404,7 @@ class EditProfile extends StatelessWidget {
                                       saveBtnColor = kDisabledColor;
                                       undoBtnColor = kDisabledColor;
                                       name = myController.text;
+
                                       isUpdated = false;
                                       toggleProfile.value =
                                           !toggleProfile.value;
@@ -380,7 +416,9 @@ class EditProfile extends StatelessWidget {
                                       user.profileBorderColor =
                                           Utils.colorToHexString(
                                               colorArrBg.currentBorder);
-                                      user.username = myController.text;
+                                      user.username = myController.text.isEmpty
+                                          ? user.username
+                                          : myController.text;
                                       user.profilePic = imgUrl;
 
                                       FirebaseApi.updateUserData(user);
@@ -399,7 +437,6 @@ class EditProfile extends StatelessWidget {
                     ),
                   ),
                 ))));
-    print("complet");
     return user;
   }
 }

@@ -1,23 +1,18 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:enos/constants.dart';
-import 'package:enos/models/search_tile.dart';
-import 'package:enos/models/ticker_tile.dart';
 import 'package:enos/screens/account.dart';
 import 'package:enos/screens/home.dart';
 import 'package:enos/screens/news.dart';
 import 'package:enos/screens/search.dart';
-import 'package:enos/services/firebase_api.dart';
+
 import 'package:enos/services/ticker_provider.dart';
-import 'package:enos/services/yahoo_api.dart';
+
 import 'package:enos/widgets/loading.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'package:flutter/cupertino.dart';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 class NavDisplayScreen extends StatefulWidget {
-  String uid;
+  final String uid;
   NavDisplayScreen({this.uid, Key key}) : super(key: key);
 
   @override
