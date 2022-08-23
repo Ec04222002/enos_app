@@ -82,6 +82,10 @@ class CommentManager extends StatefulWidget {
         Image p;
         if (!com.apiComment) {
           user2 = await FirebaseApi.getUser(com.userUid);
+          if(com.userName != user2.username) {
+            com.userName = user2.username;
+            await FirebaseApi.updateComment(com);
+          }
           c1 = Utils.stringToColor(user2.profileBgColor);
           c2 = Utils.stringToColor(user2.profileBgColor);
           if (user.profilePic != null) {
@@ -307,6 +311,11 @@ class _CommentSectionState extends State<CommentSection> {
         Image profilePic = null;
         if (!element.apiComment) {
           UserModel user2 = await FirebaseApi.getUser(element.userUid);
+          if(element.userName != user2.username) {
+            element.userName = user2.username;
+            await FirebaseApi.updateComment(element);
+          }
+
           color1 = Utils.stringToColor(user2.profileBgColor);
           color2 = Utils.stringToColor(user2.profileBorderColor);
           if (user.profilePic != null) {
