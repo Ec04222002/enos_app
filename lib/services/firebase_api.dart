@@ -28,7 +28,7 @@ class FirebaseApi {
           .map(tickerDataFromSnapshot);
       return watchListStream;
     } catch (error) {
-      print("watchlist doesn't exist");
+      //print("watchlist doesn't exist");
       return null;
     }
   }
@@ -84,9 +84,9 @@ class FirebaseApi {
       if (userName.startsWith(searchQuery.toLowerCase())) {
         listUsers.add(UserModel.fromJson(doc.data()));
       }
-      print(doc);
+      //print(doc);
     });
-    print(listUsers);
+    //print(listUsers);
     return listUsers;
   }
 
@@ -94,7 +94,7 @@ class FirebaseApi {
     final userDoc =
         await FirebaseFirestore.instance.collection('Users').doc(data.userUid);
     await userDoc.set(data.toJson());
-    print('finished setting user');
+    //print('finished setting user');
     return;
   }
 
@@ -116,7 +116,7 @@ class FirebaseApi {
           .get();
       return watchListStream;
     } catch (error) {
-      print("watchlist doesn't exist");
+      //print("watchlist doesn't exist");
       return null;
     }
   }
@@ -130,7 +130,7 @@ class FirebaseApi {
           .get()
           .then((doc) {
         exist = doc.exists;
-        print("Exist: $exist");
+        //print("Exist: $exist");
       });
       return exist;
     } catch (e) {

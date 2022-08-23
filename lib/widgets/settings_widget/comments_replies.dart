@@ -2,12 +2,13 @@ import 'package:enos/constants.dart';
 import 'package:enos/models/comment.dart';
 import 'package:enos/screens/ticker_info.dart';
 import 'package:enos/services/firebase_api.dart';
+import 'package:enos/services/ticker_provider.dart';
 import 'package:enos/services/util.dart';
 import 'package:enos/widgets/loading.dart';
 import 'package:enos/widgets/profile_pic.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
-import '../../models/user.dart';
 import '../../models/user.dart';
 
 class CommentReply extends StatelessWidget {
@@ -29,10 +30,12 @@ class CommentReplyPage extends StatefulWidget {
   UserModel user;
   List<Comment> comments;
   String uid;
-  CommentReplyPage(UserModel user, String uid) {
+  BuildContext context;
+  TickerTileProvider provider;
+  CommentReplyPage(this.user, this.context) {
     comments = [];
-    this.user = user;
-    this.uid = uid;
+    provider = Provider.of<TickerTileProvider>(context, listen: false);
+    uid = provider.watchListUid;
   }
 
   @override
@@ -41,10 +44,11 @@ class CommentReplyPage extends StatefulWidget {
 
 class _CommentReplyPageState extends State<CommentReplyPage> {
   bool isLoad = false;
+  List<Comment> comments = [];
   void initState() {
-    super.initState();
-    if (widget.comments.length == 0) {
+    if (comments.length == 0) {
       loadComments();
+      super.initState();
     }
   }
 
@@ -55,9 +59,9 @@ class _CommentReplyPageState extends State<CommentReplyPage> {
     }
     for (String com in widget.user.comments) {
       Comment comment = await FirebaseApi.getComment(com);
-      widget.comments.add(comment);
+      comments.add(comment);
     }
-    widget.comments.sort((a, b) {
+    comments.sort((a, b) {
       return -a.createdTime.compareTo(b.createdTime);
     });
     isLoad = false;
@@ -83,7 +87,7 @@ class _CommentReplyPageState extends State<CommentReplyPage> {
               color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
         ),
       ),
-      body: widget.comments.isEmpty
+      body: comments.isEmpty
           ? Center(
               child: Text(
                 "No comments",
@@ -98,7 +102,7 @@ class _CommentReplyPageState extends State<CommentReplyPage> {
                   TextButton(
                     onPressed: showBottom,
                     child: Text(
-                      "Edit",
+                      "Sort",
                       style: TextStyle(color: kActiveColor, fontSize: 16),
                     ),
                   ),
@@ -106,11 +110,11 @@ class _CommentReplyPageState extends State<CommentReplyPage> {
                       child: isLoad
                           ? Loading()
                           : ListView.builder(
-                              itemCount: widget.comments.length,
+                              itemCount: comments.length,
                               itemBuilder: (context, index) {
                                 return Column(
                                   children: [
-                                    commentBox(widget.comments[index]),
+                                    commentBox(comments[index]),
                                     SizedBox(
                                       height: 15,
                                     )
@@ -124,62 +128,68 @@ class _CommentReplyPageState extends State<CommentReplyPage> {
   }
 
   void showBottom() {
+    dynamic size = MediaQuery.of(context).size;
     showModalBottomSheet(
         context: context,
         builder: (_) {
           return Container(
-            width: 400,
-            height: 75,
-            color: kLightBackgroundColor,
+            padding: EdgeInsets.all(8),
+            width: size.width,
+            height: size.height * 0.15,
+            color: kDarkBackgroundColor,
             child: Column(
               children: [
                 Row(
                   children: [
-                    Icon(Icons.expand, color: kDisabledColor),
+                    Icon(Icons.sort, color: kDisabledColor),
                     Text(
-                      " Sort: ",
+                      " Sort",
                       style: Theme.of(context).textTheme.caption.copyWith(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
+                          fontSize: 15,
+                          fontWeight: FontWeight.w500,
                           color: kBrightTextColor),
                     )
                   ],
                 ),
-                SizedBox(height: 10),
-                DefaultTabController(
-                    length: 3,
-                    child: Row(
-                      children: [
-                        Expanded(
-                            child: TabBar(
-                          onTap: (int index) {
-                            sort(index);
-                            setState(() {});
-                          },
-                          labelPadding: EdgeInsets.zero,
-                          padding: EdgeInsets.zero,
-                          indicator: BoxDecoration(
-                            // Creates border
-                            borderRadius: BorderRadius.circular(10),
-                            color: kActiveColor,
-                          ),
-                          tabs: [
-                            Tab(
-                              text: "Most Recent",
-                              height: 30,
+                SizedBox(height: 12),
+                Container(
+                  color: kLightBackgroundColor,
+                  child: DefaultTabController(
+                      length: 3,
+                      child: Row(
+                        children: [
+                          Expanded(
+                              child: TabBar(
+                            onTap: (int index) {
+                              sort(index);
+                              setState(() {});
+                            },
+                            labelPadding: EdgeInsets.zero,
+                            padding: EdgeInsets.zero,
+                            unselectedLabelColor: kDisabledColor,
+                            indicator: BoxDecoration(
+                              // Creates border
+                              borderRadius: BorderRadius.circular(5),
+                              color: kActiveColor,
                             ),
-                            Tab(
-                              text: "Most Liked",
-                              height: 30,
-                            ),
-                            Tab(
-                              text: "Most Replied",
-                              height: 30,
-                            ),
-                          ],
-                        ))
-                      ],
-                    ))
+                            tabs: [
+                              Tab(
+                                text: "Most Recent",
+                                height: 28,
+                              ),
+                              Tab(
+                                text: "Most Liked",
+                                height: 28,
+                              ),
+                              Tab(
+                                text: "Most Replied",
+                                height: 28,
+                              ),
+                            ],
+                          ))
+                        ],
+                      )),
+                )
               ],
             ),
           );
@@ -189,15 +199,15 @@ class _CommentReplyPageState extends State<CommentReplyPage> {
   void sort(int index) async {
     isLoad = true;
     if (index == 0) {
-      widget.comments.sort((a, b) {
+      comments.sort((a, b) {
         return -a.createdTime.compareTo(b.createdTime);
       });
     } else if (index == 1) {
-      widget.comments.sort((a, b) {
+      comments.sort((a, b) {
         return b.likes - a.likes;
       });
     } else {
-      widget.comments.sort((a, b) {
+      comments.sort((a, b) {
         return b.replies.length - a.replies.length;
       });
     }
@@ -225,11 +235,22 @@ class _CommentReplyPageState extends State<CommentReplyPage> {
               ),
         GestureDetector(
             onTap: () {
+              print(comment.commentUid);
+              print(comment.parentUid);
               Navigator.push(
                   context,
                   MaterialPageRoute(
                       builder: (context) => TickerInfo(
                             symbol: comment.stockUid,
+                            uid: widget.uid,
+                            isSaved: widget.provider.symbols
+                                .contains(comment.stockUid),
+                            provider: widget.provider,
+                            parentId: comment.isNested
+                                ? comment.parentUid
+                                : comment.commentUid,
+                            childId:
+                                comment.isNested ? comment.commentUid : null,
                           )));
             },
             child: Container(
@@ -252,13 +273,14 @@ class _CommentReplyPageState extends State<CommentReplyPage> {
                             color: kDisabledColor),
                       ),
                       Text(
-                        ' · ${Utils.getTimeFromToday(comment.createdTime)}',
+                        ' · ${Utils.getTimeFromToday(comment.createdTime)} (${comment.stockUid})',
                         style: Theme.of(context).textTheme.caption.copyWith(
                               color: kDisabledColor,
                               fontSize: 14,
                               fontWeight: FontWeight.w500,
                             ),
                       ),
+                      // Text("~ Commented on ${comment.stockUid}"),
                     ],
                   ),
                   Row(
@@ -274,13 +296,13 @@ class _CommentReplyPageState extends State<CommentReplyPage> {
                         ),
                       ),
                       Container(
-                        padding: EdgeInsets.fromLTRB(0, 0, 0, 5),
+                        padding: EdgeInsets.fromLTRB(0, 0, 0, 8),
                         child: Column(
                           children: [
                             Icon(
                               Icons.reply_rounded,
                               color: kDarkTextColor,
-                              size: 28,
+                              size: 27,
                             ),
                             Text(
                               '${comment.replies.length}',
@@ -296,7 +318,7 @@ class _CommentReplyPageState extends State<CommentReplyPage> {
                         ),
                       ),
                       SizedBox(
-                        width: 15,
+                        width: 20,
                       ),
                       Container(
                         padding: EdgeInsets.zero,
@@ -305,7 +327,7 @@ class _CommentReplyPageState extends State<CommentReplyPage> {
                             Icon(
                               Icons.thumb_up,
                               color: kDarkTextColor,
-                              size: 23,
+                              size: 21,
                             ),
                             Text(
                               '${comment.likes}',

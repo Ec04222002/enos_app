@@ -34,26 +34,19 @@ class _TickerState extends State<TickerTile> {
   int indexOfChange;
   String lastPriceStr;
   double lastPrice;
-  bool init = false;
   @override
   void initState() {
     tickerProvider = Provider.of<TickerTileProvider>(widget.context);
-    print("in init");
+    //print("in init");
     super.initState();
   }
 
   // at least one update when clicked
   Future<void> getInitModel() async {
-    //if (init) return;
-    print("gettting init ticker");
     TickerTileModel current = tickerProvider.tickerAt(widget.index);
     TickerTileModel newModel = await YahooApi().get(
         symbol: current.symbol, lastData: current, requestChartData: false);
-    print("got data");
-    // newModel.price = "boboboob";
     tickerProvider.tickers[widget.index] = newModel;
-
-    //init = true;
   }
 
   @override
@@ -159,7 +152,7 @@ class _TickerState extends State<TickerTile> {
               return priceWidget();
             default:
               if (snapshot.hasError) {
-                print(snapshot.error);
+                //print(snapshot.error);
                 return Text("Error - No Data",
                     style: TextStyle(color: kRedColor));
               } else {
@@ -207,7 +200,7 @@ class _TickerState extends State<TickerTile> {
       postMarketOp = "+";
       postMarketChangeColor = kGreenColor;
     }
-    //print("in widget");
+    ////print("in widget");
     return Container(
       width: 93,
       child: Column(

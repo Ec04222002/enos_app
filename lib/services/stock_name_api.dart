@@ -9,7 +9,7 @@ class StockNameApi {
     final response = await http.get(uri);
     if (response.statusCode == 200) {
       final List result = json.decode(response.body);
-      print("**Search symbol ${symbol} in market: $market");
+      //print("**Search symbol ${symbol} in market: $market");
 
       //implementing binary search to find symbol
       int first = 0;
@@ -40,7 +40,7 @@ class StockNameApi {
     int startCode = lowerQuery.codeUnitAt(0);
     String uri = "https://ec04222002.github.io/index_symbols/index.json";
     if (lowerMarket == "otcbb") {
-      //print("otcbb");
+      ////print("otcbb");
       //A - B
       if (startCode >= 97 && startCode <= 98) {
         uri = "https://ec04222002.github.io/otcbb_AtoB/otcbb_AtoB.json";
@@ -68,7 +68,7 @@ class StockNameApi {
         uri = "https://ec04222002.github.io/otcbb_TtoZ/otcbb_TtoZ.json";
       }
     } else if (lowerMarket == "nasdaq") {
-      //print("nasdaq");
+      ////print("nasdaq");
       //A to D
       if (startCode >= 97 && startCode <= 100) {
         uri = "https://ec04222002.github.io/nasdaq_AtoD/nasdaq_AtoD.json";
@@ -84,14 +84,14 @@ class StockNameApi {
         uri = "https://ec04222002.github.io/nasdaq_TtoZ/nasdaq_TtoZ.json";
       }
     } else if (lowerMarket == "nyse") {
-      //print('nyse');
+      ////print('nyse');
       if (startCode >= 97 && startCode <= 108) {
         uri = "https://ec04222002.github.io/nyse_AtoL/nyse_AtoL.json";
       } else {
         uri = "https://ec04222002.github.io/nyse_MtoZ/nyse_MtoZ.json";
       }
     } else if (lowerMarket == "crypto") {
-      //print("crypto");
+      ////print("crypto");
       uri = "https://ec04222002.github.io/crypto_symbols/crypto_symbols.json";
     }
     return Uri.parse(uri);
@@ -99,11 +99,11 @@ class StockNameApi {
 
   Future<List<SearchTile>> getStock({String query, String market}) async {
     Uri url = _findCorrectUri(query, market);
-    print("url: $url");
+    //print("url: $url");
     final response = await http.get(url);
 
     if (response.statusCode == 200) {
-      print("success");
+      //print("success");
       final List recs = json.decode(response.body);
       return recs.map((json) => SearchTile.selfApiFromJson(json)).where((item) {
         final symbol = item.symbol.toLowerCase();

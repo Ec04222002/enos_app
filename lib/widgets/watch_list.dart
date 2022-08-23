@@ -23,7 +23,7 @@ class _WatchListWidgetState extends State<WatchListWidget> {
 
   @override
   Widget build(BuildContext context) {
-    print("**in watchlist widget");
+    //print("**in watchlist widget");
     tickerProvider = Provider.of<TickerTileProvider>(context);
 
     tickers = tickerProvider.symbols;
@@ -62,8 +62,8 @@ class _WatchListWidgetState extends State<WatchListWidget> {
   // }
 
   void _onReorder(int startIndex, int endIndex) {
-    // print("StartIndex: $startIndex");
-    // print("EndIndex: $endIndex");
+    // //print("StartIndex: $startIndex");
+    // //print("EndIndex: $endIndex");
 
     setState(() {
       tickerProvider.moveTicker(startIndex, endIndex);

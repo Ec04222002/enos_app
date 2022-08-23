@@ -13,7 +13,7 @@ import '../models/article.dart';
 
 class NewsPage extends StatefulWidget {
   NewsPage() {
-    print(categories);
+    // //print(categories);
     makeArticles();
   }
 
@@ -44,7 +44,7 @@ class NewsPage extends StatefulWidget {
         .toList();
     //if urlStream not sufficient
     if (urlStreams.length < 3) {
-      print("searching");
+      ////print("searching");
       for (dynamic stream in streams) {
         //setting valid link string
         String link;
@@ -77,7 +77,7 @@ class NewsPage extends StatefulWidget {
 
     //have all valid urlstream
     for (int indx = 0; indx < streams.length; ++indx) {
-      if (slider.length == 4) break;
+      if (slider.length >= 4) break;
       dynamic stream = urlStreams[indx];
       //create slider with articlemodle
       dynamic content = stream['content'];
@@ -132,15 +132,14 @@ final double toolBarHeight = 33, bottomNavBarHeight = 68;
 bool isSelfScroll = false;
 
 class _NewsPageState extends State<NewsPage> {
-  TabController controller;
   List<Widget> slideShow = [];
   int tabPos = 0;
 
-  @override
-  void dispose() {
-    controller.dispose();
-    super.dispose();
-  }
+  // @override
+  // void dispose() {
+  //   controller.dispose();
+  //   super.dispose();
+  // }
 
   Widget Tag(String title, String provider) {
     return Container(
@@ -286,17 +285,16 @@ class _NewsPageState extends State<NewsPage> {
             onNotification: (scrollNotification) {
               if (scrollNotification is ScrollUpdateNotification) {
                 double after = pageScrollController.position.extentAfter;
-                print(after);
                 if (after == 0) {
                   if (!isSelfScroll) {
                     setState(() {
                       isSelfScroll = true;
                       setArticleScroll();
-                      print("self scrolling true");
+                      ////print("self scrolling true");
                     });
                   }
-                  print(
-                      "page scrolled to top sect end -> self scrolling starts");
+                  // //print(
+                  //     "page scrolled to top sect end -> self scrolling starts");
                 } else {
                   if (isSelfScroll) {
                     setState(() {

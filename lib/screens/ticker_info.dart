@@ -24,8 +24,15 @@ class TickerInfo extends StatefulWidget {
   final bool isSaved;
   final String uid;
   final TickerTileProvider provider;
+  final String parentId, childId;
   const TickerInfo(
-      {this.symbol, this.uid, this.isSaved, this.provider, Key key})
+      {this.symbol,
+      this.uid,
+      this.isSaved,
+      this.provider,
+      Key key,
+      this.parentId,
+      this.childId})
       : super(key: key);
 
   @override
@@ -99,11 +106,17 @@ class _TickerInfoState extends State<TickerInfo>
   }
 
   Future<void> init() async {
-    print("in init");
     _tabController = new TabController(vsync: this, length: myTabs.length);
+    if (widget.parentId != null) {
+      print("to comment section");
+      _tabController.index = 1;
+      showBtn = false;
+    }
     sectHeight =
         editButtonHeight + dataHeight * specsUsing.length + toolBarHeight;
     _tabController.addListener(() {
+      FocusScope.of(context).unfocus();
+
       setState(() {
         currentTabIndex = _tabController.index;
       });
@@ -113,10 +126,10 @@ class _TickerInfoState extends State<TickerInfo>
       if (sectScrollController.position.userScrollDirection ==
           ScrollDirection.reverse) {
         isScrollUp = true;
-        print("scrolling up");
+        ////print("scrolling up");
         return;
       }
-      print("scrolling down");
+      ////print("scrolling down");
       isScrollUp = false;
     });
 
@@ -141,10 +154,12 @@ class _TickerInfoState extends State<TickerInfo>
     if (!mounted) return;
     setState(() {
       isLoading = false;
+
       WidgetsBinding.instance.addPostFrameCallback((_) async {
         if (!mounted) return;
         await dataBase.addPostLoadData(pageData);
         // lastData = pageData;
+
         if (mounted) {
           setState(() {
             previewLoaded = true;
@@ -174,7 +189,6 @@ class _TickerInfoState extends State<TickerInfo>
 
   //toggle data secion hide <-> show
   void _toggleData() {
-    print("toggling");
     controllers.forEach((element) {
       if (isEdit) {
         element.openStartActionPane();
@@ -241,17 +255,17 @@ class _TickerInfoState extends State<TickerInfo>
                     return;
                   }
                 }
-                //print("calling for data");
+                ////print("calling for data");
                 triggerNewChart = true;
                 util.showSnackBar(context, "Streaming Data ", true);
-                //print("in long press");
+                ////print("in long press");
                 setState(() {
                   isStream = true;
                   btnOpacity = 0.3;
                 });
               },
               onLongPressEnd: (_) {
-                print("end press");
+                //print("end press");
                 util.removeSnackBar();
                 setState(() {
                   isStream = false;
@@ -259,21 +273,21 @@ class _TickerInfoState extends State<TickerInfo>
                 });
               },
               onLongPressCancel: () {
-                print("cancel press");
+                //print("cancel press");
                 setState(() {
                   isStream = false;
                   btnOpacity = initBtnOpacity;
                 });
               },
               onTap: () {
-                print("tap");
+                //print("tap");
                 setState(() {
                   isStream = false;
                   btnOpacity = initBtnOpacity;
                 });
               },
               onTapUp: (_) {
-                print('tap up');
+                //print('tap up');
                 setState(() {
                   isStream = false;
                   btnOpacity = initBtnOpacity;
@@ -306,32 +320,32 @@ class _TickerInfoState extends State<TickerInfo>
               if (!isSelfScroll) {
                 setState(() {
                   isSelfScroll = true;
-                  print("self scrolling true");
+                  //print("self scrolling true");
                 });
               }
-              print("page scrolled to top sect end -> self scrolling starts");
+              //print("page scrolled to top sect end -> self scrolling starts");
             } else {
               if (isSelfScroll) {
                 setState(() {
-                  print("not self scrolling");
+                  //print("not self scrolling");
                   isSelfScroll = false;
                 });
               }
-              print("page not scrolled to top sect end -> no self scrolling");
+              //print("page not scrolled to top sect end -> no self scrolling");
             }
             //reducing setstate calls
             if (before < 85) {
               if (!showBtn) {
                 //showBtn = true;
                 setState(() {
-                  print("setting state");
+                  //print("setting state");
                   showBtn = true;
                 });
               }
             } else {
               if (showBtn) {
                 setState(() {
-                  print("setting state 2");
+                  //print("setting state 2");
                   showBtn = false;
                 });
               }
@@ -351,7 +365,7 @@ class _TickerInfoState extends State<TickerInfo>
                       return TickerPage();
                     default:
                       if (snapshot.hasError) {
-                        print("error: ${snapshot.error}");
+                        //print("error: ${snapshot.error}");
                         return Center(
                             child:
                                 Text("Sorry, there seems to be an error 😔"));
@@ -454,7 +468,7 @@ class _TickerInfoState extends State<TickerInfo>
                     previousClose = pageData.previousClose;
                     if (pageData.priceData[localRange] == null) {
                       chartLoading = true;
-                      print("loading charts");
+                      //print("loading charts");
                       return;
                     }
                     if (range != '1d') {
@@ -505,9 +519,23 @@ class _TickerInfoState extends State<TickerInfo>
                           children: [
                             specSection(),
                             _addNotifer(CommentSection(
-                                widget.provider.watchListUid,
-                                pageData.symbol,
-                                isSelfScroll)),
+                              widget.provider.watchListUid,
+                              pageData.symbol,
+                              isSelfScroll,
+                              widget.parentId != null
+                                  ? () {
+                                      if (pageScrollController.hasClients) {
+                                        pageScrollController.jumpTo(
+                                            pageScrollController
+                                                    .position.maxScrollExtent -
+                                                10);
+                                      }
+                                    }
+                                  : () {},
+                              // commentHighlightUid: widget.parentId,
+                              parentId: widget.parentId,
+                              childId: widget.childId,
+                            )),
                             newSection(),
                           ],
                         ),
@@ -528,7 +556,7 @@ class _TickerInfoState extends State<TickerInfo>
           if (notification.metrics.extentBefore == 0 && !isScrollUp) {
             if (isSelfScroll) {
               setState(() {
-                print('self scrol false - page going down');
+                //print('self scrol false - page going down');
                 isSelfScroll = false;
               });
             }
@@ -721,10 +749,10 @@ class _TickerInfoState extends State<TickerInfo>
                             if (isEdit) {
                               controllers[index] = Slidable.of(context);
                               if (index == specsUsing.length - 1) {
-                                print("in");
+                                //print("in");
                                 WidgetsBinding.instance
                                     .addPostFrameCallback((_) {
-                                  // print("post");
+                                  // //print("post");
                                   _toggleData();
                                 });
                               }

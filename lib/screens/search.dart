@@ -84,7 +84,6 @@ class _SearchPageState extends State<SearchPage> {
   Future<void> setUser() async {
     uid = mainContext.read<UserField>().userUid;
     user = await FirebaseApi.getUser(uid);
-    print(uid);
   }
 
   @override
@@ -110,7 +109,6 @@ class _SearchPageState extends State<SearchPage> {
 
   @override
   Widget build(BuildContext context) {
-    print('rebuilding searchtiles');
     if (isInit) {
       mainContext = context;
       if (!widget.isMainPage) {
@@ -161,7 +159,6 @@ class _SearchPageState extends State<SearchPage> {
                     if (market.toLowerCase() == "users") {
                       UserSearchTile tile =
                           UserSearchTile.modelToSearchTile(recommends[index]);
-                      print(user.userSaved);
                       tile.isSaved = false;
                       if (user.userSaved.contains(tile.uid)) {
                         tile.isSaved = true;
@@ -205,7 +202,6 @@ class _SearchPageState extends State<SearchPage> {
         var recs;
         if (market.toLowerCase() == "users") {
           recs = await FirebaseApi.getAllUser(searchQuery: query);
-          print("recs: ${recs}");
         } else {
           recs = await StockNameApi().getStock(query: query, market: market);
         }
@@ -423,7 +419,6 @@ class _SearchPageState extends State<SearchPage> {
             ),
           ]);
         });
-    print("dismissed");
     await setUser();
     setState(() {});
   }

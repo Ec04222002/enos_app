@@ -32,7 +32,7 @@ class AuthService {
       await _auth.sendPasswordResetEmail(email: email);
       return "Success";
     } catch (error) {
-      print(error.toString());
+      //print(error.toString());
       return null;
     }
   }
@@ -43,14 +43,14 @@ class AuthService {
 
   Future signInWithEmailAndPassword({String email, String password}) async {
     try {
-      print("trying to sign in");
+      //print("trying to sign in");
       dynamic result = await _auth.signInWithEmailAndPassword(
           email: email, password: password);
       // User user = result.user;
       // await setUser(user.uid);
       return result;
     } catch (error) {
-      print(error.toString());
+      //print(error.toString());
       return null;
     }
   }
@@ -62,8 +62,8 @@ class AuthService {
           email: email, password: password);
       User user = result.user;
       user.updateDisplayName(userName);
-      // print("result: ${result}");
-      // print("user: ${user}");
+      // //print("result: ${result}");
+      // //print("user: ${user}");
       _user = UserModel(
         email: user.email,
         userUid: user.uid,
@@ -84,7 +84,7 @@ class AuthService {
       ));
       return user;
     } catch (error) {
-      print(error.toString());
+      //print(error.toString());
       return null;
     }
   }
@@ -93,7 +93,7 @@ class AuthService {
     try {
       return await _auth.signOut();
     } catch (error) {
-      print(error.toString());
+      //print(error.toString());
       return null;
     }
   }
@@ -122,10 +122,10 @@ class GoogleSignInProvider extends ChangeNotifier {
       User u = result.user;
       bool userExist = await FirebaseApi.checkExist('Users', u.uid);
       if (userExist) {
-        print("user exists");
+        //print("user exists");
         _user = await FirebaseApi.getUser(u.uid);
       } else {
-        print('user does not exists');
+        //print('user does not exists');
         String userName = u.email.substring(0, u.email.indexOf("@"));
         if (userName.length > 14) {
           userName = userName.substring(0, 14);
@@ -155,7 +155,7 @@ class GoogleSignInProvider extends ChangeNotifier {
       notifyListeners();
       return _user;
     } catch (error) {
-      print(error.toString());
+      //print(error.toString());
       return null;
     }
   }
