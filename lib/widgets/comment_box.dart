@@ -3,10 +3,8 @@ import 'package:enos/models/user.dart';
 import 'package:enos/services/firebase_api.dart';
 import 'package:enos/services/util.dart';
 import 'package:enos/widgets/comment_section.dart';
-import 'package:flutter/cupertino.dart';
 
 import 'package:flutter/material.dart';
-
 import '../models/comment.dart';
 
 class CommentBox extends StatefulWidget {
@@ -21,17 +19,17 @@ class CommentBox extends StatefulWidget {
       {this.context,
       this.data,
       this.manager,
-      @required this.notifyParent, this.replyClicked}) {
+      @required this.notifyParent,
+      this.replyClicked}) {
     time = Utils.getTimeFromToday(data.createdTime);
     add = addComment;
   }
-  void addComment() async{
+  void addComment() async {
     print('yo');
     UserModel user = manager.user;
 
     Comment com = Comment(
-        content:
-        "@${data.userName} ${CommentSection.global}",
+        content: "@${data.userName} ${CommentSection.global}",
         userUid: user.userUid,
         stockUid: data.stockUid,
         likes: 0,
@@ -43,17 +41,17 @@ class CommentBox extends StatefulWidget {
         parentUid: manager.root.commentUid);
 
     String id = await FirebaseApi.updateComment(com);
-   manager.root.replies.add(id);
+    manager.root.replies.add(id);
     manager.cReplies.add(id);
-  data.replies.add(id);
-    await FirebaseApi.updateComment(
-        manager.root);
+    data.replies.add(id);
+    await FirebaseApi.updateComment(manager.root);
     await FirebaseApi.updateComment(data);
     await manager.loadComments(1);
     user.comments.add(id);
     await FirebaseApi.updateUserData(user);
     notifyParent();
   }
+
   @override
   State<CommentBox> createState() => _CommentBoxState();
 }

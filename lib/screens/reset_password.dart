@@ -71,7 +71,6 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                           if (_formKey.currentState.validate()) {
                             setState(() {
                               isLoading = true;
-                              //print("Showing loading");
                             });
                             dynamic result = await context
                                 .read<AuthService>()

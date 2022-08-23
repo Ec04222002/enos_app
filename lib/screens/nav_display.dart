@@ -29,7 +29,6 @@ class _NavDisplayScreenState extends State<NavDisplayScreen> {
   TickerTileProvider tickerProvider = TickerTileProvider();
 
   Future<void> setAllData() async {
-    //print("Set all Data ${widget.uid}");
     tickerProvider.setUid(widget.uid);
     await tickerProvider.setAllInitData();
     setState(() {

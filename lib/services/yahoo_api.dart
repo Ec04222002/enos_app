@@ -103,7 +103,7 @@ class YahooApi {
       "symbols": searchQuery,
     });
     List<TickerTileModel> listData = [];
-    print("in yahoo api");
+    //print("in yahoo api");
     if (datas == null) {
       throw Exception("Cannot get init ticker data");
     }
@@ -264,7 +264,7 @@ class YahooApi {
     List chartDataX = lastData.chartDataX;
     List chartDataY = lastData.chartDataY;
     if (requestChartData) {
-      print("getting chart data");
+      //print("getting chart data");
       // using last working header
       chartResults = await getChartData(
           symbol: symbol, range: chartRange, interval: chartInterval);
@@ -297,16 +297,16 @@ class YahooApi {
             lastNonNullData = initChartDataY[i].toDouble();
             chartDataY.add(initChartDataY[i].toDouble());
           } else if (lastNonNullData != null) {
-            print("adding last: ${lastNonNullData}");
+            //print("adding last: ${lastNonNullData}");
             chartDataY.add(lastNonNullData);
           }
           chartDataX.add(initChartDataX[i].toDouble());
         }
       }
     }
-    print(tickerSymbol);
-    print("isPost: $isPost");
-    // print("isCrypto: $isCrypto");
+    //print(tickerSymbol);
+    //print("isPost: $isPost");
+    // //print("isCrypto: $isCrypto");
     TickerTileModel data = TickerTileModel(
       priceNum: priceNum,
       symbol: tickerSymbol,

@@ -109,7 +109,7 @@ class NewsAPI {
       for (String s in keywords['all']) {
         query += " OR inititle:$s";
       }
-      print(query);
+      //print(query);
       results = api.get(
           endpoint: "/news/search",
           query: {"q": query, "offset": "$offset", "count": "20"});

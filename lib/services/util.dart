@@ -190,7 +190,7 @@ class Utils {
       //result = DateFormat.yMEd().add_jm().format(date);
       result = DateFormat('E, M/d/yy, h:mm aaa').format(date);
     }
-    //print(result);
+    ////print(result);
     return result;
   }
 
@@ -221,17 +221,17 @@ class Utils {
       bool isConstrain,
       bool isMainData = false}) {
     // double num = exp(number);
-    // print("num = $num");
-    print("in utils");
+    // //print("num = $num");
+    //print("in utils");
     String numAsString = num.toString();
 
     int decIndex = numAsString.indexOf(".");
     String preDecimal = numAsString.substring(0, decIndex);
     String postDecimal = numAsString.substring(decIndex + 1);
 
-    // print("preDecimal: $preDecimal");
-    // print("postDecimal: $postDecimal");
-    // print(preDecimal.replaceAll("0", "").replaceAll("-", ""));
+    // //print("preDecimal: $preDecimal");
+    // //print("postDecimal: $postDecimal");
+    // //print(preDecimal.replaceAll("0", "").replaceAll("-", ""));
     //if number contains e- => number really small
     if (numAsString.contains("e-")) {
       return "-0.000";

@@ -180,7 +180,7 @@ class _LineChartWidgetState extends State<LineChartWidget> {
     //i -> front index, j -> end index, mid -> mid index
     int i = 0, j = n, mid = 0;
     while (i < j) {
-      print("searching");
+      //print("searching");
       mid = ((i + j) / 2).floor();
       if (arr[mid] == target) return arr[mid];
 
@@ -227,10 +227,10 @@ class _LineChartWidgetState extends State<LineChartWidget> {
       int indx = chartDataXMod.indexOf(closestTime);
       //find respective time stamp from chart dataX w/ indx
       xData = chartDataX[indx];
-      //print("xData: $xData");
+      ////print("xData: $xData");
     }
     String time = getFormattedTime(epoch: xData);
-    // print(time);
+    // //print(time);
     int occur = modTimeDataX.where((value) => value == time).toList().length;
 
     if (occur <= 3 ||
@@ -248,10 +248,10 @@ class _LineChartWidgetState extends State<LineChartWidget> {
 
   @override
   Widget build(BuildContext bContext) {
-    print("in chart");
+    //print("in chart");
     //no Data
     if (widget.chartLoading) {
-      print("chart is loading");
+      //print("chart is loading");
       return AspectRatio(
         aspectRatio: widget.isPreview ? 3 : 1.5,
         child: Loading(
@@ -262,12 +262,12 @@ class _LineChartWidgetState extends State<LineChartWidget> {
 
     // in data not default => init switch dates in chart page
     // if (widget.range != null && widget.range != defaultRange) {
-    //   print("trigger new chart");
+    //   //print("trigger new chart");
     //   triggerNewChartData = true;
     // }
     //occurs only in chart page
     if (widget.triggerNewChart) {
-      print('length: ${widget.pageData.priceData[widget.range].length}');
+      //print('length: ${widget.pageData.priceData[widget.range].length}');
       if (widget.pageData.priceData[widget.range].isEmpty ||
           widget.pageData.priceData[widget.range].length < 5) {
         return AspectRatio(
@@ -284,8 +284,8 @@ class _LineChartWidgetState extends State<LineChartWidget> {
       setDataPoints();
     }
     doShowLast();
-    // print(chartDataX.length);
-    // print(chartDataY.length);
+    // //print(chartDataX.length);
+    // //print(chartDataY.length);
     minMaxX = widget.range == "5d" || widget.range == "1mo"
         ? Utils.maxMin(chartDataXMod)
         : Utils.maxMin(chartDataX);
@@ -352,7 +352,7 @@ class _LineChartWidgetState extends State<LineChartWidget> {
                     closePriceData = preData['closePrices'];
                     highPriceData = preData['highPrices'];
                     lowPriceData = preData['lowPrices'];
-                    // print("data: $data");
+                    // //print("data: $data");
                     String openPrice = Utils.fixNumToFormat(
                       num: data['y'],
                       isPercentage: false,
@@ -405,7 +405,7 @@ class _LineChartWidgetState extends State<LineChartWidget> {
                           provider: Provider.of<TickerTileProvider>(bContext),
                         ),
                       ));
-                  print("up...");
+                  //print("up...");
                 }
                 // if (event is FlTapDownEvent) {}
                 // if (event is FlTapCancelEvent) {}

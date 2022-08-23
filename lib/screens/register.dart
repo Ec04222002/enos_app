@@ -26,9 +26,9 @@ class _RegisterPageState extends State<RegisterPage> {
 
   @override
   void dispose() {
-    _emailTextController.dispose();
-    _passwordTextController.dispose();
-    _userNameTextController.dispose();
+    // _emailTextController.dispose();
+    // _passwordTextController.dispose();
+    // _userNameTextController.dispose();
     super.dispose();
   }
 
@@ -96,7 +96,6 @@ class _RegisterPageState extends State<RegisterPage> {
                           if (_formKey.currentState.validate()) {
                             setState(() {
                               isLoading = true;
-                              //print("show loading");
                             });
                             dynamic result = await context
                                 .read<AuthService>()
@@ -106,8 +105,6 @@ class _RegisterPageState extends State<RegisterPage> {
                                         _passwordTextController.text.trim(),
                                     userName:
                                         _userNameTextController.text.trim());
-
-                            //print("registered");
                             if (result == null) {
                               setState(() {
                                 isLoading = false;

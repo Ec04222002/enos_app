@@ -69,7 +69,7 @@ class TickerTileProvider extends ChangeNotifier {
     List<String> otherSymbols =
         FirebaseApi.tickerDataFromSnapshot(watchListDoc);
     if (otherSymbols.isEmpty) return [];
-    print("got other users symbols ${otherSymbols}");
+    //print("got other users symbols ${otherSymbols}");
     List<TickerTileModel> tickers =
         await YahooApi().getWatchlistUpdates(otherSymbols, false);
     return tickers;
@@ -113,19 +113,19 @@ class TickerTileProvider extends ChangeNotifier {
 
   Future<void> setAllInitData() async {
     //get watchlist
-    print("WatchlistUid: $watchListUid");
+    //print("WatchlistUid: $watchListUid");
     DocumentSnapshot watchListDoc =
         await FirebaseApi.getWatchListDoc(watchListUid);
     //set needed parameter
     try {
       isPublic = watchListDoc['is_public'];
       Timestamp time = watchListDoc['updated_last'];
-      print(time);
+      //print(time);
       lastUpdatedTime = time.toDate();
       List<dynamic> tickers = watchListDoc['items'];
       //getting watchlist data from api
       tickers.forEach((element) {
-        print("element: $element");
+        //print("element: $element");
         _symbols.add(element.toString());
       });
     }
@@ -160,17 +160,17 @@ class TickerTileProvider extends ChangeNotifier {
     TickerTileModel data = _tickers[_symbols.indexOf(symbol)];
     if (!Utils.isMarketTime() && !data.isLive ||
         (!data.isCrypto && Utils.isWeekend())) {
-      print("$symbol not calling");
+      //print("$symbol not calling");
       return data;
     }
-    print("$symbol is calling");
+    //print("$symbol is calling");
     bool readChartData = false;
     if (Utils.isMarketTime() && requestChartData) {
       readChartData = true;
     }
     data = await yahooApi.get(
         symbol: symbol, lastData: data, requestChartData: readChartData);
-    //print(data.price);
+    ////print(data.price);
     return data;
   }
 }

@@ -87,7 +87,7 @@ class TickerPageInfo {
           }
         }
       });
-      //print("closePriceData: $closePriceData");
+      ////print("closePriceData: $closePriceData");
     }
     preData.priceData[chartRangeAndInt[i][0]] = {
       'openPrices': openPriceData,
@@ -190,7 +190,7 @@ class TickerPageInfo {
     if (articleIndexToRemove.isNotEmpty) {
       //descending order
       articleIndexToRemove.sort((a, b) => b.compareTo(a));
-      print("indexs : $articleIndexToRemove");
+      //print("indexs : $articleIndexToRemove");
       for (int index in articleIndexToRemove) {
         preData.articles.removeAt(index);
       }
@@ -206,7 +206,7 @@ class TickerPageInfo {
     //add comment data
     List<Comment> firebaseComments =
         await FirebaseApi.getStockComment(preData.symbol);
-    print(firebaseComments);
+    //print(firebaseComments);
     firebaseComments.forEach((element) {
       if (!element.isNested) preData.commentData.add(element);
     });
@@ -238,7 +238,7 @@ class TickerPageInfo {
   Future<TickerPageModel> getModelData(String symbol, bool isSaved,
       bool isStream, TickerPageModel lastData) async {
     YahooApi api = YahooApi();
-    print("setting init data");
+    //print("setting init data");
     dynamic tickerResult = await api.getTickerData(symbol);
 
     if (isStream) {
@@ -270,14 +270,14 @@ class TickerPageInfo {
       lastData.marketPriceNum =
           tickerResult['price']['regularMarketPrice']['raw'];
       setStreamChart(lastData);
-      print("Streaming..");
+      //print("Streaming..");
       return lastData;
     }
     TickerTileModel tileModel =
         await api.get(symbol: symbol, chartInterval: "5m");
     tileModel.isSaved = isSaved;
     Map<String, dynamic> specsData = TickerSpecs.apiToMap(tickerResult);
-    //print("post: ${tileModel.previousClose}");
+    ////print("post: ${tileModel.previousClose}");
     Map<String, dynamic> compleData = {
       "postPrice": tileModel.isPostMarket
           ? tickerResult['price']['postMarketPrice']['fmt']

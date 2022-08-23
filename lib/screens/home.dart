@@ -42,7 +42,7 @@ class _HomePageState extends State<HomePage> {
       floatingActionButton: GestureDetector(
         onLongPress: () {
           util.showSnackBar(context, "Streaming Data ", true);
-          //print("in long press");
+          ////print("in long press");
           setState(() {
             btnOpacity = 0.3;
             provider.isLive = true;
@@ -50,35 +50,35 @@ class _HomePageState extends State<HomePage> {
         },
         onLongPressEnd: (_) {
           util.removeSnackBar();
-          //print("end press");
+          ////print("end press");
           setState(() {
             btnOpacity = initBtnOpacity;
             provider.isLive = false;
           });
         },
         onLongPressCancel: () {
-          //print("cancel press");
+          ////print("cancel press");
           setState(() {
             btnOpacity = initBtnOpacity;
             provider.isLive = false;
           });
         },
         onTap: () {
-          //print("tap");
+          ////print("tap");
           setState(() {
             btnOpacity = initBtnOpacity;
             provider.isLive = false;
           });
         },
         onTapCancel: () {
-          //print("tap cancel");
+          ////print("tap cancel");
           setState(() {
             btnOpacity = initBtnOpacity;
             provider.isLive = false;
           });
         },
         onTapUp: (_) {
-          //print('tap up');
+          ////print('tap up');
           setState(() {
             btnOpacity = initBtnOpacity;
             provider.isLive = false;
@@ -94,7 +94,7 @@ class _HomePageState extends State<HomePage> {
             btnOpacity = initBtnOpacity;
             provider.isLive = false;
           });
-          //print("double tap end");
+          ////print("double tap end");
         },
         child: FloatingActionButton(
           onPressed: () {},

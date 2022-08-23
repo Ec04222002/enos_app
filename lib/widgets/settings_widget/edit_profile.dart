@@ -31,7 +31,7 @@ class EditProfile extends StatelessWidget {
       if (image == null) return null;
       return image.path;
     } on PlatformException catch (e) {
-      print('Image access not allowed');
+      //print('Image access not allowed');
       return null;
     }
   }
@@ -278,7 +278,7 @@ class EditProfile extends StatelessWidget {
                                                 BorderRadius.circular(5.0),
                                           ))),
                                       onPressed: () {
-                                        print("pressed");
+                                        //print("pressed");
                                         if (!isBorderMode) return;
                                         isBorderMode = false;
 
