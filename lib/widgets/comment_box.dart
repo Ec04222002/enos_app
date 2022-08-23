@@ -14,17 +14,46 @@ class CommentBox extends StatefulWidget {
   final Comment data;
   final CommentManager manager;
   final Function notifyParent;
-  final Function replyClicked;
+  Function replyClicked;
+  Function add;
   String time;
   CommentBox(
       {this.context,
       this.data,
       this.manager,
-      @required this.notifyParent,
-      @required this.replyClicked}) {
+      @required this.notifyParent, this.replyClicked}) {
     time = Utils.getTimeFromToday(data.createdTime);
+    add = addComment;
   }
+  void addComment() async{
+    print('yo');
+    UserModel user = manager.user;
 
+    Comment com = Comment(
+        content:
+        "@${data.userName} ${CommentSection.global}",
+        userUid: user.userUid,
+        stockUid: data.stockUid,
+        likes: 0,
+        isNested: true,
+        apiComment: false,
+        createdTime: DateTime.now(),
+        replies: [],
+        userName: user.username,
+        parentUid: manager.root.commentUid);
+
+    String id = await FirebaseApi.updateComment(com);
+   manager.root.replies.add(id);
+    manager.cReplies.add(id);
+  data.replies.add(id);
+    await FirebaseApi.updateComment(
+        manager.root);
+    await FirebaseApi.updateComment(data);
+    await manager.loadComments(1);
+    user.comments.add(id);
+    await FirebaseApi.updateUserData(user);
+    notifyParent();
+  }
   @override
   State<CommentBox> createState() => _CommentBoxState();
 }

@@ -18,7 +18,9 @@ ValueNotifier textBoxNotifier = ValueNotifier(false);
 bool isReply = false;
 String hintText = "Add a comment ...";
 String btnText = 'Post';
-
+Comment curComment = null;
+CommentManager curManager = null;
+CommentBox curBox = null;
 class CommentManager extends StatefulWidget {
   Comment root;
   List<Comment> visibleReplies = [];
@@ -95,7 +97,7 @@ class CommentManager extends StatefulWidget {
       }
     }
 
-    if (pos != root.replies.length) {
+    if (pos != cReplies.length) {
       visibleReplies[pos - 1].viewReply = true;
     }
     isLoad = false;
@@ -110,9 +112,9 @@ class _CommentManagerState extends State<CommentManager> {
     setState(() {});
   }
 
-  void replyClicked(String replyToName) {
+  void replyClicked(Comment replyComment, CommentBox box) {
     // isReply = true;
-    hintText = "Reply to $replyToName";
+    hintText = "Reply to ${replyComment.userName}";
     btnText = "Reply";
     FocusScopeNode currentFocus = FocusScope.of(context);
     currentFocus.requestFocus(focusNode);
@@ -125,6 +127,8 @@ class _CommentManagerState extends State<CommentManager> {
       textBoxNotifier.value = !textBoxNotifier.value;
     });
     textBoxNotifier.value = !textBoxNotifier.value;
+    curComment = replyComment;
+    curBox = box;
   }
 
   // @override
@@ -171,28 +175,28 @@ class _CommentManagerState extends State<CommentManager> {
           preferredSize: Size.fromRadius(18),
         ),
         contentChild: (context, data) {
-          return CommentBox(
+          CommentBox box =  CommentBox(
             data: data,
             context: context,
             manager: widget,
             notifyParent: refresh,
-            replyClicked: () {
-              replyClicked(data.userName);
-              // isReply = false;
-            },
           );
+          box.replyClicked = () {
+            replyClicked(data, box);
+          };
+          return box;
         },
         contentRoot: (context, data) {
-          return CommentBox(
+          CommentBox box =  CommentBox(
             data: data,
             context: context,
             manager: widget,
             notifyParent: refresh,
-            replyClicked: () {
-              replyClicked(data.userName);
-              // isReply = false;
-            },
           );
+          box.replyClicked = () {
+            replyClicked(data, box);
+          };
+          return box;
         },
       ),
       padding: EdgeInsets.symmetric(vertical: 12),
@@ -201,6 +205,7 @@ class _CommentManagerState extends State<CommentManager> {
 }
 
 class CommentSection extends StatefulWidget {
+  static String global = "";
   String userId;
   String symbol;
   String parentId, childId;
@@ -462,7 +467,39 @@ class _CommentSectionState extends State<CommentSection> {
                                 onPressed: () async {
                                   if (_controller.text.trim() != "") {
                                     if (btnText == "Reply") {
-                                      //reply function;
+                                      CommentSection.global = _controller.text;
+                                      curBox.add();
+                                          CommentSection.global = "";
+                                          _controller.clear();
+                                          // Comment parent = curComment.parentUid != null? FirebaseApi.getComment(curComment.parentUid)
+                                          // : curComment;
+                                          //     Comment com = Comment(
+                                          //         content:
+                                          //             "@${curComment.userName} ${_controller.value.text}",
+                                          //         userUid: user.userUid,
+                                          //         stockUid: curComment.stockUid,
+                                          //         likes: 0,
+                                          //         isNested: true,
+                                          //         apiComment: false,
+                                          //         createdTime: DateTime.now(),
+                                          //         replies: [],
+                                          //         userName: user.username,
+                                          //         parentUid: parent.commentUid);
+                                          //
+                                          //     String id = await FirebaseApi.updateComment(com);
+                                          //     parent.replies.add(id);
+                                          //      curManager.cReplies.add(id);
+                                          //      if(parent != curComment)
+                                          //        curComment.replies.add(id);
+                                          //      await FirebaseApi.updateComment(
+                                          //          parent);
+                                          //      await FirebaseApi.updateComment(curComment);
+                                          //   //   await curManager.loadComments(1);
+                                          //      user.comments.add(id);
+                                          //      await FirebaseApi.updateUserData(user);
+                                          //      _controller.clear();
+                                          //      setState(() {});
+                                                return;
                                     }
                                     Comment com = Comment(
                                         content: _controller.value.text,
