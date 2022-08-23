@@ -36,17 +36,6 @@ class SliderWidget extends StatelessWidget {
                 overlayColor: Colors.transparent,
                 thumbShape: RoundSliderThumbShape(enabledThumbRadius: 5)),
             child: Slider(
-                // semanticFormatterCallback: (double value) {
-                //   print("in");
-                //   int decimalIndex = value.toString().indexOf(".");
-                //   print(decimalIndex);
-                //   print(value.toString().length - decimalIndex);
-                //   if (value.toString().length - decimalIndex > 8) {
-                //     print("returning rounded value");
-                //     return "a";
-                //   }
-                //   return value.toString();
-                // },
                 thumbColor: kBrightTextColor,
                 value: value,
                 min: min,

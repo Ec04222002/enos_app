@@ -102,7 +102,6 @@ class _SignInPageState extends State<SignInPage> {
                         if (_formKey.currentState.validate()) {
                           setState(() {
                             isLoading = true;
-                            //print("Showing loading");
                           });
                           dynamic result = await context
                               .read<AuthService>()
@@ -113,7 +112,6 @@ class _SignInPageState extends State<SignInPage> {
                           if (result == null) {
                             setState(() {
                               isLoading = false;
-                              //print("Error logging in");
                               error = 'Please enter a valid email';
                             });
                             return;
@@ -136,19 +134,17 @@ class _SignInPageState extends State<SignInPage> {
                             listen: false);
                         setState(() {
                           isLoading = true;
-                          //print("Showing loading");
                         });
                         dynamic result = await provider.googleLogin();
-                        print("Signed in with google");
+                        ////print("Signed in with google");
                         if (result == null) {
                           setState(() {
                             isLoading = false;
-                            //print("Error logging in");
                             error =
                                 'Google cannot log you in. Please try again later';
                           });
                         }
-                        print("Google results: $result");
+                        ////print("Google results: $result");
                         //await context.read<AuthService>().setUser(result);
                       },
                     ),

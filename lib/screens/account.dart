@@ -350,8 +350,6 @@ class _AccountPageState extends State<AccountPage>
                                                     Navigator.pop(context);
                                                   }, null);
                                                 } else {
-                                                  print("saving uid: $uid");
-
                                                   self.userSaved.add(uid);
 
                                                   FirebaseApi.updateUserData(
@@ -516,13 +514,18 @@ class _AccountPageState extends State<AccountPage>
               TextButton(
                   onPressed: () {
                     btnColor = kDisabledColor;
-                    btnTxt = "Submitted";
+
+                    if (btnTxt == "Submitted") {
+                      return;
+                    }
+                    print("clicked");
                     EmailSender().sendRequestView(
                         toName: name,
                         toEmail: user.email,
                         fromEmail: self.email,
                         fromName: self.username,
                         context: context);
+                    btnTxt = "Submitted";
                     toggleRequestBtn.value = !toggleRequestBtn.value;
                   },
                   child: ClipRRect(
@@ -567,7 +570,6 @@ class _AccountPageState extends State<AccountPage>
           physics: BouncingScrollPhysics(),
           padding: EdgeInsets.only(top: 10),
           itemBuilder: (context, index) {
-            print("rebuilding");
             if (index == 0) {
               if (!isSelfView)
                 return Container(
@@ -710,7 +712,6 @@ class _AccountPageState extends State<AccountPage>
   }
 
   void toggleWatchlist(bool value) {
-    print("toggling watchlist");
     if (value) {
       Utils.showAlertDialog(
           context, "Are you sure you want set your watchlist public?", () {
@@ -767,8 +768,10 @@ class _AccountPageState extends State<AccountPage>
   }
 
   void commentReply() {
-    Navigator.push(context,
-        MaterialPageRoute(builder: (context) => CommentReplyPage(user, uid)));
+    Navigator.push(
+        context,
+        MaterialPageRoute(
+            builder: (localContext) => CommentReplyPage(user, context)));
   }
 
   void openSavedUser() {

@@ -75,15 +75,9 @@ class _ArticleViewerState extends State<ArticleViewer> {
     _controller.addListener(() {
       if (_controller.position.userScrollDirection == ScrollDirection.reverse) {
         isScrollUp = true;
-        print("scrolling up");
         return;
       }
-      print("scrolling down");
       isScrollUp = false;
-      // print("not at top end");
-      // setState(() {
-      //   widget.atTop = false;
-      // });
     });
     super.initState();
   }
@@ -98,7 +92,7 @@ class _ArticleViewerState extends State<ArticleViewer> {
                 widget.isSelfScroll = false;
               });
             }
-            print("scrolling articles down -> hit top edge, moving page ");
+            // //print("scrolling articles down -> hit top edge, moving page ");
           }
         }
         return false;
@@ -199,7 +193,6 @@ class NewsTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
         onTap: () {
-          print(posturl);
           Navigator.push(
               context,
               MaterialPageRoute(

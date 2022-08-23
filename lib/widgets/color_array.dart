@@ -103,7 +103,7 @@ class _ColorArrayState extends State<ColorArray> {
                   return;
                 }
                 if (index != bgActiveIndex) {
-                  print("clicked on just color");
+                  //print("clicked on just color");
                   setState(() {
                     widget.currentBg = widget.colors[index];
                     //bgActiveIndex = index;

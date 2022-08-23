@@ -42,7 +42,7 @@ class EmailSender {
             'user_email': email,
           }
         }));
-    print(response.statusCode);
+    //print(response.statusCode);
     Utils util = Utils();
     if (response.statusCode == 200) {
       util.showSnackBar(context, "Sent Successfully 🎉", false);
@@ -65,6 +65,7 @@ class EmailSender {
     if (toEmail == null || toEmail.isEmpty) {
       return "To Email is null";
     }
+    print("sending request");
     final response = await http.post(url,
         headers: {
           'origin': 'http://localhost',

@@ -21,6 +21,8 @@ String btnText = 'Post';
 Comment curComment = null;
 CommentManager curManager = null;
 CommentBox curBox = null;
+String currentText = "";
+
 class CommentManager extends StatefulWidget {
   Comment root;
   List<Comment> visibleReplies = [];
@@ -124,7 +126,7 @@ class _CommentManagerState extends State<CommentManager> {
     currentFocus.requestFocus(focusNode);
 
     focusNode.addListener(() {
-      if (!focusNode.hasFocus) {
+      if (!focusNode.hasFocus && currentText.trim().isEmpty) {
         hintText = "Add a comment ...";
         btnText = "Post";
       }
@@ -216,7 +218,10 @@ class CommentSection extends StatefulWidget {
   bool overLimit = false;
   int numComments;
   bool isSelfScroll;
-  CommentSection(String userId, String symbol, this.isSelfScroll,
+  Function onFinishLoad;
+
+  CommentSection(
+      String userId, String symbol, this.isSelfScroll, this.onFinishLoad,
       {this.parentId = "", this.childId = ""}) {
     this.symbol = symbol;
     this.userId = userId;
@@ -227,7 +232,8 @@ class CommentSection extends StatefulWidget {
   State<CommentSection> createState() => _CommentSectionState();
 }
 
-class _CommentSectionState extends State<CommentSection> {
+class _CommentSectionState extends State<CommentSection>
+    with SingleTickerProviderStateMixin {
   bool isLoad;
   TextEditingController _controller;
   List<CommentManager> comments;
@@ -235,9 +241,13 @@ class _CommentSectionState extends State<CommentSection> {
   int numComments = 0;
   final scrollController = ScrollController();
   bool isScrollUp = true;
-
+  int highlightIndex;
+  AnimationController _animeController;
+  Animation lightUpAnimation;
+  bool animationComplete = false;
   @override
   void dispose() {
+    _animeController.dispose();
     _controller.dispose();
     scrollController.dispose();
     super.dispose();
@@ -245,17 +255,35 @@ class _CommentSectionState extends State<CommentSection> {
 
   @override
   void initState() {
+    _animeController =
+        AnimationController(vsync: this, duration: Duration(milliseconds: 1100))
+          ..addListener(() {
+            setState(() {});
+          });
+    lightUpAnimation = new Tween(begin: 0.0, end: 1.0).animate(
+        new CurvedAnimation(
+            parent: _animeController, curve: Curves.easeInQuint));
+    _animeController.addStatusListener((status) {
+      if (status == AnimationStatus.completed) {
+        Future.delayed(Duration(milliseconds: 500), () {
+          setState(() {
+            animationComplete = true;
+          });
+        });
+      }
+    });
+
     // Setup the listener.
     scrollController.addListener(() {
       if (scrollController.position.userScrollDirection ==
           ScrollDirection.reverse) {
         isScrollUp = true;
-        print("scrolling up");
+        //print("scrolling up");
         return;
       }
-      print("scrolling down");
+      //print("scrolling down");
       isScrollUp = false;
-      // print("not at top end");
+      // //print("not at top end");
       // setState(() {
       //   widget.atTop = false;
       // });
@@ -264,6 +292,8 @@ class _CommentSectionState extends State<CommentSection> {
     comments = [];
     _controller = TextEditingController();
     if (comments.length == 0) loadComments();
+
+    // print(comments);
     super.initState();
   }
 
@@ -280,9 +310,9 @@ class _CommentSectionState extends State<CommentSection> {
     UserModel user = await FirebaseApi.getUser(widget.userId);
     //  for(String id in user.comments) {
     //    Comment com = await FirebaseApi.getComment(id);
-    // //    print(com.stockUid);
-    //    // print(widget.symbol);
-    //    // print('kino');
+    // //    //print(com.stockUid);
+    //    // //print(widget.symbol);
+    //    // //print('kino');
     //    if(com.stockUid == widget.symbol) {
     //      this.numComments++;
     //    }
@@ -302,9 +332,10 @@ class _CommentSectionState extends State<CommentSection> {
       height: 25,
       fontSize: 15,
     );
-
+    // print(widget.parentId);
     for (int i = 0; i < com.length; i++) {
       Comment element = com[i];
+
       if (element.userUid == user.userUid) this.numComments++;
       if (!element.isNested) {
         Color color1, color2;
@@ -372,12 +403,18 @@ class _CommentSectionState extends State<CommentSection> {
         }
       }
     }
+    highlightIndex = comments
+        .indexWhere((element) => element.root.commentUid == widget.parentId);
+    // print(highlightIndex);
     isLoad = false;
+    if (widget.onFinishLoad != null) widget.onFinishLoad();
+    _animeController.forward();
     setState(() {});
   }
 
   @override
   Widget build(BuildContext context) {
+    print("rebuilding");
     width = MediaQuery.of(context).size.width;
     height = MediaQuery.of(context).size.height;
     return isLoad
@@ -391,7 +428,7 @@ class _CommentSectionState extends State<CommentSection> {
                       widget.isSelfScroll = false;
                     });
                   }
-                  // print(
+                  // //print(
                   //     "scrolling articles down -> hit top edge, moving page ");
                 }
               }
@@ -452,15 +489,26 @@ class _CommentSectionState extends State<CommentSection> {
                                   ),
                                 ),
                                 onTap: () {
+                                  if (currentText.isNotEmpty) {
+                                    return;
+                                  }
                                   hintText = "Add a comment ...";
                                   btnText = "Post";
                                   textBoxNotifier.value =
                                       !textBoxNotifier.value;
                                 },
                                 controller: _controller,
-                                // onChanged: (String s) {
-                                //   setState(() {});
-                                // },
+                                onChanged: (String s) {
+                                  print("onchange");
+                                  currentText = s;
+
+                                  if (currentText.trim().length > 1) {
+                                    return;
+                                  }
+
+                                  textBoxNotifier.value =
+                                      !textBoxNotifier.value;
+                                },
                                 style: TextStyle(
                                     fontSize: 15, color: kBrightTextColor),
                               ),
@@ -469,7 +517,7 @@ class _CommentSectionState extends State<CommentSection> {
                             //       SizedBox(width: 10,),
                             Container(
                               width: postBtnWidth,
-                              color: _controller.text == ""
+                              color: _controller.text.isEmpty
                                   ? kDisabledColor
                                   : kActiveColor,
                               child: TextButton(
@@ -570,7 +618,21 @@ class _CommentSectionState extends State<CommentSection> {
                       ),
                     );
                   }
-                  return comments[index - 2];
+                  return (index - 2) == highlightIndex && !animationComplete
+                      ? AnimatedBuilder(
+                          animation: _animeController,
+                          builder: (context, child) => Container(
+                              decoration: BoxDecoration(
+                                // shape: BoxShape.rectangle,
+                                // borderRadius:
+                                //     BorderRadius.all(Radius.circular(12)),
+                                border: Border.all(
+                                    color: kActiveColor
+                                        .withOpacity(lightUpAnimation.value),
+                                    width: 3),
+                              ),
+                              child: comments[index - 2]))
+                      : comments[index - 2];
                 }),
           );
   }

@@ -239,7 +239,7 @@ class _PreTickerInfoState extends State<PreTickerInfo>
         context: context,
         builder: (_) {
           return Container(
-              color: kLightBackgroundColor,
+              color: kDarkBackgroundColor,
               height: 115,
               child: Padding(
                 padding: const EdgeInsets.all(12.0),
