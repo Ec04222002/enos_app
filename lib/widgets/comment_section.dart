@@ -395,8 +395,8 @@ class _CommentSectionState extends State<CommentSection>
     for (int i = 0; i < comments.length; i++) {
       CommentManager c = comments[i];
       if (c.root.commentUid == widget.parentId) {
-        comments.remove(c);
-        comments.insert(0, c);
+        // comments.remove(c);
+        // comments.insert(0, c);
         if (widget.childId != "") {
           c.cReplies.remove(widget.childId);
           c.cReplies.insert(0, widget.childId);
