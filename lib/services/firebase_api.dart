@@ -50,7 +50,7 @@ class FirebaseApi {
   static Future<Comment> getComment(String uid) async {
     final comment =
         await FirebaseFirestore.instance.collection("Comments").doc(uid).get();
-    print(comment.data());
+    //print(comment.data());
     return Comment.fromJson(comment.data());
   }
 

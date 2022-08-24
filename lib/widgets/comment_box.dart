@@ -25,8 +25,8 @@ class CommentBox extends StatefulWidget {
     addComment = addReply;
   }
   void addReply() async {
-    print('yo');
-    print(manager);
+    // print('yo');
+    // print(manager);
     UserModel user = manager.user;
     //update main
     Comment reply = Comment(
@@ -49,7 +49,6 @@ class CommentBox extends StatefulWidget {
     //print(manager.root.replies);
     //for replying to reply
     if (data.commentUid != manager.root.commentUid) {
-      print("updating ");
       data.replies.add(id);
       await FirebaseApi.updateComment(data);
     }

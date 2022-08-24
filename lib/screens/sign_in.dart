@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:enos/constants.dart';
 import 'package:enos/widgets/text_input_widget.dart';
 import 'package:provider/provider.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class SignInPage extends StatefulWidget {
   //const SignInPage({Key key}) : super(key: key);
@@ -123,10 +124,17 @@ class _SignInPageState extends State<SignInPage> {
                       textColor: Colors.black54,
                       backgroundColor: Colors.white,
                       leadIcon: Container(
-                          padding: const EdgeInsets.symmetric(
-                              vertical: 9.0, horizontal: 10.0),
-                          child: Image.network(
-                              'https://developers.google.com/identity/images/g-logo.png')),
+                        // padding: const EdgeInsets.symmetric(
+                        //     vertical: 9.0, horizontal: 10.0),
+                        // child: Image.network(
+                        //     'https://developers.google.com/identity/images/g-logo.png')
+                        // child: FaIcon(
+                        //   FontAwesomeIcons.google,
+                        //   color: kLightBackgroundColor,
+                        //   size: 50,
+                        // ),
+                        height: 0,
+                      ),
                       text: 'Sign in with Google',
                       onTap: () async {
                         final provider = Provider.of<GoogleSignInProvider>(

@@ -80,7 +80,7 @@ class CommentManager extends StatefulWidget {
     if (pos < cReplies.length) {
       for (int i = 0; i < amt && pos < cReplies.length; i++, pos++) {
         Comment com = await FirebaseApi.getComment(cReplies[pos]);
-        print(com);
+
         visibleReplies.add(com);
         UserModel user2;
         Color c1, c2;
@@ -420,18 +420,18 @@ class _CommentSectionState extends State<CommentSection>
 //for main comments
 
       if (widget.parentId == null || widget.parentId.trim().isEmpty) {
-        print("no parent");
+        // print("no parent");
         highlightIndex = comments
             .indexWhere((element) => element.root.commentUid == widget.selfId);
       }
       //for replies
       else {
-        print(widget.parentId);
+        //print(widget.parentId);
 
         highlightIndex = comments.indexWhere(
             (element) => element.root.commentUid == widget.parentId);
       }
-      print("highlightindex: $highlightIndex");
+      //print("highlightindex: $highlightIndex");
     }
 
     // highlightIndex = comments
@@ -446,7 +446,6 @@ class _CommentSectionState extends State<CommentSection>
 
   @override
   Widget build(BuildContext context) {
-    print("rebuilding");
     width = MediaQuery.of(context).size.width;
     height = MediaQuery.of(context).size.height;
     return isLoad
@@ -531,7 +530,6 @@ class _CommentSectionState extends State<CommentSection>
                                 },
                                 controller: _controller,
                                 onChanged: (String s) {
-                                  print("onchange");
                                   currentText = s;
 
                                   if (currentText.trim().length > 1) {
@@ -556,7 +554,7 @@ class _CommentSectionState extends State<CommentSection>
                                 onPressed: () async {
                                   if (_controller.text.trim() != "") {
                                     if (btnText == "Reply") {
-                                      print("replying");
+                                      // print("replying");
                                       CommentSection.global = _controller.text;
                                       curBox.addReply();
                                       CommentSection.global = "";

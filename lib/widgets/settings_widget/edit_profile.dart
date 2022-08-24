@@ -99,26 +99,26 @@ class EditProfile extends StatelessWidget {
       //updating usermodel
     };
 
-    Function _setCameraImage = () async {
-      String url = await EditProfile.pickImg(ImageSource.camera);
-      if (url != null) {
-        //containsImage = true;
-        imgUrl = url;
-        updateProfile();
-        return "Success";
-      }
-      return null;
-    };
-    Function _setLibraryImage = () async {
-      String url = await EditProfile.pickImg(ImageSource.gallery);
-      if (url != null) {
-        // containsImage = true;
-        imgUrl = url;
-        updateProfile();
-        return "Success";
-      }
-      return null;
-    };
+    // Function _setCameraImage = () async {
+    //   String url = await EditProfile.pickImg(ImageSource.camera);
+    //   if (url != null) {
+    //     //containsImage = true;
+    //     imgUrl = url;
+    //     updateProfile();
+    //     return "Success";
+    //   }
+    //   return null;
+    // };
+    // Function _setLibraryImage = () async {
+    //   String url = await EditProfile.pickImg(ImageSource.gallery);
+    //   if (url != null) {
+    //     // containsImage = true;
+    //     imgUrl = url;
+    //     updateProfile();
+    //     return "Success";
+    //   }
+    //   return null;
+    // };
     //for just background color click
     Function _removeImage = () {
       imgUrl = null;

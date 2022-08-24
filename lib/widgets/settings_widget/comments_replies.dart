@@ -53,7 +53,7 @@ class _CommentReplyPageState extends State<CommentReplyPage> {
   }
 
   void loadComments() async {
-    print("----------");
+    //print("----------");
     isLoad = true;
     comments = [];
     if (widget.user == null) {
@@ -62,7 +62,7 @@ class _CommentReplyPageState extends State<CommentReplyPage> {
     // print(widget.user.comments);
     for (String com in widget.user.comments) {
       Comment comment = await FirebaseApi.getComment(com);
-      print(comment);
+      //print(comment);
       //???
 
       comments.add(comment);
@@ -244,10 +244,10 @@ class _CommentReplyPageState extends State<CommentReplyPage> {
         GestureDetector(
             onTap: () async {
               // print("clicked at setting");
-              print(comment.commentUid);
-              print(comment.parentUid);
+              // print(comment.commentUid);
+              // print(comment.parentUid);
 
-              print(comment.isNested);
+              // print(comment.isNested);
               await Navigator.push(
                   context,
                   MaterialPageRoute(

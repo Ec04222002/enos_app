@@ -33,7 +33,7 @@ class Comment {
       parentUid});
 
   static Comment fromJson(Map<String, dynamic> json) {
-    print(json['parentUid']);
+    //print(json['parentUid']);
     return Comment(
       commentUid: json['comment_uid'],
       stockUid: json['stock_uid'],

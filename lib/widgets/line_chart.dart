@@ -2,7 +2,6 @@ import "package:enos/constants.dart";
 import 'package:enos/models/ticker_page_info.dart';
 import 'package:enos/models/user.dart';
 import 'package:enos/screens/ticker_info.dart';
-import 'package:enos/services/ticker_page_info.dart';
 import 'package:enos/services/ticker_provider.dart';
 import 'package:enos/services/util.dart';
 import 'package:enos/widgets/loading.dart';

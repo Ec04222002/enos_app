@@ -518,7 +518,6 @@ class _AccountPageState extends State<AccountPage>
                     if (btnTxt == "Submitted") {
                       return;
                     }
-                    print("clicked");
                     EmailSender().sendRequestView(
                         toName: name,
                         toEmail: user.email,

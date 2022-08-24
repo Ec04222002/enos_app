@@ -1,6 +1,5 @@
 import 'package:enos/models/ticker_page_info.dart';
 import 'package:enos/services/ticker_page_info.dart';
-import 'package:enos/models/ticker_tile.dart';
 import 'package:enos/services/ticker_provider.dart';
 import 'package:enos/services/util.dart';
 import 'package:flutter/cupertino.dart';
