@@ -58,7 +58,7 @@ class _SignInPageState extends State<SignInPage> {
                     ),
                     SizedBox(height: 20),
                     TextInputWidget(
-                      text: "Username or email",
+                      text: "User Email",
                       icon: Icons.person_outline,
                       isPassword: false,
                       validatorFunct: (val) =>
