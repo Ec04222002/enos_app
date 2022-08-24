@@ -50,16 +50,61 @@ class FirebaseApi {
   static Future<Comment> getComment(String uid) async {
     final comment =
         await FirebaseFirestore.instance.collection("Comments").doc(uid).get();
+    print(comment.data());
     return Comment.fromJson(comment.data());
   }
 
-  static Future<String> updateComment(Comment comment) async {
+  //add reply
+  static Future<String> addReply(String parentUid, Comment reply) async {
+    final replyInBase =
+        await FirebaseFirestore.instance.collection("Comments").doc();
+    // final parentComment =
+    //     await FirebaseFirestore.instance.collection("Comments").doc(parentUid);
+    // parentComment.get();
+    reply.parentUid = parentUid;
+    reply.commentUid = replyInBase.id;
+    await replyInBase.set(reply.toJson());
+    return replyInBase.id;
+  }
+
+  static Future<void> updateComment(Comment newComment) async {
     final com = await FirebaseFirestore.instance
         .collection("Comments")
-        .doc(comment.commentUid);
+        .doc(newComment.commentUid);
+    await com.set(newComment.toJson());
+  }
+
+  //add general comment
+  static Future<String> addComment(Comment comment) async {
+    final com = await FirebaseFirestore.instance.collection("Comments").doc();
+    comment.parentUid = null;
     comment.commentUid = com.id;
     await com.set(comment.toJson());
     return com.id;
+    // //adding general comment
+    // if (comment.commentUid == null) {
+    //   comment.commentUid = com.id;
+    //   comment.parentUid = null;
+    // }
+    // //a reply to comment (var comment)
+    // else {
+
+    // }
+    // //not nested = general comment => parentId = id;
+    // String selfId = null;
+    // String parentId = com.id;
+    // if (comment.isNested) {
+    //   parentId = comment.commentUid;
+    //   selfId = com.id;
+    // }
+    // print("commentUid: ${comment.commentUid}");
+    // print("parentUid: ${comment.parentUid}");
+    // print("in update comment(), comment is nested: ${comment.isNested}");
+
+    // comment.commentUid = selfId;
+    // comment.parentUid = parentId;
+    // await com.set(comment.toJson());
+    // return com.id;
   }
 
   static Future<List<Comment>> getStockComment(String symbol) async {

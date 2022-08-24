@@ -29,9 +29,12 @@ class Comment {
       this.isNested,
       this.apiComment,
       this.viewReply = false,
-      this.userName = "", parentUid});
+      this.userName = "",
+      parentUid});
 
-  static Comment fromJson(Map<String, dynamic> json) => Comment(
+  static Comment fromJson(Map<String, dynamic> json) {
+    print(json['parentUid']);
+    return Comment(
       commentUid: json['comment_uid'],
       stockUid: json['stock_uid'],
       userUid: json['user_uid'],
@@ -42,12 +45,8 @@ class Comment {
       isNested: json['isNested'],
       apiComment: json['apiComment'],
       userName: json['userName'],
-      parentUid: json['parentUid']
-  );
-
-  @override
-  String toString() {
-    return 'Comment{commentUid: $commentUid, stockUid: $stockUid, userUid: $userUid, createdTime: $createdTime, content: $content, likes: $likes, replies: $replies, isNested: $isNested, apiComment: $apiComment}';
+      parentUid: json['parentUid'].toString(),
+    );
   }
 
   Map<String, dynamic> toJson() => {
@@ -61,6 +60,10 @@ class Comment {
         'isNested': isNested,
         'apiComment': apiComment,
         'userName': userName,
-        'parentUid' : parentUid
+        'parentUid': parentUid
       };
+  @override
+  String toString() {
+    return 'Comment{commentUid: $commentUid, stockUid: $stockUid, userUid: $userUid, createdTime: $createdTime, content: $content, likes: $likes, replies: $replies, isNested: $isNested, apiComment: $apiComment, parentUid: $parentUid}';
+  }
 }

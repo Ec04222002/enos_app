@@ -301,6 +301,7 @@ class _TickerState extends State<TickerTile> {
         ));
     if (!mounted) return;
     setState(() {
+      if (response == null) return;
       if (response['isSaved'] != isSaved) {
         if (response['isSaved']) {
           provider.addTicker(symbol, context: context);

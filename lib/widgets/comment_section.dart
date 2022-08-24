@@ -54,10 +54,10 @@ class CommentManager extends StatefulWidget {
     }
     if (cReplies.length > 0) root.viewReply = true;
 
-    if (root.apiComment == null) {
-      root.apiComment = true;
-      FirebaseApi.updateComment(root);
-    }
+    // if (root.apiComment == null) {
+    //   root.apiComment = true;
+    //   FirebaseApi.updateComment(root);
+    // }
   }
 
   // void initUser() async{
@@ -80,6 +80,7 @@ class CommentManager extends StatefulWidget {
     if (pos < cReplies.length) {
       for (int i = 0; i < amt && pos < cReplies.length; i++, pos++) {
         Comment com = await FirebaseApi.getComment(cReplies[pos]);
+        print(com);
         visibleReplies.add(com);
         UserModel user2;
         Color c1, c2;
@@ -128,18 +129,18 @@ class _CommentManagerState extends State<CommentManager> {
     currentFocus.requestFocus(focusNode);
 
     focusNode.addListener(() {
-      print("toggling");
-      print(focusNode.hasFocus);
-      print(currentText);
+      //print("toggling");
+      //print(focusNode.hasFocus);
+      //print(currentText);
       if (!focusNode.hasFocus && currentText.trim().isEmpty) {
         hintText = "Add a comment ...";
         btnText = "Post";
       }
       textBoxNotifier.value = !textBoxNotifier.value;
     });
-    textBoxNotifier.value = !textBoxNotifier.value;
     curComment = replyComment;
     curBox = box;
+    textBoxNotifier.value = !textBoxNotifier.value;
   }
 
   // @override
@@ -193,6 +194,8 @@ class _CommentManagerState extends State<CommentManager> {
             notifyParent: refresh,
           );
           box.replyClicked = () {
+            // print(widget.root.commentUid);
+            // print(widget.root.parentUid);
             replyClicked(data, box);
           };
           return box;
@@ -204,6 +207,8 @@ class _CommentManagerState extends State<CommentManager> {
             manager: widget,
             notifyParent: refresh,
           );
+          // print(widget.root.commentUid);
+          // print(widget.root.parentUid);
           box.replyClicked = () {
             replyClicked(data, box);
           };
@@ -219,7 +224,7 @@ class CommentSection extends StatefulWidget {
   static String global = "";
   String userId;
   String symbol;
-  String parentId, childId;
+  String parentId, selfId;
   bool overLimit = false;
   int numComments;
   bool isSelfScroll;
@@ -227,7 +232,7 @@ class CommentSection extends StatefulWidget {
 
   CommentSection(
       String userId, String symbol, this.isSelfScroll, this.onFinishLoad,
-      {this.parentId = "", this.childId = ""}) {
+      {this.parentId = "", this.selfId = ""}) {
     this.symbol = symbol;
     this.userId = userId;
     this.numComments = 0;
@@ -347,10 +352,10 @@ class _CommentSectionState extends State<CommentSection>
         Image profilePic = null;
         if (!element.apiComment) {
           UserModel user2 = await FirebaseApi.getUser(element.userUid);
-          if (element.userName != user2.username) {
-            element.userName = user2.username;
-            await FirebaseApi.updateComment(element);
-          }
+          // if (element.userName != user2.username) {
+          //   element.userName = user2.username;
+          //   await FirebaseApi.updateComment(element);
+          // }
 
           color1 = Utils.stringToColor(user2.profileBgColor);
           color2 = Utils.stringToColor(user2.profileBorderColor);
@@ -397,19 +402,41 @@ class _CommentSectionState extends State<CommentSection>
     //    comments.remove(c);
     //    comments.insert(0, c);
     //  }
-    for (int i = 0; i < comments.length; i++) {
-      CommentManager c = comments[i];
-      if (c.root.commentUid == widget.parentId) {
-        comments.remove(c);
-        comments.insert(0, c);
-        if (widget.childId != "") {
-          c.cReplies.remove(widget.childId);
-          c.cReplies.insert(0, widget.childId);
-        }
+
+    //putting clicked on reply on top
+    // for (int i = 0; i < comments.length; i++) {
+    //   CommentManager c = comments[i];
+    //   if (c.root.commentUid == widget.parentId) {
+    //     // comments.remove(c);
+    //     // comments.insert(0, c);
+    //     if (widget.selfId != "") {
+    //       c.cReplies.remove(widget.selfId);
+    //       c.cReplies.insert(0, widget.selfId);
+    //     }
+    //   }
+    // }
+
+    if (widget.selfId != null && widget.selfId.isNotEmpty) {
+//for main comments
+
+      if (widget.parentId == null || widget.parentId.trim().isEmpty) {
+        print("no parent");
+        highlightIndex = comments
+            .indexWhere((element) => element.root.commentUid == widget.selfId);
       }
+      //for replies
+      else {
+        print(widget.parentId);
+
+        highlightIndex = comments.indexWhere(
+            (element) => element.root.commentUid == widget.parentId);
+      }
+      print("highlightindex: $highlightIndex");
     }
-    highlightIndex = comments
-        .indexWhere((element) => element.root.commentUid == widget.parentId);
+
+    // highlightIndex = comments
+    //     .indexWhere((element) => element.root.commentUid == widget.parentId);
+
     // print(highlightIndex);
     isLoad = false;
     if (widget.onFinishLoad != null) widget.onFinishLoad();
@@ -529,8 +556,9 @@ class _CommentSectionState extends State<CommentSection>
                                 onPressed: () async {
                                   if (_controller.text.trim() != "") {
                                     if (btnText == "Reply") {
+                                      print("replying");
                                       CommentSection.global = _controller.text;
-                                      curBox.add();
+                                      curBox.addReply();
                                       CommentSection.global = "";
                                       _controller.clear();
                                       currentText = "";
@@ -565,6 +593,7 @@ class _CommentSectionState extends State<CommentSection>
                                       focusNode.unfocus();
                                       return;
                                     }
+                                    // add general comment
                                     Comment com = Comment(
                                         content: _controller.value.text,
                                         likes: 0,
@@ -576,7 +605,7 @@ class _CommentSectionState extends State<CommentSection>
                                         createdTime: DateTime.now(),
                                         userName: user.username);
                                     String id =
-                                        await FirebaseApi.updateComment(com);
+                                        await FirebaseApi.addComment(com);
                                     ProfilePicture pic = ProfilePicture(
                                       name: user.username,
                                       image: user.profilePic != null
@@ -610,6 +639,8 @@ class _CommentSectionState extends State<CommentSection>
                                     this.numComments++;
                                     _controller.clear();
                                     setState(() {});
+                                    currentText = "";
+                                    focusNode.unfocus();
                                   }
                                 },
                                 child: Text(

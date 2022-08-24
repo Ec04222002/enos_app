@@ -43,7 +43,7 @@ class CommentReplyPage extends StatefulWidget {
 }
 
 class _CommentReplyPageState extends State<CommentReplyPage> {
-  bool isLoad = false;
+  bool isLoad = true;
   List<Comment> comments = [];
   void initState() {
     if (comments.length == 0) {
@@ -53,14 +53,22 @@ class _CommentReplyPageState extends State<CommentReplyPage> {
   }
 
   void loadComments() async {
+    print("----------");
     isLoad = true;
+    comments = [];
     if (widget.user == null) {
       widget.user = await FirebaseApi.getUser(widget.uid);
     }
+    // print(widget.user.comments);
     for (String com in widget.user.comments) {
       Comment comment = await FirebaseApi.getComment(com);
+      print(comment);
+      //???
+
       comments.add(comment);
+      // print(comment.parentUid);
     }
+
     comments.sort((a, b) {
       return -a.createdTime.compareTo(b.createdTime);
     });
@@ -234,24 +242,25 @@ class _CommentReplyPageState extends State<CommentReplyPage> {
                 name: widget.user.username,
               ),
         GestureDetector(
-            onTap: () {
+            onTap: () async {
+              // print("clicked at setting");
               print(comment.commentUid);
               print(comment.parentUid);
-              Navigator.push(
+
+              print(comment.isNested);
+              await Navigator.push(
                   context,
                   MaterialPageRoute(
                       builder: (context) => TickerInfo(
-                            symbol: comment.stockUid,
-                            uid: widget.uid,
-                            isSaved: widget.provider.symbols
-                                .contains(comment.stockUid),
-                            provider: widget.provider,
-                            parentId: comment.isNested
-                                ? comment.parentUid
-                                : comment.commentUid,
-                            childId:
-                                comment.isNested ? comment.commentUid : null,
-                          )));
+                          symbol: comment.stockUid,
+                          uid: widget.uid,
+                          isSaved: widget.provider.symbols
+                              .contains(comment.stockUid),
+                          provider: widget.provider,
+                          parentId: comment.parentUid,
+                          childId: comment.commentUid)));
+              widget.user = null;
+              loadComments();
             },
             child: Container(
               width: 350,

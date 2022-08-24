@@ -107,7 +107,7 @@ class _TickerInfoState extends State<TickerInfo>
 
   Future<void> init() async {
     _tabController = new TabController(vsync: this, length: myTabs.length);
-    if (widget.parentId != null) {
+    if (widget.parentId != null || widget.childId != null) {
       print("to comment section");
       _tabController.index = 1;
       showBtn = false;
@@ -522,7 +522,7 @@ class _TickerInfoState extends State<TickerInfo>
                               widget.provider.watchListUid,
                               pageData.symbol,
                               isSelfScroll,
-                              widget.parentId != null
+                              widget.parentId != null || widget.childId != null
                                   ? () {
                                       if (pageScrollController.hasClients) {
                                         pageScrollController.jumpTo(
@@ -534,7 +534,7 @@ class _TickerInfoState extends State<TickerInfo>
                                   : () {},
                               // commentHighlightUid: widget.parentId,
                               parentId: widget.parentId,
-                              childId: widget.childId,
+                              selfId: widget.childId,
                             )),
                             newSection(),
                           ],

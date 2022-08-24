@@ -13,7 +13,7 @@ class CommentBox extends StatefulWidget {
   final CommentManager manager;
   final Function notifyParent;
   Function replyClicked;
-  Function add;
+  Function addComment;
   String time;
   CommentBox(
       {this.context,
@@ -22,13 +22,14 @@ class CommentBox extends StatefulWidget {
       @required this.notifyParent,
       this.replyClicked}) {
     time = Utils.getTimeFromToday(data.createdTime);
-    add = addComment;
+    addComment = addReply;
   }
-  void addComment() async {
+  void addReply() async {
     print('yo');
+    print(manager);
     UserModel user = manager.user;
-
-    Comment com = Comment(
+    //update main
+    Comment reply = Comment(
         content: "@${data.userName} ${CommentSection.global}",
         userUid: user.userUid,
         stockUid: data.stockUid,
@@ -40,12 +41,23 @@ class CommentBox extends StatefulWidget {
         userName: user.username,
         parentUid: manager.root.commentUid);
 
-    String id = await FirebaseApi.updateComment(com);
+    String id = await FirebaseApi.addReply(manager.root.commentUid, reply);
+
     manager.root.replies.add(id);
+    //print(manager.root.replies);
     manager.cReplies.add(id);
-    data.replies.add(id);
+    //print(manager.root.replies);
+    //for replying to reply
+    if (data.commentUid != manager.root.commentUid) {
+      print("updating ");
+      data.replies.add(id);
+      await FirebaseApi.updateComment(data);
+    }
+    //data.replies.add(id);
+    //print(manager.root.replies);
+
     await FirebaseApi.updateComment(manager.root);
-    await FirebaseApi.updateComment(data);
+
     await manager.loadComments(1);
     user.comments.add(id);
     await FirebaseApi.updateUserData(user);
@@ -86,7 +98,7 @@ class _CommentBoxState extends State<CommentBox> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Container(
-          padding: EdgeInsets.symmetric(vertical: 8, horizontal: 8),
+          padding: EdgeInsets.fromLTRB(8, 5, 3, 2),
           decoration: BoxDecoration(
               color: kLightBackgroundColor,
               borderRadius: BorderRadius.circular(3)),
@@ -100,7 +112,7 @@ class _CommentBoxState extends State<CommentBox> {
                         ? '${widget.data.userName}'
                         : '${widget.data.userName.substring(0, 15)}...',
                     style: Theme.of(context).textTheme.caption.copyWith(
-                        fontSize: 14,
+                        fontSize: 13,
                         fontWeight: FontWeight.w500,
                         color: kDisabledColor),
                   ),
@@ -108,7 +120,7 @@ class _CommentBoxState extends State<CommentBox> {
                     ' · ${widget.time}',
                     style: Theme.of(context).textTheme.caption.copyWith(
                           color: kDisabledColor,
-                          fontSize: 14,
+                          fontSize: 13,
                           fontWeight: FontWeight.w500,
                         ),
                   ),
@@ -122,7 +134,7 @@ class _CommentBoxState extends State<CommentBox> {
                 style: Theme.of(context).textTheme.caption.copyWith(
                     fontWeight: FontWeight.w600,
                     color: kBrightTextColor,
-                    fontSize: 15.5),
+                    fontSize: 14),
               ),
               SizedBox(
                 height: 8,
@@ -253,7 +265,7 @@ class _CommentBoxState extends State<CommentBox> {
                               widget.data.likes++;
                             }
                             await FirebaseApi.updateUserData(user);
-                            await FirebaseApi.updateComment(widget.data);
+                            await FirebaseApi.addComment(widget.data);
                             widget.notifyParent();
                           },
                           icon: widget.manager.user.likedComments == null ||
@@ -275,7 +287,9 @@ class _CommentBoxState extends State<CommentBox> {
                         width: 5,
                       ),
                       TextButton.icon(
-                          onPressed: widget.replyClicked,
+                          onPressed: () {
+                            widget.replyClicked();
+                          },
                           icon: Icon(Icons.reply),
                           label: Text(
                             "Reply",
