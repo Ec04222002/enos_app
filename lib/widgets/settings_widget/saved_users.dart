@@ -1,4 +1,4 @@
-  import 'package:enos/constants.dart';
+import 'package:enos/constants.dart';
 import 'package:enos/models/user.dart';
 import 'package:enos/models/user_tile.dart';
 import 'package:enos/screens/account.dart';
@@ -99,89 +99,100 @@ class SavedUsers extends StatelessWidget {
                         },
                         icon: Icon(Icons.arrow_back_ios),
                       )),
-                  body: ValueListenableBuilder(
-                    valueListenable: toggleSave,
-                    builder: (context, value, child) => ListView.separated(
-                      padding: EdgeInsets.only(top: 10),
-                      physics: BouncingScrollPhysics(),
-                      itemCount: savedUserId.length,
-                      itemBuilder: (context, index) {
-                        UserSearchTile userTile = userTiles[index];
+                  body: user.userSaved.isEmpty
+                      ? Center(
+                          child: Text(
+                            "No Saved Users",
+                            style:
+                                TextStyle(color: kDisabledColor, fontSize: 18),
+                          ),
+                        )
+                      : ValueListenableBuilder(
+                          valueListenable: toggleSave,
+                          builder: (context, value, child) =>
+                              ListView.separated(
+                            padding: EdgeInsets.only(top: 10),
+                            physics: BouncingScrollPhysics(),
+                            itemCount: savedUserId.length,
+                            itemBuilder: (context, index) {
+                              UserSearchTile userTile = userTiles[index];
 
-                        return ListTile(
-                            tileColor: kLightBackgroundColor,
-                            leading: userTile.leadWidget,
-                            onTap: () async {
-                              _showUserInfo(userTile.uid);
+                              return ListTile(
+                                  tileColor: kLightBackgroundColor,
+                                  leading: userTile.leadWidget,
+                                  onTap: () async {
+                                    _showUserInfo(userTile.uid);
+                                  },
+                                  title: Text(
+                                    "@" + userTile.userName,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(
+                                        color: kBrightTextColor,
+                                        fontSize: 21,
+                                        fontWeight: FontWeight.w800),
+                                  ),
+                                  trailing: IconButton(
+                                      onPressed: () {
+                                        if (userTile.isSaved) {
+                                          Utils.showAlertDialog(context,
+                                              "Are you sure you want to remove @${userTile.userName}?",
+                                              () {
+                                            Navigator.pop(context);
+                                          }, () {
+                                            savedUserId.removeAt(savedUserId
+                                                .indexOf(userTile.uid));
+                                            user.userSaved = savedUserId;
+                                            userTile.isSaved = false;
+                                            FirebaseApi.updateUserData(user);
+                                            toggleSave.value =
+                                                !toggleSave.value;
+                                            Navigator.pop(context);
+                                          });
+                                          // savedUserId.removeAt(
+                                          //     savedUserId.indexOf(userTile.uid));
+                                          // user.userSaved = savedUserId;
+                                          // userTile.isSaved = false;
+                                          // FirebaseApi.updateUserData(user);
+                                          // toggleSave.value = !toggleSave.value;
+                                        } else {
+                                          if (user.userSaved.length > 15) {
+                                            Utils.showAlertDialog(context,
+                                                "You have reached your limit of 15 people added.",
+                                                () {
+                                              Navigator.pop(context);
+                                            }, null);
+                                          } else {
+                                            savedUserId.add(userTile.uid);
+                                            user.userSaved = savedUserId;
+                                            userTile.isSaved = true;
+                                            FirebaseApi.updateUserData(user);
+                                            toggleSave.value =
+                                                !toggleSave.value;
+                                          }
+                                        }
+                                        // UserModel newUserModel = recommends[index];
+                                        // newUserModel.userSaved = user.userSaved;
+                                      },
+                                      icon: userTile.isSaved
+                                          ? Icon(
+                                              Icons.bookmark_outlined,
+                                              color: kDisabledColor,
+                                              size: 35,
+                                            )
+                                          : Icon(
+                                              Icons.bookmark_border,
+                                              color: kDisabledColor,
+                                              size: 35,
+                                            )));
                             },
-                            title: Text(
-                              "@" + userTile.userName,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                  color: kBrightTextColor,
-                                  fontSize: 21,
-                                  fontWeight: FontWeight.w800),
-                            ),
-                            trailing: IconButton(
-                                onPressed: () {
-                                  if (userTile.isSaved) {
-                                    Utils.showAlertDialog(context,
-                                        "Are you sure you want to remove @${userTile.userName}?",
-                                        () {
-                                      Navigator.pop(context);
-                                    }, () {
-                                      savedUserId.removeAt(
-                                          savedUserId.indexOf(userTile.uid));
-                                      user.userSaved = savedUserId;
-                                      userTile.isSaved = false;
-                                      FirebaseApi.updateUserData(user);
-                                      toggleSave.value = !toggleSave.value;
-                                      Navigator.pop(context);
-                                    });
-                                    // savedUserId.removeAt(
-                                    //     savedUserId.indexOf(userTile.uid));
-                                    // user.userSaved = savedUserId;
-                                    // userTile.isSaved = false;
-                                    // FirebaseApi.updateUserData(user);
-                                    // toggleSave.value = !toggleSave.value;
-                                  } else {
-                                    if (user.userSaved.length > 15) {
-                                      Utils.showAlertDialog(context,
-                                          "You have reached your limit of 15 people added.",
-                                          () {
-                                        Navigator.pop(context);
-                                      }, null);
-                                    } else {
-                                      savedUserId.add(userTile.uid);
-                                      user.userSaved = savedUserId;
-                                      userTile.isSaved = true;
-                                      FirebaseApi.updateUserData(user);
-                                      toggleSave.value = !toggleSave.value;
-                                    }
-                                  }
-                                  // UserModel newUserModel = recommends[index];
-                                  // newUserModel.userSaved = user.userSaved;
-                                },
-                                icon: userTile.isSaved
-                                    ? Icon(
-                                        Icons.bookmark_outlined,
-                                        color: kDisabledColor,
-                                        size: 35,
-                                      )
-                                    : Icon(
-                                        Icons.bookmark_border,
-                                        color: kDisabledColor,
-                                        size: 35,
-                                      )));
-                      },
-                      separatorBuilder: (context, index) {
-                        return SizedBox(
-                          height: 8,
-                        );
-                      },
-                    ),
-                  ),
+                            separatorBuilder: (context, index) {
+                              return SizedBox(
+                                height: 8,
+                              );
+                            },
+                          ),
+                        ),
                 )));
   }
 }

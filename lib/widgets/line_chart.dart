@@ -248,6 +248,12 @@ class _LineChartWidgetState extends State<LineChartWidget> {
   @override
   Widget build(BuildContext bContext) {
     //print("in chart");
+    //print(MediaQuery.of(context).size.width);
+    if (widget.isPreview && MediaQuery.of(context).size.width < 380) {
+      return Container(
+        height: 0,
+      );
+    }
     //no Data
     if (widget.chartLoading) {
       //print("chart is loading");

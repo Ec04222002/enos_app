@@ -215,16 +215,16 @@ class NewsTile extends StatelessWidget {
           //       ),
           //     ]),
           child: Row(
-            mainAxisAlignment: MainAxisAlignment.start,
-            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Tile(),
+              Tile(context),
               SizedBox(
                 width: 5,
               ),
               Container(
-                height: 100.0,
-                width: 100,
+                height: 95.0,
+                width: MediaQuery.of(context).size.width * 0.24,
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
                   image: DecorationImage(
@@ -237,9 +237,10 @@ class NewsTile extends StatelessWidget {
         ));
   }
 
-  Widget Tile() {
+  Widget Tile(BuildContext context) {
     return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
+      mainAxisAlignment: MainAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
         // Container(
         //   padding: EdgeInsets.all(6.0),
@@ -256,19 +257,20 @@ class NewsTile extends StatelessWidget {
         // ),
         SizedBox(height: 8.0),
         Container(
-          width: 250,
+          padding: EdgeInsets.zero,
+          width: MediaQuery.of(context).size.width * 0.64,
           child: Text(
             title,
             maxLines: 3,
             style: TextStyle(
                 fontWeight: FontWeight.bold,
-                fontSize: 16.0,
+                fontSize: 15.0,
                 color: Colors.white),
           ),
         ),
         SizedBox(height: 8.0),
         Container(
-          width: 250,
+          width: MediaQuery.of(context).size.width * 0.64,
           child: Text(
             desc,
             maxLines: 2,

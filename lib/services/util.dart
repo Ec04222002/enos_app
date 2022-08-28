@@ -113,7 +113,7 @@ class Utils {
       ClipRRect(
         borderRadius: BorderRadius.circular(5.0), //or 15.0
         child: Container(
-          height: 54.0,
+          height: 53.0,
           color: color == null ? kLightBackgroundColor : color,
           padding: EdgeInsets.zero,
           child: Row(

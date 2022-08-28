@@ -53,6 +53,7 @@ class _AccountPageState extends State<AccountPage>
   ValueNotifier<bool> toggleTopProfile = ValueNotifier(false);
   bool initCalled = false, setOtherCalled = false;
 
+  DateTime lastUpdatedTime;
   @override
   void dispose() {
     _tabController.dispose();
@@ -73,6 +74,7 @@ class _AccountPageState extends State<AccountPage>
     //     await FirebaseApi.updateUserData(self);
     //   }
     // }
+
     name = user.username;
     setState(() {
       isLoading = false;
@@ -138,11 +140,13 @@ class _AccountPageState extends State<AccountPage>
     if (viewAccountIsSelf()) {
       _tickers = provider.tickers;
       showWatchlist = true;
+      lastUpdatedTime = provider.lastUpdatedTime;
     } else {
       DocumentSnapshot<Map<String, dynamic>> watchList =
           await FirebaseApi.getWatchListDoc(uid);
       _tickers = [];
       showWatchlist = watchList.get("is_public");
+      lastUpdatedTime = Utils.toDateTime(watchList.get('updated_last'));
       if (showWatchlist) {
         _tickers = await TickerTileProvider.getOtherTickers(uid);
         for (int i = 0; i < _tickers.length; ++i) {
@@ -201,11 +205,15 @@ class _AccountPageState extends State<AccountPage>
 
   bool _isWideWord(String word) {
     const wideChars = ['m', 'w', 'M', 'W', 'O', 'N', 'Q', 'H', 'D', 'G'];
-    double thresHold = 0.5;
+    if (MediaQuery.of(context).size.width < 380 && word.length > 8) {
+      return true;
+    }
+    double thresHold = MediaQuery.of(context).size.width < 380 ? 0.35 : 0.5;
     int wideCharInWord = 0;
     for (String char in wideChars) {
       wideCharInWord += char.allMatches(word).length;
     }
+
     return wideCharInWord >= thresHold * word.length;
   }
 
@@ -220,7 +228,9 @@ class _AccountPageState extends State<AccountPage>
           width: size.width,
           height: size.height * 0.15,
           child: Padding(
-            padding: EdgeInsets.fromLTRB(10, 0, 0, 8),
+            padding: MediaQuery.of(context).size.width < 380
+                ? EdgeInsets.fromLTRB(9, 0, 0, 8)
+                : EdgeInsets.fromLTRB(15, 0, 0, 8),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.end,
               mainAxisAlignment: MainAxisAlignment.start,
@@ -234,9 +244,9 @@ class _AccountPageState extends State<AccountPage>
                   color1: Utils.stringToColor(user.profileBgColor),
                   color2: Utils.stringToColor(user.profileBorderColor),
                   width:
-                      user.username.length > 6 && _isWideWord(name) ? 64 : 72,
+                      user.username.length > 6 && _isWideWord(name) ? 64 : 71,
                   height:
-                      user.username.length > 6 && _isWideWord(name) ? 64 : 72,
+                      user.username.length > 6 && _isWideWord(name) ? 64 : 71,
                   fontSize:
                       user.username.length > 6 && _isWideWord(name) ? 27 : 35,
                 ),
@@ -273,7 +283,7 @@ class _AccountPageState extends State<AccountPage>
                             fontSize:
                                 user.username.length > 6 && _isWideWord(name)
                                     ? 22
-                                    : 27),
+                                    : 26),
                         children: [
                           TextSpan(
                               text: "\t·\t",
@@ -363,13 +373,13 @@ class _AccountPageState extends State<AccountPage>
                                                 ? Icon(
                                                     Icons.bookmark_outlined,
                                                     color: kDisabledColor,
-                                                    size: 35,
+                                                    size: 34,
                                                   )
                                                 : Icon(
                                                     Icons
                                                         .bookmark_border_outlined,
                                                     color: kDisabledColor,
-                                                    size: 35,
+                                                    size: 34,
                                                   )),
                                   ),
                                 ),
@@ -406,33 +416,40 @@ class _AccountPageState extends State<AccountPage>
         elevation: 0,
         automaticallyImplyLeading: false,
         titleSpacing: 0,
-        backgroundColor: kLightBackgroundColor,
+        backgroundColor: Colors.transparent,
         toolbarHeight: 24,
         leading: Container(height: 0),
         flexibleSpace: Column(
           mainAxisAlignment: MainAxisAlignment.end,
           children: [
-            TabBar(
-              controller: _tabController,
-              labelPadding: EdgeInsets.zero,
-              padding: EdgeInsets.zero,
-              indicator: BoxDecoration(
-                  // Creates border
-                  color: kActiveColor),
-              tabs: [
-                Tab(
-                  child: Text(
-                    "Watchlist",
-                    style: TextStyle(fontSize: 16),
+            Container(
+              decoration: BoxDecoration(
+                color: kLightBackgroundColor,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(5)),
+              ),
+              child: TabBar(
+                controller: _tabController,
+                labelPadding: EdgeInsets.zero,
+                padding: EdgeInsets.zero,
+                indicator: BoxDecoration(
+                    borderRadius:
+                        BorderRadius.vertical(top: Radius.circular(5)),
+                    color: kActiveColor),
+                tabs: [
+                  Tab(
+                    child: Text(
+                      "Watchlist",
+                      style: TextStyle(fontSize: 16),
+                    ),
                   ),
-                ),
-                Tab(
-                  child: Text(
-                    "Settings",
-                    style: TextStyle(fontSize: 16),
-                  ),
-                )
-              ],
+                  Tab(
+                    child: Text(
+                      "Settings",
+                      style: TextStyle(fontSize: 16),
+                    ),
+                  )
+                ],
+              ),
             )
           ],
         ),
@@ -479,11 +496,6 @@ class _AccountPageState extends State<AccountPage>
           return SizedBox(
             height: 0,
           );
-          // return Divider(
-          //   color: kDisabledColor,
-          //   height: 0,
-          //   thickness: 0.1,
-          // );
         },
         itemCount: settingsList.length);
   }
@@ -575,7 +587,7 @@ class _AccountPageState extends State<AccountPage>
                   padding: EdgeInsets.symmetric(horizontal: 12, vertical: 0),
                   margin: EdgeInsets.zero,
                   child: Text(
-                    "Updated ${Utils.getTimeFromToday(provider.lastUpdatedTime)}",
+                    "Updated ${Utils.getTimeFromToday(lastUpdatedTime)}",
                     style: TextStyle(
                         color: kDisabledColor,
                         fontSize: 13,
@@ -635,7 +647,7 @@ class _AccountPageState extends State<AccountPage>
               trailing: IconButton(
                   onPressed: () {
                     TickerTileModel ticker = _tickers[tickerIndex];
-                    if (!_tickers[tickerIndex].isSaved) {
+                    if (!ticker.isSaved) {
                       _tickers[tickerIndex].isSaved = true;
 
                       provider.addTicker(
@@ -648,8 +660,12 @@ class _AccountPageState extends State<AccountPage>
                           () {
                         Navigator.pop(context);
                       }, () {
+                        //respect to self
                         _tickers[tickerIndex].isSaved = false;
-                        _tickers.remove(_tickers[tickerIndex]);
+                        // if (isSelfView) {
+                        //   _tickers.remove(_tickers[tickerIndex]);
+                        // }
+
                         provider.removeTicker(
                             provider.symbols.indexOf(ticker.symbol));
 

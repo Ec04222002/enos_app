@@ -38,148 +38,149 @@ class _SignInPageState extends State<SignInPage> {
             loadText: "Signing in ...",
           )
         : Scaffold(
-            body: SingleChildScrollView(
-                child: Padding(
-              padding: EdgeInsets.fromLTRB(
-                  30, MediaQuery.of(context).size.height * 0.08, 30, 0),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  children: <Widget>[
-                    Align(
-                        child:
-                            Image.asset('assets/launch_image.png', width: 120)),
-                    Text(
-                      "Welcome to Enos!",
-                      style: Theme.of(context)
-                          .textTheme
-                          .headline1
-                          .copyWith(letterSpacing: 0.5, fontSize: 25),
-                    ),
-                    SizedBox(height: 20),
-                    TextInputWidget(
-                      text: "User Email",
-                      icon: Icons.person_outline,
-                      isPassword: false,
-                      validatorFunct: (val) =>
-                          val.isEmpty ? 'Please enter an email' : null,
-                      controller: _emailTextController,
-                      obscureText: false,
-                    ),
-                    SizedBox(height: 10),
-                    TextInputWidget(
-                      text: "Password",
-                      icon: Icons.lock_outline,
-                      isPassword: true,
-                      validatorFunct: (val) => val.length < 6
-                          ? 'Please enter a password 6+ chars long'
-                          : null,
-                      controller: _passwordTextController,
-                    ),
-                    Container(
-                        width: MediaQuery.of(context).size.width,
-                        height: 35,
-                        alignment: Alignment.bottomRight,
-                        child: TextButton(
-                            onPressed: () => Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) =>
-                                        ResetPasswordScreen())),
-                            child: Text(
-                              "Forgot Password ?",
-                              style:
-                                  TextStyle(fontSize: 12, color: kActiveColor),
-                              textAlign: TextAlign.right,
-                            ))),
-                    Text(
-                      error,
-                      style: TextStyle(color: kRedColor),
-                    ),
-                    AuthButton(
-                      backgroundColor: kActiveColor,
-                      text: 'Log in',
-                      onTap: () async {
-                        if (_formKey.currentState.validate()) {
+            body: Center(
+              child: SingleChildScrollView(
+                  child: Padding(
+                padding: EdgeInsets.fromLTRB(30, 0, 30, 0),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    children: <Widget>[
+                      Align(
+                          child: Image.asset('assets/launch_image.png',
+                              width: 120)),
+                      Text(
+                        "Welcome to Enos!",
+                        style: Theme.of(context)
+                            .textTheme
+                            .headline1
+                            .copyWith(letterSpacing: 0.5, fontSize: 25),
+                      ),
+                      SizedBox(height: 20),
+                      TextInputWidget(
+                        text: "User Email",
+                        icon: Icons.person_outline,
+                        isPassword: false,
+                        validatorFunct: (val) =>
+                            val.isEmpty ? 'Please enter an email' : null,
+                        controller: _emailTextController,
+                        obscureText: false,
+                      ),
+                      SizedBox(height: 10),
+                      TextInputWidget(
+                        text: "Password",
+                        icon: Icons.lock_outline,
+                        isPassword: true,
+                        validatorFunct: (val) => val.length < 6
+                            ? 'Please enter a password 6+ chars long'
+                            : null,
+                        controller: _passwordTextController,
+                      ),
+                      Container(
+                          width: MediaQuery.of(context).size.width,
+                          height: 35,
+                          alignment: Alignment.bottomRight,
+                          child: TextButton(
+                              onPressed: () => Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) =>
+                                          ResetPasswordScreen())),
+                              child: Text(
+                                "Forgot Password ?",
+                                style: TextStyle(
+                                    fontSize: 12, color: kActiveColor),
+                                textAlign: TextAlign.right,
+                              ))),
+                      Text(
+                        error,
+                        style: TextStyle(color: kRedColor),
+                      ),
+                      AuthButton(
+                        backgroundColor: kActiveColor,
+                        text: 'Log in',
+                        onTap: () async {
+                          if (_formKey.currentState.validate()) {
+                            setState(() {
+                              isLoading = true;
+                            });
+                            dynamic result = await context
+                                .read<AuthService>()
+                                .signInWithEmailAndPassword(
+                                    email: _emailTextController.text.trim(),
+                                    password:
+                                        _passwordTextController.text.trim());
+                            if (result == null) {
+                              setState(() {
+                                isLoading = false;
+                                error = 'Please enter a valid email';
+                              });
+                              return;
+                            }
+                          }
+                        },
+                      ),
+                      AuthButton(
+                        textColor: Colors.black54,
+                        backgroundColor: Colors.white,
+                        leadIcon: Container(
+                          // padding: const EdgeInsets.symmetric(
+                          //     vertical: 9.0, horizontal: 10.0),
+                          // child: Image.network(
+                          //     'https://developers.google.com/identity/images/g-logo.png')
+                          // child: FaIcon(
+                          //   FontAwesomeIcons.google,
+                          //   color: kLightBackgroundColor,
+                          //   size: 50,
+                          // ),
+                          height: 0,
+                        ),
+                        text: 'Sign in with Google',
+                        onTap: () async {
+                          final provider = Provider.of<GoogleSignInProvider>(
+                              context,
+                              listen: false);
                           setState(() {
                             isLoading = true;
                           });
-                          dynamic result = await context
-                              .read<AuthService>()
-                              .signInWithEmailAndPassword(
-                                  email: _emailTextController.text.trim(),
-                                  password:
-                                      _passwordTextController.text.trim());
+                          dynamic result = await provider.googleLogin();
+                          ////print("Signed in with google");
                           if (result == null) {
                             setState(() {
                               isLoading = false;
-                              error = 'Please enter a valid email';
+                              error =
+                                  'Google cannot log you in. Please try again later';
                             });
-                            return;
                           }
-                        }
-                      },
-                    ),
-                    AuthButton(
-                      textColor: Colors.black54,
-                      backgroundColor: Colors.white,
-                      leadIcon: Container(
-                        // padding: const EdgeInsets.symmetric(
-                        //     vertical: 9.0, horizontal: 10.0),
-                        // child: Image.network(
-                        //     'https://developers.google.com/identity/images/g-logo.png')
-                        // child: FaIcon(
-                        //   FontAwesomeIcons.google,
-                        //   color: kLightBackgroundColor,
-                        //   size: 50,
-                        // ),
-                        height: 0,
+                          ////print("Google results: $result");
+                          //await context.read<AuthService>().setUser(result);
+                        },
                       ),
-                      text: 'Sign in with Google',
-                      onTap: () async {
-                        final provider = Provider.of<GoogleSignInProvider>(
-                            context,
-                            listen: false);
-                        setState(() {
-                          isLoading = true;
-                        });
-                        dynamic result = await provider.googleLogin();
-                        ////print("Signed in with google");
-                        if (result == null) {
-                          setState(() {
-                            isLoading = false;
-                            error =
-                                'Google cannot log you in. Please try again later';
-                          });
-                        }
-                        ////print("Google results: $result");
-                        //await context.read<AuthService>().setUser(result);
-                      },
-                    ),
-                    SizedBox(height: 15),
-                    //google/fb
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Text(
-                          "Don't have account? ",
-                        ),
-                        GestureDetector(
-                            onTap: () {
-                              Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (context) => RegisterPage()));
-                            },
-                            child: const Text('Sign up',
-                                style: TextStyle(color: kActiveColor))),
-                      ],
-                    ),
-                    SizedBox(height: 15),
-                  ],
+                      SizedBox(height: 15),
+                      //google/fb
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Text(
+                            "Don't have account? ",
+                          ),
+                          GestureDetector(
+                              onTap: () {
+                                Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (context) => RegisterPage()));
+                              },
+                              child: const Text('Sign up',
+                                  style: TextStyle(color: kActiveColor))),
+                        ],
+                      ),
+                      SizedBox(height: 15),
+                    ],
+                  ),
                 ),
-              ),
-            )),
+              )),
+            ),
           );
   }
 }

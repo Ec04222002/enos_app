@@ -61,65 +61,67 @@ class _SearchInputState extends State<SearchInput> {
                 color: kDarkTextColor,
                 icon: Icon(Icons.arrow_back_ios),
               ),
-        Container(
-          height: 38,
-          width: MediaQuery.of(context).size.width / 1.26,
-          margin: isMainPage
-              ? EdgeInsets.fromLTRB(0, 12, 0, 12)
-              : EdgeInsets.fromLTRB(0, 12, 12, 12),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(6),
-            color: kBrightTextColor,
-          ),
-          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 0),
-          child: TextField(
-            autofocus: (isMainPage) ? false : true,
-            controller: controller,
-            decoration: InputDecoration(
-              contentPadding: EdgeInsets.symmetric(vertical: 4),
-              icon: Icon(
-                Icons.search,
-                size: 27,
-                color: kDisabledColor,
-              ),
-              suffixIcon: CoolDropdown(
-                resultPadding: EdgeInsets.all(5),
-                resultAlign: Alignment.center,
-                resultBD: BoxDecoration(
-                    color: kDarkTextColor,
-                    border: Border(
-                        left: BorderSide(color: kDisabledColor, width: 1.0))),
-                resultTS: TextStyle(
-                    fontSize: 13,
-                    color: Colors.grey.withOpacity(0.8),
-                    fontWeight: FontWeight.w600),
-                resultWidth: 95,
-                dropdownWidth: 90,
-                selectedItemPadding: EdgeInsets.zero,
-                dropdownPadding:
-                    EdgeInsets.symmetric(vertical: 0, horizontal: 4),
-                dropdownList: items,
-                dropdownItemBottomGap: 0,
-                dropdownItemGap: 0,
-                dropdownItemPadding: EdgeInsets.zero,
-                dropdownAlign: "center",
-                dropdownHeight: 310,
-                selectedItemBD: BoxDecoration(
-                    color: kDarkTextColor,
-                    borderRadius: BorderRadius.circular(5)),
-                selectedItemTS: TextStyle(color: Colors.grey, fontSize: 18),
-                unselectedItemTS: TextStyle(color: Colors.grey, fontSize: 18),
-                onChange: (item) {
-                  widget.setMarketName(item['value']);
-                },
-                defaultValue: items[0],
-              ),
-              hintText: widget.hintText,
-              hintStyle: style,
-              border: InputBorder.none,
+        Expanded(
+          child: Container(
+            height: 37,
+            //width: MediaQuery.of(context).size.width / 1.26,
+            margin: isMainPage
+                ? EdgeInsets.fromLTRB(0, 12, 0, 12)
+                : EdgeInsets.fromLTRB(0, 12, 12, 12),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(6),
+              color: kBrightTextColor,
             ),
-            style: style,
-            onChanged: widget.onChanged,
+            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 0),
+            child: TextField(
+              autofocus: (isMainPage) ? false : true,
+              controller: controller,
+              decoration: InputDecoration(
+                contentPadding: EdgeInsets.symmetric(vertical: 4),
+                icon: Icon(
+                  Icons.search,
+                  size: 26,
+                  color: kDisabledColor,
+                ),
+                suffixIcon: CoolDropdown(
+                  resultPadding: EdgeInsets.all(5),
+                  resultAlign: Alignment.center,
+                  resultBD: BoxDecoration(
+                      color: kDarkTextColor,
+                      border: Border(
+                          left: BorderSide(color: kDisabledColor, width: 1.0))),
+                  resultTS: TextStyle(
+                      fontSize: 12,
+                      color: Colors.grey.withOpacity(0.8),
+                      fontWeight: FontWeight.w600),
+                  resultWidth: 90,
+                  dropdownWidth: 90,
+                  selectedItemPadding: EdgeInsets.symmetric(horizontal: 3),
+                  dropdownPadding:
+                      EdgeInsets.symmetric(vertical: 0, horizontal: 3),
+                  dropdownList: items,
+                  dropdownItemBottomGap: 0,
+                  dropdownItemGap: 0,
+                  dropdownItemPadding: EdgeInsets.zero,
+                  dropdownAlign: "center",
+                  dropdownHeight: 305,
+                  selectedItemBD: BoxDecoration(
+                      color: kDarkTextColor,
+                      borderRadius: BorderRadius.circular(5)),
+                  selectedItemTS: TextStyle(color: Colors.grey, fontSize: 18),
+                  unselectedItemTS: TextStyle(color: Colors.grey, fontSize: 18),
+                  onChange: (item) {
+                    widget.setMarketName(item['value']);
+                  },
+                  defaultValue: items[0],
+                ),
+                hintText: widget.hintText,
+                hintStyle: style,
+                border: InputBorder.none,
+              ),
+              style: style,
+              onChanged: widget.onChanged,
+            ),
           ),
         ),
       ],

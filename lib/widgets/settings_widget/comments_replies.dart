@@ -263,14 +263,16 @@ class _CommentReplyPageState extends State<CommentReplyPage> {
               loadComments();
             },
             child: Container(
-              width: 350,
+              // width: MediaQuery.of(context).size.width - 47,
               padding: EdgeInsets.symmetric(vertical: 8, horizontal: 8),
               decoration: BoxDecoration(
                   color: kLightBackgroundColor,
                   borderRadius: BorderRadius.circular(3)),
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(
+                    // mainAxisAlignment: MainAxisAlignment.end,
                     children: [
                       Text(
                         widget.user.username.length <= 15
