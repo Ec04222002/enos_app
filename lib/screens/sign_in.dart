@@ -8,7 +8,6 @@ import 'package:flutter/material.dart';
 import 'package:enos/constants.dart';
 import 'package:enos/widgets/text_input_widget.dart';
 import 'package:provider/provider.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class SignInPage extends StatefulWidget {
   //const SignInPage({Key key}) : super(key: key);
