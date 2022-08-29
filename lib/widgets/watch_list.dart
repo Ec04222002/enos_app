@@ -1,6 +1,7 @@
 import 'package:enos/models/watchlist.dart';
 import 'package:enos/services/firebase_api.dart';
 import 'package:enos/services/ticker_provider.dart';
+import 'package:enos/services/util.dart';
 import 'package:enos/widgets/ticker_tile.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -21,6 +22,7 @@ class _WatchListWidgetState extends State<WatchListWidget> {
   @override
   Widget build(BuildContext context) {
     //print("**in watchlist widget");
+
     tickerProvider = Provider.of<TickerTileProvider>(context);
 
     tickers = tickerProvider.symbols;
